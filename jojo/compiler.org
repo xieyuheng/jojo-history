@@ -7,8 +7,6 @@
 
 * [todo-stack]
 
-  - sexp parser
-
   - re-expose built in functions
 
   - rewrite the compiler, in jojo

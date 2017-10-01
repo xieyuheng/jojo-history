@@ -1,0 +1,50 @@
+#+property: tangle sexp.py
+#+title: sexp parser
+
+* [note]
+
+  - symbol list to sexp
+
+  - symbol is implemented as string
+
+  - a double quoted string is viewed as a symbol
+
+  - sexp := Null | Cons(sexp, sexp_list) | symbol
+
+* import
+
+  #+begin_src python
+  from jojo.word import (
+
+  )
+  #+end_src
+
+* Null
+
+  #+begin_src python
+  class Null:
+      pass
+  #+end_src
+
+* Cons
+
+  #+begin_src python
+  class Cons:
+      def __init__(self, car, cdr):
+          self.car = car
+          self.cdr = cdr
+  #+end_src
+
+* read
+
+  #+begin_src python
+  def read(word_list):
+      pass
+  #+end_src
+
+* write
+
+  #+begin_src python
+  def write(sexp):
+      pass
+  #+end_src
