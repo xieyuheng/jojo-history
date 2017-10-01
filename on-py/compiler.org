@@ -1,0 +1,48 @@
+#+property: tangle compiler.py
+#+title: compile jojo to python
+
+* [todo-stack]
+
+  - a compiler, in python, to compile jojo to python
+
+  - re-expose built in functions
+
+  - rewrite the compiler, in jojo
+
+* import
+
+  #+begin_src python
+  from jojo import (
+      VM, RP,
+      GET, SET,
+      JOJO, MSG, CLO,
+      APPLY, IFTE,
+      NEW,
+  )
+  #+end_src
+
+* stack operation
+
+  #+begin_src python
+  def drop(a):
+      return ()
+
+  def dup(a):
+      return (a, a)
+
+  def over(a, b):
+      return (a, b, a)
+
+  def tuck(a, b):
+      return (b, a, b)
+
+  def swap(a, b):
+      return (b, a)
+  #+end_src
+
+* number
+
+  #+begin_src python
+  def add(a, b):
+      return a + b
+  #+end_src
