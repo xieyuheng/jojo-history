@@ -1,9 +1,13 @@
 #+property: tangle compiler.py
 #+title: compile jojo to python
 
+- a compiler
+  in python [compiled jojo]
+  to compile jojo to python
+
 * [todo-stack]
 
-  - a compiler, in python, to compile jojo to python
+  - sexp parser
 
   - re-expose built in functions
 
