@@ -1,9 +1,10 @@
 #+property: tangle compiler.py
-#+title: compile jojo to python
+#+title: compiler
 
-- a compiler
-  in python [compiled jojo]
-  to compile jojo to python
+* [note]
+
+  - a compiler, in python
+    to compile jojo to python
 
 * [todo-stack]
 
