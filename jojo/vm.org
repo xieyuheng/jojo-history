@@ -205,6 +205,21 @@
               exe_fun(c, vm)
       #+end_src
 
+*** current compiling module
+
+***** CALL
+
+      #+begin_src python
+      class CALL:
+          def __init__(self, module, name):
+              self.module = module
+              self.name = name
+
+          def jo_exe(self, rp, vm):
+              jo = getattr(self.module, self.name)
+              exe_jo(jo, rp, vm)
+      #+end_src
+
 * exe
 
 *** exe

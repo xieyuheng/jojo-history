@@ -7,6 +7,7 @@ from jojo.vm import (
     JOJO, MSG, CLO,
     APPLY, IFTE,
     NEW,
+    CALL,
 )
 
 def drop(a):
@@ -116,3 +117,25 @@ def test_4():
         {'1': 'k1', '2': 'k2', '3': 'k3'}
     ]]
     assert vm.ds == ds1
+
+
+import sys
+
+k_5 = 5
+j_5 = JOJO(
+    CALL(sys.modules[__name__], 'add'),
+)
+
+jojo_5 = JOJO(
+    CALL(sys.modules[__name__], 'k_5'),
+    CALL(sys.modules[__name__], 'k_5'),
+    CALL(sys.modules[__name__], 'add'),
+    CALL(sys.modules[__name__], 'dup'),
+    CALL(sys.modules[__name__], 'j_5'),
+)
+
+def test_5():
+    vm = VM([],
+            [RP((jojo_5))])
+    vm = vm.exe()
+    assert vm.ds == [20]

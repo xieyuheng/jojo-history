@@ -122,6 +122,15 @@ class NEW:
             print ("  argument is not a class : {}".format(c))
         exe_fun(c, vm)
 
+class CALL:
+    def __init__(self, module, name):
+        self.module = module
+        self.name = name
+
+    def jo_exe(self, rp, vm):
+        jo = getattr(self.module, self.name)
+        exe_jo(jo, rp, vm)
+
 def exe(vm):
     while vm.rs != []:
         exe_one_step(vm)

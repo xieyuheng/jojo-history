@@ -1,7 +1,5 @@
 * [todo-stack]
 
-  - specify which semantic subset of python is captured by jojo vm
-
   - extend-able-ly re-expose built-in functions
 
-  - rewrite the compiler, in jojo
+  - specify which semantic subset of python is captured by jojo vm

@@ -3,31 +3,30 @@
 
 * [note]
 
-  - a compiler, in python
-    to compile jojo to python
-
-  - input  : jojo sexp list
-    output : string list ><><><
-
-    ??? code block list ><><><
+  - compile jojo sexp list to module
 
 * import
 
   #+begin_src python
-  from vm import (
+  from . vm import (
       VM, RP,
       GET, SET,
       JOJO, MSG, CLO,
       APPLY, IFTE,
       NEW,
+      CALL,
   )
 
-  from sexp import (
+  from . sexp import (
       null, null_p,
       cons, cons_p,
       list_p,
       car, cdr,
   )
+
+  import types
+  import sys
+  import importlib
   #+end_src
 
 * [note] syntax
@@ -59,30 +58,117 @@
     - :local!
     - .message
 
+* utility
+
+*** get_current_module
+
+    #+begin_src python
+    def get_current_module():
+        return sys.modules[__name__]
+    #+end_src
+
+* compile_module
+
+*** get_jojo_name_list
+
+    #+begin_src python
+    def get_jojo_name_list(sexp_list):
+        jojo_name_list = []
+        for sexp in sexp_list:
+            if not cons_p(sexp):
+                pass
+            elif car(sexp) == '+jojo':
+                body = cdr(sexp)
+                jojo_name = car(body)
+                jojo_name_list.append(jojo_name)
+        return jojo_name_list
+    #+end_src
+
+*** compile_module
+
+    #+begin_src python
+    def compile_module(module_name, sexp_list) -> types.ModuleType:
+        module = types.ModuleType(module_name)
+        jojo_name_list = get_jojo_name_list(sexp_list)
+        setattr(module, 'jojo_name_list', jojo_name_list)
+        for sexp in sexp_list:
+            if cons_p(sexp):
+                keyword = car(sexp)
+                fun = top_level_keyword_dict[keyword]
+                fun(module, cdr(sexp))
+        return module
+    #+end_src
+
+*** compile_jojo
+
+    #+begin_src python
+    def compile_jojo(module, body) -> JOJO:
+        return JOJO(1, 2, add, 3, add)
+    #+end_src
+
+*** top_level_keyword_dict
+
+    #+begin_src python
+    top_level_keyword_dict = {}
+    #+end_src
+
+*** @keyword
+
+    #+begin_src python
+    def keyword(name):
+        def decorator(fun):
+            top_level_keyword_dict[name] = fun
+            return fun
+        return decorator
+    #+end_src
+
+* top level keywords
+
+*** import
+
+    #+begin_src python
+    @keyword("import")
+    def k_import(module, body):
+        module_name = car(body)
+        imported_module = importlib.import_module(module_name)
+        setattr(get_current_module(), module_name, imported_module)
+    #+end_src
+
+*** +jojo
+
+    #+begin_src python
+    @keyword("+jojo")
+    def plus_jojo(module, body):
+        jojo_name = car(body)
+        setattr(module, jojo_name, compile_jojo(module, cdr(body)))
+    #+end_src
+
 * macro_expend
 
-* stack operation
+* built-in
 
-  #+begin_src python
-  def drop(a):
-      return ()
+*** stack operation
 
-  def dup(a):
-      return (a, a)
+    #+begin_src python
+    def drop(a):
+        return ()
 
-  def over(a, b):
-      return (a, b, a)
+    def dup(a):
+        return (a, a)
 
-  def tuck(a, b):
-      return (b, a, b)
+    def over(a, b):
+        return (a, b, a)
 
-  def swap(a, b):
-      return (b, a)
-  #+end_src
+    def tuck(a, b):
+        return (b, a, b)
 
-* number
+    def swap(a, b):
+        return (b, a)
+    #+end_src
 
-  #+begin_src python
-  def add(a, b):
-      return a + b
-  #+end_src
+*** number
+
+    #+begin_src python
+    def add(a, b):
+        return a + b
+    #+end_src
