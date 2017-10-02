@@ -47,43 +47,43 @@ class Human:
     def sing(self):
         return 'singing'
 
+
+jojo_1 = JOJO(
+    "xieyuheng", Human, NEW, SET("h"),
+    "kkk took my baby away", GET("h"), MSG("say"),
+    GET("h"), MSG("name"),
+)
+
 def test_1():
-    jojo = JOJO(
-        "xieyuheng", Human, NEW, SET("h"),
-        "kkk took my baby away", GET("h"), MSG("say"),
-        GET("h"), MSG("name"),
-    )
     vm = VM([],
-            [RP(JOJO(jojo))]
-    )
+            [RP(jojo_1)])
     vm = vm.exe()
     assert vm.ds == ["xieyuheng"]
 
+jojo_2 = JOJO(
+    5, SET("1"),
+    100,
+    [SET("2"), GET("2"), GET("2"), add, GET("1"), add],
+    CLO,
+    APPLY
+)
 
 def test_2():
-    jojo = JOJO(
-        5, SET("1"),
-        100,
-        [SET("2"), GET("2"), GET("2"), add, GET("1"), add],
-        CLO,
-        APPLY
-    )
     vm = VM([],
-            [RP(JOJO(jojo))]
-    )
+            [RP(jojo_2)])
     vm = vm.exe()
     assert vm.ds == [205]
 
+jojo_3 = JOJO(
+    False,
+    ["true"], CLO,
+    ["false"], CLO,
+    IFTE,
+)
 
 def test_3():
-    jojo = JOJO(
-        False,
-        ["true"], CLO,
-        ["false"], CLO,
-        IFTE
-    )
     vm = VM([],
-            [RP(JOJO(jojo))]
+            [RP(jojo_3)]
     )
     vm = vm.exe()
     assert vm.ds == ["false"]
@@ -98,7 +98,7 @@ def test_4():
             k0,
             arg_dict,
         ]
-    jojo = JOJO(
+    jojo_4 = JOJO(
         "aaa",
         "bbb",
         ["k1", "k2", "k3"],
@@ -106,8 +106,7 @@ def test_4():
         k,
     )
     vm = VM([],
-            [RP(JOJO(jojo))]
-    )
+            [RP((jojo_4))])
     vm = vm.exe()
     ds1 = [[
         'aaa',

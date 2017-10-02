@@ -1,10 +1,6 @@
 #+property: tangle vm.py
 #+title: jojo vm on python
 
-* [todo-stack]
-
-  - specify which semantic subset of python is captured by jojo
-
 * import
 
   #+begin_src python
@@ -87,67 +83,54 @@
 
 * jo
 
-*** GET
+*** local variable
 
-    #+begin_src python
-    class GET:
-        def __init__(self, name):
-            self.name = name
-
-        def jo_exe(self, rp, vm):
-            value = rp.lr[self.name]
-            vm.ds.append(value)
-    #+end_src
-
-*** SET
-
-    #+begin_src python
-    class SET:
-        def __init__(self, name):
-            self.name = name
-
-        def jo_exe(self, rp, vm):
-            value = vm.ds.pop()
-            rp.lr[self.name] = value
-    #+end_src
-
-*** JOJO
-
-    #+begin_src python
-    class JOJO:
-        def __init__(self, *body):
-            self.length = len(body)
-            self.body = list(body)
-            self.lr = {}
-
-        def jo_exe(self, rp, vm):
-            vm.rs.append(RP(self))
-    #+end_src
-
-*** MSG
-
-    #+begin_src python
-    class MSG:
-        def __init__(self, message):
-            self.message = message
-
-        def jo_exe(self, rp, vm):
-            o = vm.ds.pop()
-            fun = getattr(o, self.message)
-            exe_jo(fun, rp, vm)
-    #+end_src
-
-*** CLO
-
-***** CLOSURE
+***** GET
 
       #+begin_src python
-      class CLOSURE:
-          def __init__(self, body, lr):
-              self.length = len(body)
-              self.body = body
-              self.lr = lr
+      class GET:
+          def __init__(self, name):
+              self.name = name
+
+          def jo_exe(self, rp, vm):
+              value = rp.lr[self.name]
+              vm.ds.append(value)
       #+end_src
+
+***** SET
+
+      #+begin_src python
+      class SET:
+          def __init__(self, name):
+              self.name = name
+
+          def jo_exe(self, rp, vm):
+              value = vm.ds.pop()
+              rp.lr[self.name] = value
+      #+end_src
+
+*** top level
+
+***** JOJO
+
+      #+begin_src python
+      class JOJO:
+          def __init__(self, *body):
+              self.length = len(body)
+              self.body = list(body)
+              self.lr = {}
+
+          def jo_exe(self, rp, vm):
+              vm.rs.append(RP(self))
+      #+end_src
+
+***** >< MACRO
+
+      #+begin_src python
+
+      #+end_src
+
+*** closure
 
 ***** CLO
 
@@ -159,45 +142,68 @@
               lr = rp.lr
               clo = CLOSURE(body, lr)
               vm.ds.append(clo)
+
+      class CLOSURE:
+          def __init__(self, body, lr):
+              self.length = len(body)
+              self.body = body
+              self.lr = lr
       #+end_src
 
-*** APPLY
+***** APPLY
 
-    #+begin_src python
-    class APPLY:
-        @classmethod
-        def jo_exe(cls, rp, vm):
-            clo = vm.ds.pop()
-            vm.rs.append(RP(clo))
-    #+end_src
+      #+begin_src python
+      class APPLY:
+          @classmethod
+          def jo_exe(cls, rp, vm):
+              clo = vm.ds.pop()
+              vm.rs.append(RP(clo))
+      #+end_src
 
-*** IFTE
+*** control
 
-    #+begin_src python
-    class IFTE:
-        @classmethod
-        def jo_exe(self, rp, vm):
-            clo2 = vm.ds.pop()
-            clo1 = vm.ds.pop()
-            test = vm.ds.pop()
-            if test:
-                vm.rs.append(RP(clo1))
-            else:
-                vm.rs.append(RP(clo2))
-    #+end_src
+***** IFTE
 
-*** NEW
+      #+begin_src python
+      class IFTE:
+          @classmethod
+          def jo_exe(self, rp, vm):
+              clo2 = vm.ds.pop()
+              clo1 = vm.ds.pop()
+              test = vm.ds.pop()
+              if test:
+                  vm.rs.append(RP(clo1))
+              else:
+                  vm.rs.append(RP(clo2))
+      #+end_src
 
-    #+begin_src python
-    class NEW:
-        @classmethod
-        def jo_exe(self, rp, vm):
-            c = vm.ds.pop()
-            if not class_p(c):
-                print ("- NEW.jo_exe fail")
-                print ("  argument is not a class : {}".format(c))
-            exe_fun(c, vm)
-    #+end_src
+*** object system
+
+***** MSG
+
+      #+begin_src python
+      class MSG:
+          def __init__(self, message):
+              self.message = message
+
+          def jo_exe(self, rp, vm):
+              o = vm.ds.pop()
+              fun = getattr(o, self.message)
+              exe_jo(fun, rp, vm)
+      #+end_src
+
+***** NEW
+
+      #+begin_src python
+      class NEW:
+          @classmethod
+          def jo_exe(self, rp, vm):
+              c = vm.ds.pop()
+              if not class_p(c):
+                  print ("- NEW.jo_exe fail")
+                  print ("  argument is not a class : {}".format(c))
+              exe_fun(c, vm)
+      #+end_src
 
 * exe
 

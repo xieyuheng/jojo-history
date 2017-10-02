@@ -71,20 +71,7 @@ class JOJO:
     def jo_exe(self, rp, vm):
         vm.rs.append(RP(self))
 
-class MSG:
-    def __init__(self, message):
-        self.message = message
 
-    def jo_exe(self, rp, vm):
-        o = vm.ds.pop()
-        fun = getattr(o, self.message)
-        exe_jo(fun, rp, vm)
-
-class CLOSURE:
-    def __init__(self, body, lr):
-        self.length = len(body)
-        self.body = body
-        self.lr = lr
 
 class CLO:
     @classmethod
@@ -93,6 +80,12 @@ class CLO:
         lr = rp.lr
         clo = CLOSURE(body, lr)
         vm.ds.append(clo)
+
+class CLOSURE:
+    def __init__(self, body, lr):
+        self.length = len(body)
+        self.body = body
+        self.lr = lr
 
 class APPLY:
     @classmethod
@@ -110,6 +103,15 @@ class IFTE:
             vm.rs.append(RP(clo1))
         else:
             vm.rs.append(RP(clo2))
+
+class MSG:
+    def __init__(self, message):
+        self.message = message
+
+    def jo_exe(self, rp, vm):
+        o = vm.ds.pop()
+        fun = getattr(o, self.message)
+        exe_jo(fun, rp, vm)
 
 class NEW:
     @classmethod

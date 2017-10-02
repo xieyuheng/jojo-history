@@ -6,6 +6,13 @@ from vm import (
     NEW,
 )
 
+from sexp import (
+    null, null_p,
+    cons, cons_p,
+    list_p,
+    car, cdr,
+)
+
 def drop(a):
     return ()
 

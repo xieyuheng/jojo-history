@@ -62,6 +62,13 @@
         return isinstance(x, Cons)
     #+end_src
 
+*** list_p
+
+    #+begin_src python
+    def list_p(x):
+        return null_p(x) or cons_p(x)
+    #+end_src
+
 *** cdr
 
     #+begin_src python
@@ -74,13 +81,6 @@
     #+begin_src python
     def car(x):
         return x.car
-    #+end_src
-
-*** list_p
-
-    #+begin_src python
-    def list_p(x):
-        return null_p(x) or cons_p(x)
     #+end_src
 
 * [note] syntax sugar

@@ -6,11 +6,10 @@
   - a compiler, in python
     to compile jojo to python
 
-* [todo-stack]
+  - input  : jojo sexp list
+    output : string list ><><><
 
-  - re-expose built in functions
-
-  - rewrite the compiler, in jojo
+    ??? code block list ><><><
 
 * import
 
@@ -22,7 +21,45 @@
       APPLY, IFTE,
       NEW,
   )
+
+  from sexp import (
+      null, null_p,
+      cons, cons_p,
+      list_p,
+      car, cdr,
+  )
   #+end_src
+
+* [note] syntax
+
+  - top level :
+    - (+jojo)
+    - (+macro)
+    - (+data) ><><><
+
+  - in jojo :
+    - (begin)
+    - (clo)
+
+    - (quote)
+    - (partquote)
+    - (@)
+
+    - (if) ><><><
+    - (cond) ><><><
+    - (case) ><><><
+
+  - key jo :
+    - apply
+    - ifte
+    - new
+
+  - jo pattern :
+    - :local
+    - :local!
+    - .message
+
+* macro_expend
 
 * stack operation
 
