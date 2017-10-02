@@ -1,9 +1,9 @@
 #+property: tangle sexp.py
-#+title: sexp parser
+#+title: sexp
 
 * [note]
 
-  - symbol list to sexp
+  - symbol list to sexp list
 
   - symbol is implemented as string
 
@@ -11,40 +11,169 @@
 
   - sexp := Null | Cons(sexp, sexp_list) | symbol
 
-* import
+* null & cons
+
+*** Null
+
+    #+begin_src python
+    class Null:
+        pass
+    #+end_src
+
+*** null
+
+    #+begin_src python
+    null = Null()
+    #+end_src
+
+*** null_p
+
+    #+begin_src python
+    def null_p(x):
+        return x == null
+    #+end_src
+
+*** Cons
+
+    #+begin_src python
+    class Cons:
+        def __init__(self, car, cdr):
+            self.car = car
+            self.cdr = cdr
+    #+end_src
+
+*** cons
+
+    #+begin_src python
+    def cons(car, cdr):
+        if list_p(cdr):
+            return Cons(car, cdr)
+        else:
+            print ("- cons fail")
+            print ("  cdr of cons must be a cons or null")
+            print ("  cdr : {}".format(cdr))
+
+    #+end_src
+
+*** cons_p
+
+    #+begin_src python
+    def cons_p(x):
+        return isinstance(x, Cons)
+    #+end_src
+
+*** cdr
+
+    #+begin_src python
+    def cdr(x):
+        return x.cdr
+    #+end_src
+
+*** car
+
+    #+begin_src python
+    def car(x):
+        return x.car
+    #+end_src
+
+*** list_p
+
+    #+begin_src python
+    def list_p(x):
+        return null_p(x) or cons_p(x)
+    #+end_src
+
+* [note] syntax sugar
+
+  - [...] -> (begin ...)
+
+  - {...} -> (clo ...)
+
+  - ' ... -> (quote ...)
+
+  - ` ... -> (partquote ...)
+
+* parse_sexp_list
 
   #+begin_src python
-  from jojo.word import (
-
-  )
+  def parse_sexp_list(symbol_list):
+      length = len(symbol_list)
+      i = 0
+      sexp_list = []
+      while i < length:
+         s, i = parse_sexp(symbol_list, i)
+         sexp_list.append(s)
+      return sexp_list
   #+end_src
 
-* Null
+* parse_sexp
 
   #+begin_src python
-  class Null:
-      pass
+  def parse_sexp(symbol_list, i):
+      symbol = symbol_list[i]
+      if symbol == '(':
+          return parse_sexp_cons_until_ket(symbol_list, i+1, ')')
+      elif symbol == '[':
+          s_cons, i1 = parse_sexp_cons_until_ket(symbol_list, i+1, ']')
+          return (cons('begin', s_cons), i1)
+      elif symbol == '{':
+          s_cons, i1 = parse_sexp_cons_until_ket(symbol_list, i+1, '}')
+          return (cons('clo', s_cons), i1)
+      elif symbol == "'":
+          s, i1 = parse_sexp(symbol_list, i+1)
+          return (cons('quote', cons(s, null)), i1)
+      elif symbol == "`":
+          s, i1 = parse_sexp(symbol_list, i+1)
+          return (cons('partquote', cons(s, null)), i1)
+      else:
+          return (symbol, i+1)
   #+end_src
 
-* Cons
+* parse_sexp_cons_until_ket
 
   #+begin_src python
-  class Cons:
-      def __init__(self, car, cdr):
-          self.car = car
-          self.cdr = cdr
-  #+end_src
-
-* read
-
-  #+begin_src python
-  def read(word_list):
-      pass
+  def parse_sexp_cons_until_ket(symbol_list, i, ket):
+      symbol = symbol_list[i]
+      if symbol == ket:
+          return (null, i+1)
+      else:
+          s, i1 = parse_sexp(symbol_list, i)
+          s_cons, i2 = \
+              parse_sexp_cons_until_ket(symbol_list, i1, ket)
+          return (cons(s, s_cons), i2)
   #+end_src
 
 * write
 
   #+begin_src python
-  def write(sexp):
-      pass
+  def write(x):
+      print(x, end="")
+  #+end_src
+
+* write_sexp
+
+  #+begin_src python
+  def write_sexp(s):
+      if null_p(s):
+          write ("null")
+      elif cons_p(s):
+          write ("(")
+          write_sexp_cons(s)
+          write (")")
+      else:
+          write (s)
+  #+end_src
+
+* write_sexp_cons
+
+  #+begin_src python
+  def write_sexp_cons(s_cons):
+      if null_p(s_cons):
+          pass
+      elif null_p(cdr(s_cons)):
+          write_sexp(car(s_cons))
+      else:
+          write_sexp(car(s_cons))
+          write (" ")
+          write_sexp_cons(cdr(s_cons))
   #+end_src

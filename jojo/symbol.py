@@ -1,4 +1,4 @@
-def scan(string):
+def scan_symble_list(string):
     symbol_list = []
     i = 0
     length = len(string)
@@ -15,7 +15,7 @@ def scan(string):
         elif doublequote_p(s):
             doublequote_end_index = string.find('"', i+1)
             if doublequote_end_index == -1:
-                print ("- scan fail")
+                print ("- scan_symble_list fail")
                 print ("  doublequote mismatch")
                 print ("  string : {}".format(string))
             end = doublequote_end_index + 1

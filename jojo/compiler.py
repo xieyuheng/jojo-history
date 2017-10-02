@@ -1,4 +1,4 @@
-from jojo.vm import (
+from vm import (
     VM, RP,
     GET, SET,
     JOJO, MSG, CLO,

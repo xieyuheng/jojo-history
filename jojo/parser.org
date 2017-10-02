@@ -1,8 +1,0 @@
-#+property: tangle parser.py
-#+title: parser
-
-* import
-
-  #+begin_src python
-  import ...
-  #+end_src
