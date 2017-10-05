@@ -73,7 +73,14 @@ class JOJO:
     def jo_exe(self, rp, vm):
         vm.rs.append(RP(self))
 
+class MACRO:
+    def __init__(self, body):
+        self.length = len(body)
+        self.body = list(body)
+        self.lr = {}
 
+    def jo_exe(self, rp, vm):
+        vm.rs.append(RP(self))
 
 class CLO:
     def __init__(self, body):

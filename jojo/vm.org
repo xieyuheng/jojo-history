@@ -132,10 +132,17 @@
               vm.rs.append(RP(self))
       #+end_src
 
-***** >< MACRO
+***** MACRO
 
       #+begin_src python
+      class MACRO:
+          def __init__(self, body):
+              self.length = len(body)
+              self.body = list(body)
+              self.lr = {}
 
+          def jo_exe(self, rp, vm):
+              vm.rs.append(RP(self))
       #+end_src
 
 *** closure

@@ -41,11 +41,23 @@ def test_2():
 
 def test_3():
     code = '''\
-    (+jojo t3 1 2 eq? {"true"} {"false"} ifte)
+    (+jojo t 1 2 eq? {"true"} {"false"} ifte)
     '''
     sexp_list = parse_sexp_list(scan_symble_list(code))
     module = compile_module('module', sexp_list)
     vm = VM([],
-            [RP(module.t3)])
+            [RP(module.t)])
+    vm = vm.exe()
+    assert vm.ds == ["false"]
+
+
+def test_4():
+    code = '''\
+    (+jojo t (if 1 2 eq? {"true"} {"false"}))
+    '''
+    sexp_list = parse_sexp_list(scan_symble_list(code))
+    module = compile_module('module', sexp_list)
+    vm = VM([],
+            [RP(module.t)])
     vm = vm.exe()
     assert vm.ds == ["false"]

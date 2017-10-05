@@ -3,6 +3,8 @@
 
 * [todo-stack]
 
+  - convert jojo naming to python naming
+
   - macro system
 
 * [note]
@@ -89,6 +91,21 @@
         return jojo_name_list
     #+end_src
 
+*** get_macro_name_list
+
+    #+begin_src python
+    def get_macro_name_list(sexp_list):
+        macro_name_list = []
+        for sexp in sexp_list:
+            if not cons_p(sexp):
+                pass
+            elif car(sexp) == '+macro':
+                body = cdr(sexp)
+                macro_name = car(body)
+                macro_name_list.append(macro_name)
+        return macro_name_list
+    #+end_src
+
 *** compile_module
 
     #+begin_src python
@@ -96,6 +113,8 @@
         module = types.ModuleType(module_name)
         setattr(module, 'jojo_name_list',
                 get_jojo_name_list(sexp_list))
+        setattr(module, 'macro_name_list',
+                get_macro_name_list(sexp_list))
         setattr(module, 'imported_module_dict', {})
         for sexp in sexp_list:
             if cons_p(sexp):
@@ -144,8 +163,12 @@
       #+begin_src python
       def cons_emit(module, cons):
           keyword = car(cons)
-          fun = keyword_dict[keyword]
-          return fun(module, cdr(cons))
+          if keyword in keyword_dict.keys():
+              fun = keyword_dict[keyword]
+              return fun(module, cdr(cons))
+          else:
+              print("- cons_emit fail")
+              print("  meet unknown keyword : {}".format(keyword))
       #+end_src
 
 ***** symbol_emit
@@ -286,13 +309,22 @@
         imported_module_dict[module_name] = imported_module
     #+end_src
 
-*** +jojo
+*** (+jojo)
 
     #+begin_src python
     @top_level_keyword("+jojo")
     def plus_jojo(module, body):
         jojo_name = car(body)
         setattr(module, jojo_name, JOJO(compile_jo_list(module, cdr(body))))
+    #+end_src
+
+*** (+macro)
+
+    #+begin_src python
+    @top_level_keyword("+macro")
+    def plus_macro(module, body):
+        jojo_name = car(body)
+        setattr(module, jojo_name, MACRO(compile_jo_list(module, cdr(body))))
     #+end_src
 
 * keywords
@@ -317,12 +349,22 @@
         return decorator
     #+end_src
 
-*** clo
+*** (clo)
 
     #+begin_src python
     @keyword('clo')
     def k_clo(module, body):
         return [CLO(compile_jo_list(module, body))]
+    #+end_src
+
+*** (if)
+
+    #+begin_src python
+    @keyword('if')
+    def k_if(module, body):
+        jo_list = compile_jo_list(module, body)
+        jo_list.append(IFTE)
+        return jo_list
     #+end_src
 
 * prim_dict

@@ -33,10 +33,23 @@ def get_jojo_name_list(sexp_list):
             jojo_name_list.append(jojo_name)
     return jojo_name_list
 
+def get_macro_name_list(sexp_list):
+    macro_name_list = []
+    for sexp in sexp_list:
+        if not cons_p(sexp):
+            pass
+        elif car(sexp) == '+macro':
+            body = cdr(sexp)
+            macro_name = car(body)
+            macro_name_list.append(macro_name)
+    return macro_name_list
+
 def compile_module(module_name, sexp_list):
     module = types.ModuleType(module_name)
     setattr(module, 'jojo_name_list',
             get_jojo_name_list(sexp_list))
+    setattr(module, 'macro_name_list',
+            get_macro_name_list(sexp_list))
     setattr(module, 'imported_module_dict', {})
     for sexp in sexp_list:
         if cons_p(sexp):
@@ -67,8 +80,12 @@ def null_emit(module, sexp):
 
 def cons_emit(module, cons):
     keyword = car(cons)
-    fun = keyword_dict[keyword]
-    return fun(module, cdr(cons))
+    if keyword in keyword_dict.keys():
+        fun = keyword_dict[keyword]
+        return fun(module, cdr(cons))
+    else:
+        print("- cons_emit fail")
+        print("  meet unknown keyword : {}".format(keyword))
 
 def symbol_emit(module, symbol):
 
@@ -169,6 +186,11 @@ def plus_jojo(module, body):
     jojo_name = car(body)
     setattr(module, jojo_name, JOJO(compile_jo_list(module, cdr(body))))
 
+@top_level_keyword("+macro")
+def plus_macro(module, body):
+    jojo_name = car(body)
+    setattr(module, jojo_name, MACRO(compile_jo_list(module, cdr(body))))
+
 keyword_dict = {}
 
 def keyword(name):
@@ -180,6 +202,12 @@ def keyword(name):
 @keyword('clo')
 def k_clo(module, body):
     return [CLO(compile_jo_list(module, body))]
+
+@keyword('if')
+def k_if(module, body):
+    jo_list = compile_jo_list(module, body)
+    jo_list.append(IFTE)
+    return jo_list
 
 prim_dict = {}
 
@@ -209,10 +237,9 @@ def tuck(a, b):
 def swap(a, b):
     return (b, a)
 
+@prim('add')
 def add(a, b):
     return a + b
-
-prim('add')(add)
 
 @prim('sub')
 def add(a, b):
@@ -225,3 +252,7 @@ def equal_p(a, b):
 @prim('eq?')
 def eq_p(a, b):
     return a is b
+
+
+
+
