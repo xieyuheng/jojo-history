@@ -29,6 +29,18 @@ def list_to_stack(l):
         l = cdr(l)
     return stack
 
+def convert_jojo_name(name):
+    char_list = []
+    length = len(name)
+    for s in name:
+        if s == '-':
+            char_list.append('_')
+        elif s == '?':
+            char_list.append('_p')
+        else:
+            char_list.append(s)
+    return "".join(char_list)
+
 def get_jojo_name_list(sexp_list):
     jojo_name_list = []
     for sexp in sexp_list:
@@ -36,7 +48,7 @@ def get_jojo_name_list(sexp_list):
             pass
         elif car(sexp) == '+jojo':
             body = cdr(sexp)
-            jojo_name = car(body)
+            jojo_name = convert_jojo_name(car(body))
             jojo_name_list.append(jojo_name)
     return jojo_name_list
 
@@ -47,7 +59,7 @@ def get_macro_name_list(sexp_list):
             pass
         elif car(sexp) == '+macro':
             body = cdr(sexp)
-            macro_name = car(body)
+            macro_name = convert_jojo_name(car(body))
             macro_name_list.append(macro_name)
     return macro_name_list
 
@@ -107,11 +119,11 @@ def symbol_emit(module, symbol):
         return [GET(symbol)]
     if set_local_symbol_p(symbol):
         symbol = symbol[:len(symbol)-1]
-        print ("hereherehere")
         return [SET(symbol)]
 
     if message_symbol_p(symbol):
         symbol = symbol[1:len(symbol)]
+        symbol = convert_jojo_name(symbol)
         return [MSG(symbol)]
 
     if symbol == 'apply':
@@ -120,6 +132,8 @@ def symbol_emit(module, symbol):
         return [IFTE]
     if symbol == 'new':
         return [NEW]
+
+    symbol = convert_jojo_name(symbol)
 
     jojo_name_list = getattr(module, 'jojo_name_list')
     if symbol in jojo_name_list:
@@ -183,6 +197,7 @@ def message_symbol_p(symbol):
 top_level_keyword_dict = {}
 
 def top_level_keyword(name):
+    name = convert_jojo_name(name)
     def decorator(fun):
         top_level_keyword_dict[name] = fun
         return fun
@@ -190,7 +205,7 @@ def top_level_keyword(name):
 
 @top_level_keyword("import")
 def k_import(module, body):
-    module_name = car(body)
+    module_name = convert_jojo_name(car(body))
     imported_module = importlib.import_module(module_name)
     imported_module_dict = getattr(module, 'imported_module_dict')
     imported_module_dict[module_name] = imported_module
@@ -208,6 +223,7 @@ def plus_macro(module, body):
 keyword_dict = {}
 
 def keyword(name):
+    name = convert_jojo_name(name)
     def decorator(fun):
         keyword_dict[name] = fun
         return fun
@@ -235,6 +251,7 @@ def k_quote(module, body):
 prim_dict = {}
 
 def prim(name):
+    name = convert_jojo_name(name)
     def decorator(fun):
         prim_dict[name] = fun
         return fun

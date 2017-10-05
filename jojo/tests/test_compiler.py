@@ -91,10 +91,10 @@ def test_6():
 def test_7():
     code = '''\
     (+jojo t
-      '(a b c)
+      '(a b (((c))))
       dup car swap
       dup cdr car swap
-      dup cdr cdr car swap
+      dup cdr cdr car car car car swap
       drop)
     '''
     sexp_list = parse_sexp_list(scan_symble_list(code))
