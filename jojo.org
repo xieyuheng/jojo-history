@@ -3,11 +3,49 @@
 
 * [todo-stack]
 
-  - macro system
+*** macro
 
-  - specify the design of jo in jojo vm
+    - (cond) in python
 
-  - specify which semantic subset of python is captured by jojo vm
+    - (cond) in jojo
+
+    - (list)
+
+    - (dict)
+
+    - (stack)
+
+    - (set)
+
+    - (case)
+
+    - (+data)
+
+    - (+class)
+
+    - (+message)
+
+    - 'equal?' as message
+
+    - 'write' as message
+
+*** module
+
+    - import as python
+
+    - code in jojo can be module
+      - setuptools
+        to use dynamiclly generated module
+
+*** vm
+
+    - specify the design of jo in jojo vm
+
+    - specify which semantic subset of python is captured by jojo vm
+
+*** prim
+
+    - cover python's builtin and standard libraries
 
 * import
 

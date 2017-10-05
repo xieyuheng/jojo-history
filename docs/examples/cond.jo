@@ -12,8 +12,8 @@
 
 (note
 
- (+macro cond :body!
-   :body :body cond-recur)
+  (+macro cond :body!
+    :body :body cond-recur)
 
   (+jojo cond-recur :rest! :body!
     :rest list-length 2 eq?
