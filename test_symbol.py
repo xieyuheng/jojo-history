@@ -1,4 +1,4 @@
-from jojo.symbol import scan_symble_list
+from jojo import scan_symble_list
 
 
 def test_0():

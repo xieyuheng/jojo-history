@@ -1,5 +1,4 @@
-from jojo.symbol import scan_symble_list
-from jojo.sexp import parse_sexp_list, write_sexp
+from jojo import scan_symble_list, parse_sexp_list, write_sexp
 
 string = '''\
 (1 (1 2 3) 2 (1 2 3) 3 "123")

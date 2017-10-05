@@ -1,15 +1,13 @@
-from jojo.symbol import scan_symble_list
-from jojo.sexp import parse_sexp_list, write_sexp
-from jojo.compiler import (
-    compile_module,
-)
-from jojo.vm import (
+from jojo import (
     VM, RP,
     GET, SET,
     JOJO, MSG, CLO,
     APPLY, IFTE,
     NEW,
     CALL,
+    scan_symble_list,
+    parse_sexp_list, write_sexp,
+    compile_module,
 )
 
 def test_1():

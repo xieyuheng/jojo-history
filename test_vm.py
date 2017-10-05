@@ -1,7 +1,7 @@
 import inspect
 import types
 
-from jojo.vm import (
+from jojo import (
     VM, RP,
     GET, SET,
     JOJO, MSG, CLO,
