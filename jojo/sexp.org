@@ -52,7 +52,6 @@
             print ("- cons fail")
             print ("  cdr of cons must be a cons or null")
             print ("  cdr : {}".format(cdr))
-
     #+end_src
 
 *** cons_p

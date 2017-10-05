@@ -22,14 +22,14 @@ def cons(car, cdr):
 def cons_p(x):
     return isinstance(x, Cons)
 
+def list_p(x):
+    return null_p(x) or cons_p(x)
+
 def cdr(x):
     return x.cdr
 
 def car(x):
     return x.car
-
-def list_p(x):
-    return null_p(x) or cons_p(x)
 
 def parse_sexp_list(symbol_list):
     length = len(symbol_list)

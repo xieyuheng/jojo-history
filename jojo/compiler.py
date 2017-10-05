@@ -22,6 +22,13 @@ import re
 def get_current_module():
     return sys.modules[__name__]
 
+def list_to_stack(l):
+    stack = []
+    while not null_p(l):
+        stack.append(car(l))
+        l = cdr(l)
+    return stack
+
 def get_jojo_name_list(sexp_list):
     jojo_name_list = []
     for sexp in sexp_list:
@@ -100,6 +107,7 @@ def symbol_emit(module, symbol):
         return [GET(symbol)]
     if set_local_symbol_p(symbol):
         symbol = symbol[:len(symbol)-1]
+        print ("hereherehere")
         return [SET(symbol)]
 
     if message_symbol_p(symbol):
@@ -146,18 +154,24 @@ def string_symbol_p(symbol):
         return True
 
 def local_symbol_p(symbol):
-    p = re.compile(r":\S+\Z")
-    if p.match(symbol):
-        return True
-    else:
+    if len(symbol) <= 1:
         return False
+    if symbol[0] != ':':
+        return False
+    if symbol[len(symbol)-1] == '!':
+        return False
+    else:
+        return True
 
 def set_local_symbol_p(symbol):
-    p = re.compile(r":\S+!\Z")
-    if p.match(symbol):
-        return True
-    else:
+    if len(symbol) <= 2:
         return False
+    if symbol[0] != ':':
+        return False
+    if symbol[len(symbol)-1] != '!':
+        return False
+    else:
+        return True
 
 def message_symbol_p(symbol):
     p = re.compile(r"\.\S+\Z")
@@ -199,6 +213,10 @@ def keyword(name):
         return fun
     return decorator
 
+@keyword('begin')
+def k_begin(module, body):
+    return compile_jo_list(module, body)
+
 @keyword('clo')
 def k_clo(module, body):
     return [CLO(compile_jo_list(module, body))]
@@ -207,6 +225,11 @@ def k_clo(module, body):
 def k_if(module, body):
     jo_list = compile_jo_list(module, body)
     jo_list.append(IFTE)
+    return jo_list
+
+@keyword('quote')
+def k_quote(module, body):
+    jo_list = list_to_stack(body)
     return jo_list
 
 prim_dict = {}
@@ -253,6 +276,15 @@ def equal_p(a, b):
 def eq_p(a, b):
     return a is b
 
+prim('null')(null)
+prim('null?')(null_p)
 
+prim('cons')(cons)
+prim('cons?')(cons_p)
+
+prim('list?')(list_p)
+
+prim('car')(car)
+prim('cdr')(cdr)
 
 

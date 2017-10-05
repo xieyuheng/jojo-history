@@ -61,3 +61,45 @@ def test_4():
             [RP(module.t)])
     vm = vm.exe()
     assert vm.ds == ["false"]
+
+
+def test_5():
+    code = '''\
+    (+jojo t null 1 swap cons 2 swap cons cdr car)
+    '''
+    sexp_list = parse_sexp_list(scan_symble_list(code))
+    module = compile_module('module', sexp_list)
+    vm = VM([],
+            [RP(module.t)])
+    vm = vm.exe()
+    assert vm.ds == [1]
+
+
+def test_6():
+    code = '''\
+    (+jojo t :body! [:body [:body]])
+    '''
+    sexp_list = parse_sexp_list(scan_symble_list(code))
+    module = compile_module('module', sexp_list)
+    vm = VM([1],
+            [RP(module.t)])
+    vm = vm.exe()
+    assert vm.ds == [1, 1]
+
+
+
+def test_7():
+    code = '''\
+    (+jojo t
+      '(a b c)
+      dup car swap
+      dup cdr car swap
+      dup cdr cdr car swap
+      drop)
+    '''
+    sexp_list = parse_sexp_list(scan_symble_list(code))
+    module = compile_module('module', sexp_list)
+    vm = VM([],
+            [RP(module.t)])
+    vm = vm.exe()
+    assert vm.ds == ["a", "b", "c"]

@@ -51,7 +51,7 @@
     - (partquote)
     - (@)
 
-    - (if) ><><><
+    - (if)
     - (cond) ><><><
     - (case) ><><><
 
@@ -72,6 +72,17 @@
     #+begin_src python
     def get_current_module():
         return sys.modules[__name__]
+    #+end_src
+
+*** list_to_stack
+
+    #+begin_src python
+    def list_to_stack(l):
+        stack = []
+        while not null_p(l):
+            stack.append(car(l))
+            l = cdr(l)
+        return stack
     #+end_src
 
 * compile_module
@@ -189,6 +200,7 @@
                 return [GET(symbol)]
             if set_local_symbol_p(symbol):
                 symbol = symbol[:len(symbol)-1]
+                print ("hereherehere")
                 return [SET(symbol)]
 
             if message_symbol_p(symbol):
@@ -247,22 +259,28 @@
 
         #+begin_src python
         def local_symbol_p(symbol):
-            p = re.compile(r":\S+\Z")
-            if p.match(symbol):
-                return True
-            else:
+            if len(symbol) <= 1:
                 return False
+            if symbol[0] != ':':
+                return False
+            if symbol[len(symbol)-1] == '!':
+                return False
+            else:
+                return True
         #+end_src
 
 ******* set_local_symbol_p
 
         #+begin_src python
         def set_local_symbol_p(symbol):
-            p = re.compile(r":\S+!\Z")
-            if p.match(symbol):
-                return True
-            else:
+            if len(symbol) <= 2:
                 return False
+            if symbol[0] != ':':
+                return False
+            if symbol[len(symbol)-1] != '!':
+                return False
+            else:
+                return True
         #+end_src
 
 ******* message_symbol_p
@@ -349,6 +367,14 @@
         return decorator
     #+end_src
 
+*** (begin)
+
+    #+begin_src python
+    @keyword('begin')
+    def k_begin(module, body):
+        return compile_jo_list(module, body)
+    #+end_src
+
 *** (clo)
 
     #+begin_src python
@@ -366,6 +392,19 @@
         jo_list.append(IFTE)
         return jo_list
     #+end_src
+
+*** (quote)
+
+    #+begin_src python
+    @keyword('quote')
+    def k_quote(module, body):
+        jo_list = list_to_stack(body)
+        return jo_list
+    #+end_src
+
+*** >< (partquote)
+
+*** >< (@)
 
 * prim_dict
 
@@ -433,10 +472,19 @@
         return a is b
     #+end_src
 
-*** >< list
+*** list
 
     #+begin_src python
+    prim('null')(null)
+    prim('null?')(null_p)
 
+    prim('cons')(cons)
+    prim('cons?')(cons_p)
+
+    prim('list?')(list_p)
+
+    prim('car')(car)
+    prim('cdr')(cdr)
     #+end_src
 
 *** >< stack

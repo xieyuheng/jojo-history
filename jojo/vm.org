@@ -1,11 +1,15 @@
 #+property: tangle vm.py
-#+title: jojo vm on python
+#+title: vm
 
 * [todo-stack]
 
   - specify the design of jo in jojo vm
 
   - specify which semantic subset of python is captured by jojo vm
+
+* [note]
+
+  - jojo vm on python
 
 * import
 
