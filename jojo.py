@@ -409,18 +409,6 @@ def list_to_stack(l):
         l = cdr(l)
     return stack
 
-def convert_jojo_name(name):
-    char_list = []
-    length = len(name)
-    for s in name:
-        if s == '-':
-            char_list.append('_')
-        elif s == '?':
-            char_list.append('_p')
-        else:
-            char_list.append(s)
-    return "".join(char_list)
-
 def get_jojo_name_list(sexp_list):
     jojo_name_list = []
     for sexp in sexp_list:
@@ -428,7 +416,7 @@ def get_jojo_name_list(sexp_list):
             pass
         elif car(sexp) == '+jojo':
             body = cdr(sexp)
-            jojo_name = convert_jojo_name(car(body))
+            jojo_name = car(body)
             jojo_name_list.append(jojo_name)
     return jojo_name_list
 
@@ -439,7 +427,7 @@ def get_macro_name_list(sexp_list):
             pass
         elif car(sexp) == '+macro':
             body = cdr(sexp)
-            macro_name = convert_jojo_name(car(body))
+            macro_name = car(body)
             macro_name_list.append(macro_name)
     return macro_name_list
 
@@ -479,12 +467,31 @@ def null_emit(module, sexp):
 
 def cons_emit(module, cons):
     keyword = car(cons)
+
     if keyword in keyword_dict.keys():
         fun = keyword_dict[keyword]
         return fun(module, cdr(cons))
+
+    macro_name_list = getattr(module, "macro_name_list")
+
+    if keyword in macro_name_list:
+        if not hasattr(module, keyword):
+            print ("- cons_emit fail")
+            print ("  must define a macro before using it")
+            print ("  macro name : {}".format(keyword))
+            return
+        else:
+            macro = getattr(module, keyword)
+            vm = vm([cdr(cons)],
+                    [RP(macro)])
+            vm = vm.exe()
+            new_cons = vm.ds[0]
+            return cons_emit(module, new_cons)
+
     else:
         print("- cons_emit fail")
         print("  meet unknown keyword : {}".format(keyword))
+        return
 
 def symbol_emit(module, symbol):
 
@@ -503,7 +510,6 @@ def symbol_emit(module, symbol):
 
     if message_symbol_p(symbol):
         symbol = symbol[1:len(symbol)]
-        symbol = convert_jojo_name(symbol)
         return [MSG(symbol)]
 
     if symbol == 'apply':
@@ -512,8 +518,6 @@ def symbol_emit(module, symbol):
         return [IFTE]
     if symbol == 'new':
         return [NEW]
-
-    symbol = convert_jojo_name(symbol)
 
     jojo_name_list = getattr(module, 'jojo_name_list')
     if symbol in jojo_name_list:
@@ -577,7 +581,6 @@ def message_symbol_p(symbol):
 top_level_keyword_dict = {}
 
 def top_level_keyword(name):
-    name = convert_jojo_name(name)
     def decorator(fun):
         top_level_keyword_dict[name] = fun
         return fun
@@ -585,7 +588,7 @@ def top_level_keyword(name):
 
 @top_level_keyword("import")
 def k_import(module, body):
-    module_name = convert_jojo_name(car(body))
+    module_name = car(body)
     imported_module = importlib.import_module(module_name)
     imported_module_dict = getattr(module, 'imported_module_dict')
     imported_module_dict[module_name] = imported_module
@@ -600,10 +603,13 @@ def plus_macro(module, body):
     jojo_name = car(body)
     setattr(module, jojo_name, MACRO(compile_jo_list(module, cdr(body))))
 
+@top_level_keyword("note")
+def top_level_note(module, body):
+    pass
+
 keyword_dict = {}
 
 def keyword(name):
-    name = convert_jojo_name(name)
     def decorator(fun):
         keyword_dict[name] = fun
         return fun
@@ -631,7 +637,6 @@ def k_quote(module, body):
 prim_dict = {}
 
 def prim(name):
-    name = convert_jojo_name(name)
     def decorator(fun):
         prim_dict[name] = fun
         return fun
@@ -668,6 +673,14 @@ def sub(a, b):
 @prim('mul')
 def mul(a, b):
     return a * b
+
+@prim('true')
+def true():
+    return True
+
+@prim('false')
+def false():
+    return False
 
 @prim('equal?')
 def equal_p(a, b):
