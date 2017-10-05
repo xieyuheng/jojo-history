@@ -1,5 +1,8 @@
 #!/usr/bin/emacs --script
 
+(setq python-indent-guess-indent-offset nil)
+(setq python-indent-offset 4)
+
 (defun color-message (.color .string)
   (message
    (concat (char-to-string 27)

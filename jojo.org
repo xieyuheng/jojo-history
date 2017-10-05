@@ -1,6 +1,6 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-- design the python interface of jojo compiler
+
 * [todo-stack]
 
   - macro system
@@ -16,6 +16,8 @@
   import types
   import importlib
   import re
+  import sys
+  import os
   #+end_src
 
 * utility
@@ -936,7 +938,7 @@
                 return False
         #+end_src
 
-* top level keywords
+* top_level_keyword_dict
 
 *** [note]
 
@@ -988,7 +990,7 @@
         setattr(module, jojo_name, MACRO(compile_jo_list(module, cdr(body))))
     #+end_src
 
-* keywords
+* keyword_dict
 
 *** [note]
 
@@ -1101,8 +1103,12 @@
         return a + b
 
     @prim('sub')
-    def add(a, b):
+    def sub(a, b):
         return a - b
+
+    @prim('mul')
+    def mul(a, b):
+        return a * b
     #+end_src
 
 *** equivalence
@@ -1137,3 +1143,37 @@
     #+begin_src python
 
     #+end_src
+
+* create_module
+
+  #+begin_src python
+  def create_module(name, path):
+      path = os.path.abspath(path)
+
+      if not os.path.exists(path):
+          print ("- create_module fail")
+          print ("  path does not exist")
+          print ("  path : {}".format(path))
+          return
+
+      if not os.path.isfile(path):
+          print ("- create_module fail")
+          print ("  path is not file")
+          print ("  path : {}".format(path))
+          return
+
+      with open(path, "r") as f:
+          code = f.read()
+          sexp_list = parse_sexp_list(scan_symble_list(code))
+          module = compile_module(name, sexp_list)
+
+      module.__file__ = path
+
+      return module
+  #+end_src
+
+* play
+
+  #+begin_src python
+
+  #+end_src

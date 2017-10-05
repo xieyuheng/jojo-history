@@ -2,6 +2,8 @@ import inspect
 import types
 import importlib
 import re
+import sys
+import os
 
 def get_signature(fun):
     try:
@@ -660,8 +662,12 @@ def add(a, b):
     return a + b
 
 @prim('sub')
-def add(a, b):
+def sub(a, b):
     return a - b
+
+@prim('mul')
+def mul(a, b):
+    return a * b
 
 @prim('equal?')
 def equal_p(a, b):
@@ -681,5 +687,31 @@ prim('list?')(list_p)
 
 prim('car')(car)
 prim('cdr')(cdr)
+
+
+
+def create_module(name, path):
+    path = os.path.abspath(path)
+
+    if not os.path.exists(path):
+        print ("- create_module fail")
+        print ("  path does not exist")
+        print ("  path : {}".format(path))
+        return
+
+    if not os.path.isfile(path):
+        print ("- create_module fail")
+        print ("  path is not file")
+        print ("  path : {}".format(path))
+        return
+
+    with open(path, "r") as f:
+        code = f.read()
+        sexp_list = parse_sexp_list(scan_symble_list(code))
+        module = compile_module(name, sexp_list)
+
+    module.__file__ = path
+
+    return module
 
 
