@@ -12,15 +12,40 @@ from jojo.vm import (
     CALL,
 )
 
-code_1 = '''\
-(import sys)
-(+jojo six 1 2 add 3 add)
-'''
-
 def test_1():
-    sexp_list = parse_sexp_list(scan_symble_list(code_1))
-    module_1 = compile_module('module_1', sexp_list)
+    code = '''\
+    (+jojo six 1 2 add 3 add)
+    '''
+    sexp_list = parse_sexp_list(scan_symble_list(code))
+    module = compile_module('module', sexp_list)
     vm = VM([],
-            [RP(module_1.six)])
+            [RP(module.six)])
     vm = vm.exe()
     assert vm.ds == [6]
+
+import os
+import posix
+
+def test_2():
+    code = '''\
+    (import os)
+    (+jojo times os .times)
+    '''
+    sexp_list = parse_sexp_list(scan_symble_list(code))
+    module = compile_module('module', sexp_list)
+    vm = VM([],
+            [RP(module.times)])
+    vm = vm.exe()
+    assert type(vm.ds.pop()) == posix.times_result
+
+
+def test_3():
+    code = '''\
+    (+jojo t3 1 2 eq? {"true"} {"false"} ifte)
+    '''
+    sexp_list = parse_sexp_list(scan_symble_list(code))
+    module = compile_module('module', sexp_list)
+    vm = VM([],
+            [RP(module.t3)])
+    vm = vm.exe()
+    assert vm.ds == ["false"]

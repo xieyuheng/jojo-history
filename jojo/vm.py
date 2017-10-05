@@ -8,10 +8,12 @@ def get_signature(fun):
         return False
 
 def fun_p(x):
-    if isinstance(x, types.LambdaType):
+    if (isinstance(x, types.LambdaType) or
+        isinstance(x, types.MethodType)):
         return True
-    elif isinstance(x, types.MethodType):
-        return True
+    elif (isinstance(x, types.BuiltinFunctionType) or
+          isinstance(x, types.BuiltinMethodType)):
+        return get_signature(x)
     else:
         return False
 
@@ -39,7 +41,7 @@ class VM:
         return exe(self)
 
 def push_result_to_vm(result, vm):
-    if isinstance(result, tuple):
+    if type(result) == tuple:
         vm.ds.extend(result)
     elif result == None:
         pass
@@ -63,7 +65,7 @@ class SET:
         rp.lr[self.name] = value
 
 class JOJO:
-    def __init__(self, *body):
+    def __init__(self, body):
         self.length = len(body)
         self.body = list(body)
         self.lr = {}
@@ -74,24 +76,19 @@ class JOJO:
 
 
 class CLO:
-    @classmethod
-    def jo_exe(cls, rp, vm):
-        body = vm.ds.pop()
-        lr = rp.lr
-        clo = CLOSURE(body, lr)
-        vm.ds.append(clo)
-
-class CLOSURE:
-    def __init__(self, body, lr):
-        self.length = len(body)
+    def __init__(self, body):
         self.body = body
-        self.lr = lr
+
+    def jo_exe(self, rp, vm):
+        new_jojo = JOJO(self.body)
+        new_jojo.lr = rp.lr
+        vm.ds.append(new_jojo)
 
 class APPLY:
     @classmethod
     def jo_exe(cls, rp, vm):
         clo = vm.ds.pop()
-        vm.rs.append(RP(clo))
+        clo.jo_exe(rp, vm)
 
 class IFTE:
     @classmethod
@@ -162,6 +159,7 @@ def exe_jo(jo, rp, vm):
 
 def exe_fun(fun, vm):
     signature = get_signature(fun)
+
     if not signature:
         print ("- exe_fun fail to get signature")
         print ("  fun : {}".format(fun))

@@ -2,4 +2,5 @@
 
 export env PYTHONPATH=../../
 
-python $@
+# python $@
+ipython $@
