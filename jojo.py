@@ -543,6 +543,8 @@ def string_emit(module, string):
         return [IFTE]
     if string == 'new':
         return [NEW]
+    if string == ',':
+        return []
 
     jojo_name_vect = getattr(module, 'jojo_name_vect')
     if string in jojo_name_vect:

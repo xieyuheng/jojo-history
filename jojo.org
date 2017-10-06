@@ -1,35 +1,28 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
 - error handling
+- stop using 'import re'
+- (cond) in python as keyword
 * [todo-stack]
 
 *** macro
 
-    - (cond) in python as keyword
-
     - (cond~) in jojo as macro [as a macro system test]
 
     - (list)
-
     - (dict)
-
     - (vect)
-
     - (stack)
-
     - (set)
 
-    - (case)
-
     - (+data)
-
     - (+class)
-
     - (+message)
 
     - 'equal?' as message
-
     - 'write' as message
+
+    - (case)
 
 *** module
 
@@ -530,12 +523,6 @@
 
 * sexp -- string expression
 
-*** [note]
-
-    - string vect to sexp vect
-
-    - sexp := Null | Cons(sexp, sexp_list) | string
-
 *** null & cons
 
 ***** Null
@@ -607,17 +594,15 @@
           return x.car
       #+end_src
 
-*** [note] syntax sugar
+*** parse_sexp_vect -- string vect to sexp vect
 
-    - [...] -> (begin ...)
+    - sexp := Null | Cons(sexp, sexp_list) | string
 
-    - {...} -> (clo ...)
-
-    - ' ... -> (quote ...)
-
-    - ` ... -> (partquote ...)
-
-*** parse_sexp_vect
+    - syntax sugar :
+      - [...] -> (begin ...)
+      - {...} -> (clo ...)
+      - ' ... -> (quote ...)
+      - ` ... -> (partquote ...)
 
     #+begin_src python
     def parse_sexp_vect(string_vect):
@@ -928,6 +913,8 @@
               return [IFTE]
           if string == 'new':
               return [NEW]
+          if string == ',':
+              return []
 
           jojo_name_vect = getattr(module, 'jojo_name_vect')
           if string in jojo_name_vect:
@@ -1129,7 +1116,7 @@
 
 *** >< (@)
 
-*** (cond)
+*** >< (cond)
 
     #+begin_src python
     @keyword('cond')
