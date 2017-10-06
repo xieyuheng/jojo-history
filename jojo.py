@@ -855,7 +855,7 @@ def k_partquote_one(module, sexp):
             jo_vect = []
             jo_vect.extend([MARK])
             jo_vect.extend(k_partquote(module, sexp))
-            jo_vect.extend([COLLECT_VECT, vect_to_list])
+            jo_vect.extend([COLLECT_LIST])
             return jo_vect
     else:
         return [sexp]
@@ -882,7 +882,15 @@ def k_list(module, sexp_list):
     jo_vect = []
     jo_vect.extend([MARK])
     jo_vect.extend(sexp_list_emit(module, sexp_list))
-    jo_vect.extend([COLLECT_VECT, vect_to_list])
+    jo_vect.extend([COLLECT_LIST])
+    return jo_vect
+
+@keyword('vect')
+def k_vect(module, sexp_list):
+    jo_vect = []
+    jo_vect.extend([MARK])
+    jo_vect.extend(sexp_list_emit(module, sexp_list))
+    jo_vect.extend([COLLECT_VECT])
     return jo_vect
 
 macro_dict = {}

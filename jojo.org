@@ -15,7 +15,6 @@
 *** macro
 
     - (dict)
-    - (vect)
     - (stack)
     - (tuple)
     - (set)
@@ -687,15 +686,16 @@
 
 * sexp -- string expression
 
+*** [note] syntax sugar
+
+    - [...] -> (begin ...)
+    - {...} -> (clo ...)
+    - ' ... -> (quote ...)
+    - ` ... -> (partquote ...)
+
 *** parse_sexp_vect -- string vect to sexp vect
 
     - sexp := Null | Cons(sexp, sexp_list) | string
-
-    - syntax sugar :
-      - [...] -> (begin ...)
-      - {...} -> (clo ...)
-      - ' ... -> (quote ...)
-      - ` ... -> (partquote ...)
 
     #+begin_src python
     def parse_sexp_vect(string_vect):
@@ -1405,7 +1405,7 @@
                 jo_vect = []
                 jo_vect.extend([MARK])
                 jo_vect.extend(k_partquote(module, sexp))
-                jo_vect.extend([COLLECT_VECT, vect_to_list])
+                jo_vect.extend([COLLECT_LIST])
                 return jo_vect
         else:
             return [sexp]
@@ -1440,7 +1440,19 @@
         jo_vect = []
         jo_vect.extend([MARK])
         jo_vect.extend(sexp_list_emit(module, sexp_list))
-        jo_vect.extend([COLLECT_VECT, vect_to_list])
+        jo_vect.extend([COLLECT_LIST])
+        return jo_vect
+    #+end_src
+
+*** (vect)
+
+    #+begin_src python
+    @keyword('vect')
+    def k_vect(module, sexp_list):
+        jo_vect = []
+        jo_vect.extend([MARK])
+        jo_vect.extend(sexp_list_emit(module, sexp_list))
+        jo_vect.extend([COLLECT_VECT])
         return jo_vect
     #+end_src
 
