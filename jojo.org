@@ -3,6 +3,10 @@
 
 * [todo-stack]
 
+*** re-factor
+
+    - turn big dispatching in string_emit into dict search
+
 *** tuple
 
     - do not view tuple result as multiple-return-value
@@ -10,11 +14,10 @@
 
 *** macro
 
-    - (->)
-
     - (list)
     - (dict)
     - (vect)
+    - (stack)
     - (tuple)
     - (set)
 
@@ -109,6 +112,20 @@
       Vect = list
       #+end_src
 
+***** vect_p
+
+      #+begin_src python
+      def vect_p(x):
+          return type(x) == Vect
+      #+end_src
+
+***** string_p
+
+      #+begin_src python
+      def string_p(x):
+          return type(x) == str
+      #+end_src
+
 *** error handling
 
 ***** JOJO_ERROR
@@ -120,363 +137,400 @@
 
 * vm
 
+*** RP
+
+    #+begin_src python
+    class RP:
+        def __init__(self, fun):
+            self.cursor = 0
+            self.length = fun.length
+            self.body = fun.body
+            self.lr = fun.lr.copy()
+    #+end_src
+
 *** VM
 
-***** RP
+    #+begin_src python
+    class VM:
+        def __init__(self, ds, rs):
+            self.ds = ds
+            self.rs = rs
 
-      #+begin_src python
-      class RP:
-          def __init__(self, fun):
-              self.cursor = 0
-              self.length = fun.length
-              self.body = fun.body
-              self.lr = fun.lr.copy()
-      #+end_src
+        def exe(self):
+            return exe(self)
+    #+end_src
 
-***** VM
+*** push_result_to_vm
 
-      #+begin_src python
-      class VM:
-          def __init__(self, ds, rs):
-              self.ds = ds
-              self.rs = rs
-
-          def exe(self):
-              return exe(self)
-      #+end_src
-
-***** push_result_to_vm
-
-      #+begin_src python
-      def push_result_to_vm(result, vm):
-          if type(result) == tuple:
-              vm.ds.extend(result)
-          elif result == None:
-              pass
-          else:
-              vm.ds.append(result)
-      #+end_src
-
-*** jo
-
-***** GET -- get local variable
-
-      #+begin_src python
-      class GET:
-          def __init__(self, name):
-              self.name = name
-
-          def jo_exe(self, rp, vm):
-              value = rp.lr[self.name]
-              vm.ds.append(value)
-      #+end_src
-
-***** SET -- set local variable
-
-      #+begin_src python
-      class SET:
-          def __init__(self, name):
-              self.name = name
-
-          def jo_exe(self, rp, vm):
-              value = vm.ds.pop()
-              rp.lr[self.name] = value
-      #+end_src
-
-***** JOJO -- top level
-
-      #+begin_src python
-      class JOJO:
-          def __init__(self, body):
-              self.length = len(body)
-              self.body = Vect(body)
-              self.lr = {}
-
-          def jo_exe(self, rp, vm):
-              vm.rs.append(RP(self))
-      #+end_src
-
-***** MACRO -- top level
-
-      #+begin_src python
-      class MACRO:
-          def __init__(self, body):
-              self.length = len(body)
-              self.body = Vect(body)
-              self.lr = {}
-
-          def jo_exe(self, rp, vm):
-              vm.rs.append(RP(self))
-      #+end_src
-
-***** CLO -- closure
-
-      #+begin_src python
-      class CLO:
-          def __init__(self, body):
-              self.body = body
-
-          def jo_exe(self, rp, vm):
-              new_jojo = JOJO(self.body)
-              new_jojo.lr = rp.lr
-              vm.ds.append(new_jojo)
-      #+end_src
-
-***** APPLY
-
-      #+begin_src python
-      class APPLY:
-          @classmethod
-          def jo_exe(self, rp, vm):
-              clo = vm.ds.pop()
-              clo.jo_exe(rp, vm)
-      #+end_src
-
-***** IFTE -- branching
-
-      #+begin_src python
-      class IFTE:
-          @classmethod
-          def jo_exe(self, rp, vm):
-              clo2 = vm.ds.pop()
-              clo1 = vm.ds.pop()
-              test = vm.ds.pop()
-              if test:
-                  vm.rs.append(RP(clo1))
-              else:
-                  vm.rs.append(RP(clo2))
-      #+end_src
-
-***** MSG -- message to object
-
-      #+begin_src python
-      class MSG:
-          def __init__(self, message):
-              self.message = message
-
-          def jo_exe(self, rp, vm):
-              o = vm.ds.pop()
-              fun = getattr(o, self.message)
-              exe_jo(fun, rp, vm)
-      #+end_src
-
-***** NEW -- create object from class
-
-      #+begin_src python
-      class NEW:
-          @classmethod
-          def jo_exe(self, rp, vm):
-              c = vm.ds.pop()
-              if not class_p(c):
-                  print ("- NEW.jo_exe fail")
-                  print ("  argument is not a class : {}".format(c))
-                  raise JOJO_ERROR()
-              exe_fun(c, vm)
-      #+end_src
-
-***** CALL -- call a name from a module
-
-      #+begin_src python
-      class CALL:
-          def __init__(self, module, name):
-              self.module = module
-              self.name = name
-
-          def jo_exe(self, rp, vm):
-              jo = getattr(self.module, self.name)
-              exe_jo(jo, rp, vm)
-      #+end_src
-
-***** MARK -- for collectors
-
-      #+begin_src python
-      class MARK:
-          @classmethod
-          def jo_exe(self, rp, vm):
-              vm.ds.append(self)
-      #+end_src
-
-***** COLLECT_VECT -- collect values before mark to vect
-
-      #+begin_src python
-      class COLLECT_VECT:
-          @classmethod
-          def jo_exe(self, rp, vm):
-              vect = []
-              while True:
-                  value = vm.ds.pop()
-                  if value == MARK:
-                      break
-                  else:
-                      vect.append(value)
-              vect.reverse()
-              vm.ds.append(vect)
-      #+end_src
+    #+begin_src python
+    def push_result_to_vm(result, vm):
+        if type(result) == tuple:
+            vm.ds.extend(result)
+        elif result == None:
+            pass
+        else:
+            vm.ds.append(result)
+    #+end_src
 
 *** exe
 
-***** exe
+    #+begin_src python
+    def exe(vm):
+        while vm.rs != []:
+            exe_one_step(vm)
+            print (vm.ds)
+        print ("- exe end")
+        return vm
+    #+end_src
 
-      #+begin_src python
-      def exe(vm):
-          while vm.rs != []:
-              exe_one_step(vm)
-              print (vm.ds)
-          print ("- exe end")
-          return vm
-      #+end_src
+*** exe_one_step
 
-***** exe_one_step
+    #+begin_src python
+    def exe_one_step(vm):
+        rp = vm.rs.pop()
+        jo = rp.body[rp.cursor]
 
-      #+begin_src python
-      def exe_one_step(vm):
-          rp = vm.rs.pop()
-          jo = rp.body[rp.cursor]
+        # handle tail call
+        if rp.cursor >= rp.length - 1:
+           pass
+        else:
+           rp.cursor = rp.cursor + 1
+           vm.rs.append(rp)
 
-          # handle tail call
-          if rp.cursor >= rp.length - 1:
-             pass
-          else:
-             rp.cursor = rp.cursor + 1
-             vm.rs.append(rp)
+        # dispatching
+        exe_jo(jo, rp, vm)
+    #+end_src
 
-          # dispatching
-          exe_jo(jo, rp, vm)
-      #+end_src
+*** exe_jo
 
-***** exe_jo
+    #+begin_src python
+    def exe_jo(jo, rp, vm):
+        if fun_p(jo):
+            exe_fun(jo, vm)
+        elif hasattr(jo, "jo_exe"):
+            jo.jo_exe(rp, vm)
+        else:
+            vm.ds.append(jo)
+    #+end_src
 
-      #+begin_src python
-      def exe_jo(jo, rp, vm):
-          if fun_p(jo):
-              exe_fun(jo, vm)
-          elif hasattr(jo, "jo_exe"):
-              jo.jo_exe(rp, vm)
-          else:
-              vm.ds.append(jo)
-      #+end_src
+*** exe_fun
+
+***** [note]
+
+      - normal arguments are called positional arguments.
+
+      - there are also keyword-only arguments,
+        because after *args,
+        the information about position will be lost.
+
+      - before *args
+        each positional arguments took one position
+        do not respect default arguments
+
+      - if *args is used in a function signature
+        pass it as a vect
+
+      - if **kwargs is used in a function signature
+        pass it as a dict
 
 ***** exe_fun
 
-******* [note]
+      #+begin_src python
+      def exe_fun(fun, vm):
+          signature = get_signature(fun)
 
-        - normal arguments are called positional arguments.
+          if not signature:
+              print ("- exe_fun fail to get signature")
+              print ("  fun : {}".format(fun))
+              raise JOJO_ERROR()
 
-        - there are also keyword-only arguments,
-          because after *args,
-          the information about position will be lost.
+          parameters = signature.parameters
 
-        - before *args
-          each positional arguments took one position
-          do not respect default arguments
+          if has_para_dict(parameters):
+              arg_dict = get_default_arg_dict(parameters)
+              top_of_ds = vm.ds.pop()
+              if not isinstance(top_of_ds, dict):
+                  print ("- exe_fun fail")
+                  print ("  when fun require a arg_dict")
+                  print ("  the top of data stack is not a dict")
+                  print ("  fun : {}".format(fun))
+                  print ("  top of data stack : {}".format(top_of_ds))
+                  raise JOJO_ERROR()
+              arg_dict.update(top_of_ds)
+          else:
+              arg_dict = None
 
-        - if *args is used in a function signature
-          pass it as a vect
+          if has_para_vect(parameters):
+              top_of_ds = vm.ds.pop()
+              if not vect_p(top_of_ds):
+                  print ("- exe_fun fail")
+                  print ("  when fun require a arg_vect")
+                  print ("  the top of data stack is not a vect")
+                  print ("  fun : {}".format(fun))
+                  print ("  top of data stack : {}".format(top_of_ds))
+                  raise JOJO_ERROR()
+              arg_vect = top_of_ds
+          else:
+              arg_vect = []
 
-        - if **kwargs is used in a function signature
-          pass it as a dict
+          positional_para_length = get_positional_para_length(parameters)
+          args = []
+          i = 0
+          while i < positional_para_length:
+              args.append(vm.ds.pop())
+              i = i + 1
+          args.reverse()
+          args.extend(arg_vect)
 
-******* exe_fun
+          if arg_dict == None:
+              result = fun(*args)
+          else:
+              result = fun(*args, **arg_dict)
 
-        #+begin_src python
-        def exe_fun(fun, vm):
-            signature = get_signature(fun)
+          push_result_to_vm(result, vm)
+      #+end_src
 
-            if not signature:
-                print ("- exe_fun fail to get signature")
-                print ("  fun : {}".format(fun))
+***** get_positional_para_length
+
+      #+begin_src python
+      def get_positional_para_length(parameters):
+          n = 0
+          for v in parameters.values():
+              if (v.kind == inspect.Parameter.POSITIONAL_ONLY or
+                  v.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD):
+                  n = n + 1
+          return n
+      #+end_src
+
+***** has_para_vect
+
+      #+begin_src python
+      def has_para_vect(parameters):
+          for v in parameters.values():
+              if (v.kind == inspect.Parameter.VAR_POSITIONAL):
+                  return True
+          return False
+      #+end_src
+
+***** has_para_dict
+
+      #+begin_src python
+      def has_para_dict(parameters):
+          for v in parameters.values():
+              if (v.kind == inspect.Parameter.KEYWORD_ONLY or
+                  v.kind == inspect.Parameter.VAR_KEYWORD):
+                  return True
+          return False
+      #+end_src
+
+***** get_default_arg_dict
+
+      #+begin_src python
+      def get_default_arg_dict(parameters):
+          default_dict = {}
+          for v in parameters.values():
+              if (v.kind == inspect.Parameter.KEYWORD_ONLY and
+                  v.default != inspect.Parameter.empty):
+                  default_dict[v.name] = v.default
+          return default_dict
+      #+end_src
+
+* jo
+
+*** GET -- get local variable
+
+    #+begin_src python
+    class GET:
+        def __init__(self, name):
+            self.name = name
+
+        def jo_exe(self, rp, vm):
+            value = rp.lr[self.name]
+            vm.ds.append(value)
+    #+end_src
+
+*** SET -- set local variable
+
+    #+begin_src python
+    class SET:
+        def __init__(self, name):
+            self.name = name
+
+        def jo_exe(self, rp, vm):
+            value = vm.ds.pop()
+            rp.lr[self.name] = value
+    #+end_src
+
+*** JOJO -- top level
+
+    #+begin_src python
+    class JOJO:
+        def __init__(self, body):
+            self.length = len(body)
+            self.body = Vect(body)
+            self.lr = {}
+
+        def jo_exe(self, rp, vm):
+            vm.rs.append(RP(self))
+    #+end_src
+
+*** MACRO -- top level
+
+    #+begin_src python
+    class MACRO:
+        def __init__(self, body):
+            self.length = len(body)
+            self.body = Vect(body)
+            self.lr = {}
+
+        def jo_exe(self, rp, vm):
+            vm.rs.append(RP(self))
+    #+end_src
+
+*** CLO -- closure
+
+    #+begin_src python
+    class CLO:
+        def __init__(self, body):
+            self.body = body
+
+        def jo_exe(self, rp, vm):
+            new_jojo = JOJO(self.body)
+            new_jojo.lr = rp.lr
+            vm.ds.append(new_jojo)
+    #+end_src
+
+*** APPLY
+
+    #+begin_src python
+    class APPLY:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            clo = vm.ds.pop()
+            clo.jo_exe(rp, vm)
+    #+end_src
+
+*** IFTE -- branching
+
+    #+begin_src python
+    class IFTE:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            clo2 = vm.ds.pop()
+            clo1 = vm.ds.pop()
+            test = vm.ds.pop()
+            if test:
+                vm.rs.append(RP(clo1))
+            else:
+                vm.rs.append(RP(clo2))
+    #+end_src
+
+*** MSG -- message to object
+
+    #+begin_src python
+    class MSG:
+        def __init__(self, message):
+            self.message = message
+
+        def jo_exe(self, rp, vm):
+            o = vm.ds.pop()
+            fun = getattr(o, self.message)
+            exe_jo(fun, rp, vm)
+    #+end_src
+
+*** NEW -- create object from class
+
+    #+begin_src python
+    class NEW:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            c = vm.ds.pop()
+            if not class_p(c):
+                print ("- NEW.jo_exe fail")
+                print ("  argument is not a class : {}".format(c))
                 raise JOJO_ERROR()
+            exe_fun(c, vm)
+    #+end_src
 
-            parameters = signature.parameters
+*** CALL -- call a name from a module
 
-            if has_para_dict(parameters):
-                arg_dict = get_default_arg_dict(parameters)
-                top_of_ds = vm.ds.pop()
-                if not isinstance(top_of_ds, dict):
-                    print ("- exe_fun fail")
-                    print ("  when fun require a arg_dict")
-                    print ("  the top of data stack is not a dict")
-                    print ("  fun : {}".format(fun))
-                    print ("  top of data stack : {}".format(top_of_ds))
-                    raise JOJO_ERROR()
-                arg_dict.update(top_of_ds)
-            else:
-                arg_dict = None
+    #+begin_src python
+    class CALL:
+        def __init__(self, module, name):
+            self.module = module
+            self.name = name
 
-            if has_para_vect(parameters):
-                top_of_ds = vm.ds.pop()
-                if not vect_p(top_of_ds):
-                    print ("- exe_fun fail")
-                    print ("  when fun require a arg_vect")
-                    print ("  the top of data stack is not a vect")
-                    print ("  fun : {}".format(fun))
-                    print ("  top of data stack : {}".format(top_of_ds))
-                    raise JOJO_ERROR()
-                arg_vect = top_of_ds
-            else:
-                arg_vect = []
+        def jo_exe(self, rp, vm):
+            jo = getattr(self.module, self.name)
+            exe_jo(jo, rp, vm)
+    #+end_src
 
-            positional_para_length = get_positional_para_length(parameters)
-            args = []
-            i = 0
-            while i < positional_para_length:
-                args.append(vm.ds.pop())
-                i = i + 1
-            args.reverse()
-            args.extend(arg_vect)
+*** MARK -- for collectors
 
-            if arg_dict == None:
-                result = fun(*args)
-            else:
-                result = fun(*args, **arg_dict)
+    #+begin_src python
+    class MARK:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            vm.ds.append(self)
+    #+end_src
 
-            push_result_to_vm(result, vm)
-        #+end_src
+*** COLLECT_VECT -- collect values before mark to vect
 
-******* get_positional_para_length
+    #+begin_src python
+    class COLLECT_VECT:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            vect = []
+            while True:
+                value = vm.ds.pop()
+                if value == MARK:
+                    break
+                else:
+                    vect.append(value)
+            vect.reverse()
+            vm.ds.append(vect)
+    #+end_src
 
-        #+begin_src python
-        def get_positional_para_length(parameters):
-            n = 0
-            for v in parameters.values():
-                if (v.kind == inspect.Parameter.POSITIONAL_ONLY or
-                    v.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD):
-                    n = n + 1
-            return n
-        #+end_src
+*** VECT_SPREAD -- spread values to data stack
 
-******* has_para_vect
+    #+begin_src python
+    class VECT_SPREAD:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            vect = vm.ds.pop()
+            for value in vect:
+                vm.ds.append(value)
+    #+end_src
 
-        #+begin_src python
-        def has_para_vect(parameters):
-            for v in parameters.values():
-                if (v.kind == inspect.Parameter.VAR_POSITIONAL):
-                    return True
-            return False
-        #+end_src
+*** COLLECT_LIST -- collect values before mark to list
 
-******* has_para_dict
+    #+begin_src python
+    class COLLECT_LIST:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            def recur(rest):
+                value = vm.ds.pop()
+                if value == MARK:
+                    return rest
+                else:
+                    return recur(cons(value, rest))
+            vm.ds.append(recur(null))
+    #+end_src
 
-        #+begin_src python
-        def has_para_dict(parameters):
-            for v in parameters.values():
-                if (v.kind == inspect.Parameter.KEYWORD_ONLY or
-                    v.kind == inspect.Parameter.VAR_KEYWORD):
-                    return True
-            return False
-        #+end_src
+*** LIST_SPREAD -- spread values to data stack
 
-******* get_default_arg_dict
-
-        #+begin_src python
-        def get_default_arg_dict(parameters):
-            default_dict = {}
-            for v in parameters.values():
-                if (v.kind == inspect.Parameter.KEYWORD_ONLY and
-                    v.default != inspect.Parameter.empty):
-                    default_dict[v.name] = v.default
-            return default_dict
-        #+end_src
+    #+begin_src python
+    class LIST_SPREAD:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            def recur(l):
+                if null_p(l):
+                    pass
+                else:
+                    vm.ds.append(car(l))
+                    recur(cdr(l))
+            recur(vm.ds.pop())
+    #+end_src
 
 * scan -- sexp lexer
 
@@ -902,12 +956,19 @@
               return [IFTE]
           if string == 'new':
               return [NEW]
+          if string == ',':
+              return []
+
           if string == 'mark':
               return [MARK]
           if string == 'collect-vect':
               return [COLLECT_VECT]
-          if string == ',':
-              return []
+          if string == 'vect-spread':
+              return [VECT_SPREAD]
+          if string == 'collect-list':
+              return [COLLECT_LIST]
+          if string == 'list-spread':
+              return [LIST_SPREAD]
 
           jojo_name_vect = getattr(module, 'jojo_name_vect')
           if string in jojo_name_vect:
@@ -1105,9 +1166,7 @@
 *** vect_p
 
     #+begin_src python
-    @prim('vect?')
-    def vect_p(x):
-        return type(x) == Vect
+    prim('vect?')(vect_p)
     #+end_src
 
 *** vect_to_sexp
@@ -1337,11 +1396,33 @@
             return [sexp]
     #+end_src
 
+*** (->)
+
+    #+begin_src python
+    @keyword('->')
+    def k_arrow(module, sexp_list):
+        jo_vect = []
+        while not null_p(sexp_list):
+            sexp = car(sexp_list)
+            if not string_p(sexp):
+                pass
+            elif sexp == '--':
+                break
+            elif local_string_p(sexp):
+                jo_vect.append(SET(sexp))
+            else:
+                pass
+            sexp_list = cdr(sexp_list)
+        jo_vect.reverse()
+        return jo_vect
+    #+end_src
+
 * macro_dict
 
 *** [note]
 
     - macro : (-> body -- sexp)
+      where body is sexp_list
 
 *** macro_dict
 

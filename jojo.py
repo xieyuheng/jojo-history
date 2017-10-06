@@ -30,6 +30,12 @@ def class_p(x):
 
 Vect = list
 
+def vect_p(x):
+    return type(x) == Vect
+
+def string_p(x):
+    return type(x) == str
+
 class JOJO_ERROR(Exception):
     pass
 
@@ -55,112 +61,6 @@ def push_result_to_vm(result, vm):
         pass
     else:
         vm.ds.append(result)
-
-class GET:
-    def __init__(self, name):
-        self.name = name
-
-    def jo_exe(self, rp, vm):
-        value = rp.lr[self.name]
-        vm.ds.append(value)
-
-class SET:
-    def __init__(self, name):
-        self.name = name
-
-    def jo_exe(self, rp, vm):
-        value = vm.ds.pop()
-        rp.lr[self.name] = value
-
-class JOJO:
-    def __init__(self, body):
-        self.length = len(body)
-        self.body = Vect(body)
-        self.lr = {}
-
-    def jo_exe(self, rp, vm):
-        vm.rs.append(RP(self))
-
-class MACRO:
-    def __init__(self, body):
-        self.length = len(body)
-        self.body = Vect(body)
-        self.lr = {}
-
-    def jo_exe(self, rp, vm):
-        vm.rs.append(RP(self))
-
-class CLO:
-    def __init__(self, body):
-        self.body = body
-
-    def jo_exe(self, rp, vm):
-        new_jojo = JOJO(self.body)
-        new_jojo.lr = rp.lr
-        vm.ds.append(new_jojo)
-
-class APPLY:
-    @classmethod
-    def jo_exe(self, rp, vm):
-        clo = vm.ds.pop()
-        clo.jo_exe(rp, vm)
-
-class IFTE:
-    @classmethod
-    def jo_exe(self, rp, vm):
-        clo2 = vm.ds.pop()
-        clo1 = vm.ds.pop()
-        test = vm.ds.pop()
-        if test:
-            vm.rs.append(RP(clo1))
-        else:
-            vm.rs.append(RP(clo2))
-
-class MSG:
-    def __init__(self, message):
-        self.message = message
-
-    def jo_exe(self, rp, vm):
-        o = vm.ds.pop()
-        fun = getattr(o, self.message)
-        exe_jo(fun, rp, vm)
-
-class NEW:
-    @classmethod
-    def jo_exe(self, rp, vm):
-        c = vm.ds.pop()
-        if not class_p(c):
-            print ("- NEW.jo_exe fail")
-            print ("  argument is not a class : {}".format(c))
-            raise JOJO_ERROR()
-        exe_fun(c, vm)
-
-class CALL:
-    def __init__(self, module, name):
-        self.module = module
-        self.name = name
-
-    def jo_exe(self, rp, vm):
-        jo = getattr(self.module, self.name)
-        exe_jo(jo, rp, vm)
-
-class MARK:
-    @classmethod
-    def jo_exe(self, rp, vm):
-        vm.ds.append(self)
-
-class COLLECT_VECT:
-    @classmethod
-    def jo_exe(self, rp, vm):
-        vect = []
-        while True:
-            value = vm.ds.pop()
-            if value == MARK:
-                break
-            else:
-                vect.append(value)
-        vect.reverse()
-        vm.ds.append(vect)
 
 def exe(vm):
     while vm.rs != []:
@@ -272,6 +172,141 @@ def get_default_arg_dict(parameters):
             v.default != inspect.Parameter.empty):
             default_dict[v.name] = v.default
     return default_dict
+
+class GET:
+    def __init__(self, name):
+        self.name = name
+
+    def jo_exe(self, rp, vm):
+        value = rp.lr[self.name]
+        vm.ds.append(value)
+
+class SET:
+    def __init__(self, name):
+        self.name = name
+
+    def jo_exe(self, rp, vm):
+        value = vm.ds.pop()
+        rp.lr[self.name] = value
+
+class JOJO:
+    def __init__(self, body):
+        self.length = len(body)
+        self.body = Vect(body)
+        self.lr = {}
+
+    def jo_exe(self, rp, vm):
+        vm.rs.append(RP(self))
+
+class MACRO:
+    def __init__(self, body):
+        self.length = len(body)
+        self.body = Vect(body)
+        self.lr = {}
+
+    def jo_exe(self, rp, vm):
+        vm.rs.append(RP(self))
+
+class CLO:
+    def __init__(self, body):
+        self.body = body
+
+    def jo_exe(self, rp, vm):
+        new_jojo = JOJO(self.body)
+        new_jojo.lr = rp.lr
+        vm.ds.append(new_jojo)
+
+class APPLY:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        clo = vm.ds.pop()
+        clo.jo_exe(rp, vm)
+
+class IFTE:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        clo2 = vm.ds.pop()
+        clo1 = vm.ds.pop()
+        test = vm.ds.pop()
+        if test:
+            vm.rs.append(RP(clo1))
+        else:
+            vm.rs.append(RP(clo2))
+
+class MSG:
+    def __init__(self, message):
+        self.message = message
+
+    def jo_exe(self, rp, vm):
+        o = vm.ds.pop()
+        fun = getattr(o, self.message)
+        exe_jo(fun, rp, vm)
+
+class NEW:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        c = vm.ds.pop()
+        if not class_p(c):
+            print ("- NEW.jo_exe fail")
+            print ("  argument is not a class : {}".format(c))
+            raise JOJO_ERROR()
+        exe_fun(c, vm)
+
+class CALL:
+    def __init__(self, module, name):
+        self.module = module
+        self.name = name
+
+    def jo_exe(self, rp, vm):
+        jo = getattr(self.module, self.name)
+        exe_jo(jo, rp, vm)
+
+class MARK:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        vm.ds.append(self)
+
+class COLLECT_VECT:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        vect = []
+        while True:
+            value = vm.ds.pop()
+            if value == MARK:
+                break
+            else:
+                vect.append(value)
+        vect.reverse()
+        vm.ds.append(vect)
+
+class VECT_SPREAD:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        vect = vm.ds.pop()
+        for value in vect:
+            vm.ds.append(value)
+
+class COLLECT_LIST:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        def recur(rest):
+            value = vm.ds.pop()
+            if value == MARK:
+                return rest
+            else:
+                return recur(cons(value, rest))
+        vm.ds.append(recur(null))
+
+class LIST_SPREAD:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        def recur(l):
+            if null_p(l):
+                pass
+            else:
+                vm.ds.append(car(l))
+                recur(cdr(l))
+        recur(vm.ds.pop())
 
 def scan_string_vect(string):
     string_vect = []
@@ -540,12 +575,19 @@ def string_emit(module, string):
         return [IFTE]
     if string == 'new':
         return [NEW]
+    if string == ',':
+        return []
+
     if string == 'mark':
         return [MARK]
     if string == 'collect-vect':
         return [COLLECT_VECT]
-    if string == ',':
-        return []
+    if string == 'vect-spread':
+        return [VECT_SPREAD]
+    if string == 'collect-list':
+        return [COLLECT_LIST]
+    if string == 'list-spread':
+        return [LIST_SPREAD]
 
     jojo_name_vect = getattr(module, 'jojo_name_vect')
     if string in jojo_name_vect:
@@ -683,9 +725,7 @@ prim('cdr')(cdr)
 prim('sexp-write')(write_sexp)
 prim('sexp-list-write')(write_sexp_cons)
 
-@prim('vect?')
-def vect_p(x):
-    return type(x) == Vect
+prim('vect?')(vect_p)
 
 @prim('vect->sexp')
 def vect_to_sexp(vect):
@@ -819,6 +859,23 @@ def k_partquote_one(module, sexp):
             return jo_vect
     else:
         return [sexp]
+
+@keyword('->')
+def k_arrow(module, sexp_list):
+    jo_vect = []
+    while not null_p(sexp_list):
+        sexp = car(sexp_list)
+        if not string_p(sexp):
+            pass
+        elif sexp == '--':
+            break
+        elif local_string_p(sexp):
+            jo_vect.append(SET(sexp))
+        else:
+            pass
+        sexp_list = cdr(sexp_list)
+    jo_vect.reverse()
+    return jo_vect
 
 macro_dict = {}
 
