@@ -28,8 +28,7 @@ def class_p(x):
     else:
         return True
 
-vect = list
-stack = list
+Vect = list
 
 class JOJO_ERROR(Exception):
     pass
@@ -76,7 +75,7 @@ class SET:
 class JOJO:
     def __init__(self, body):
         self.length = len(body)
-        self.body = vect(body)
+        self.body = Vect(body)
         self.lr = {}
 
     def jo_exe(self, rp, vm):
@@ -85,7 +84,7 @@ class JOJO:
 class MACRO:
     def __init__(self, body):
         self.length = len(body)
-        self.body = vect(body)
+        self.body = Vect(body)
         self.lr = {}
 
     def jo_exe(self, rp, vm):
@@ -200,7 +199,7 @@ def exe_fun(fun, vm):
 
     if has_para_vect(parameters):
         top_of_ds = vm.ds.pop()
-        if not isinstance(top_of_ds, vect):
+        if not vect_p(top_of_ds):
             print ("- exe_fun fail")
             print ("  when fun require a arg_vect")
             print ("  the top of data stack is not a vect")
@@ -412,7 +411,7 @@ def write_sexp_cons(s_cons):
         write_sexp_cons(cdr(s_cons))
 
 def vect_p(x):
-    return type(x) == vect
+    return type(x) == Vect
 
 def vect_to_sexp(vect):
     if vect == []:
@@ -835,5 +834,3 @@ def create_module(name, path):
     module.__file__ = path
 
     return module
-
-

@@ -1,17 +1,27 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-- do not handle tuple as multiple return values
+
 * [todo-stack]
+
+*** tuple
+
+    - do not view tuple result as multiple-return-value
+      only jojo can use multiple-return-value
 
 *** macro
 
-    - (cond~) in jojo as macro [as a macro system test]
+    - (partquote)
+    - (@)
+
+    - (->)
 
     - (list)
     - (dict)
     - (vect)
-    - (stack)
+    - (tuple)
     - (set)
+
+    - (conditional) in jojo as macro [as a macro system test]
 
     - (+data)
     - (+class)
@@ -22,130 +32,137 @@
 
     - (case)
 
-*** module
+*** interface
 
-    - import as python
+***** module
 
-    - code in jojo can be module
-      - setuptools
-        to use dynamiclly generated module
+      - import as python
 
-*** vm
+      - code in jojo can be module
+        - setuptools
+          to use dynamiclly generated module
 
-    - specify the design of jo in jojo vm
-
-    - specify which semantic subset of python is captured by jojo vm
+***** command line
 
 *** prim
 
     - cover python's builtin and standard libraries
 
-* import
+*** docs
 
-  #+begin_src python
-  import inspect
-  import types
-  import importlib
-  import sys
-  import os
-  #+end_src
+***** vm
 
-* utility
+      - specify the design of jo in jojo vm
 
-*** get_signature
+      - specify which semantic subset of python is captured by jojo vm
+
+* prolog
+
+*** import
 
     #+begin_src python
-    def get_signature(fun):
-        try:
-            return inspect.signature(fun)
-        except ValueError:
-            return False
+    import inspect
+    import types
+    import importlib
+    import sys
+    import os
     #+end_src
 
-*** fun_p
+*** utility
 
-    #+begin_src python
-    def fun_p(x):
-        if (isinstance(x, types.LambdaType) or
-            isinstance(x, types.MethodType)):
-            return True
-        elif (isinstance(x, types.BuiltinFunctionType) or
-              isinstance(x, types.BuiltinMethodType)):
-            return get_signature(x)
-        else:
-            return False
-    #+end_src
+***** get_signature
 
-*** class_p
+      #+begin_src python
+      def get_signature(fun):
+          try:
+              return inspect.signature(fun)
+          except ValueError:
+              return False
+      #+end_src
 
-    #+begin_src python
-    def class_p(x):
-        if not inspect.isclass(x):
-            return False
-        elif x == type:
-            return False
-        else:
-            return True
-    #+end_src
+***** fun_p
 
-*** fix naming
+      #+begin_src python
+      def fun_p(x):
+          if (isinstance(x, types.LambdaType) or
+              isinstance(x, types.MethodType)):
+              return True
+          elif (isinstance(x, types.BuiltinFunctionType) or
+                isinstance(x, types.BuiltinMethodType)):
+              return get_signature(x)
+          else:
+              return False
+      #+end_src
 
-    #+begin_src python
-    vect = list
-    stack = list
-    #+end_src
+***** class_p
 
-* error handling
+      #+begin_src python
+      def class_p(x):
+          if not inspect.isclass(x):
+              return False
+          elif x == type:
+              return False
+          else:
+              return True
+      #+end_src
 
-*** JOJO_ERROR
+***** Vect
 
-    #+begin_src python
-    class JOJO_ERROR(Exception):
-        pass
-    #+end_src
+      #+begin_src python
+      Vect = list
+      #+end_src
 
-* VM
+*** error handling
 
-*** RP
+***** JOJO_ERROR
 
-    #+begin_src python
-    class RP:
-        def __init__(self, fun):
-            self.cursor = 0
-            self.length = fun.length
-            self.body = fun.body
-            self.lr = fun.lr.copy()
-    #+end_src
+      #+begin_src python
+      class JOJO_ERROR(Exception):
+          pass
+      #+end_src
+
+* vm
 
 *** VM
 
-    #+begin_src python
-    class VM:
-        def __init__(self, ds, rs):
-            self.ds = ds
-            self.rs = rs
+***** RP
 
-        def exe(self):
-            return exe(self)
-    #+end_src
+      #+begin_src python
+      class RP:
+          def __init__(self, fun):
+              self.cursor = 0
+              self.length = fun.length
+              self.body = fun.body
+              self.lr = fun.lr.copy()
+      #+end_src
 
-*** push_result_to_vm
+***** VM
 
-    #+begin_src python
-    def push_result_to_vm(result, vm):
-        if type(result) == tuple:
-            vm.ds.extend(result)
-        elif result == None:
-            pass
-        else:
-            vm.ds.append(result)
-    #+end_src
+      #+begin_src python
+      class VM:
+          def __init__(self, ds, rs):
+              self.ds = ds
+              self.rs = rs
 
-* jo
+          def exe(self):
+              return exe(self)
+      #+end_src
 
-*** local variable
+***** push_result_to_vm
 
-***** GET
+      #+begin_src python
+      def push_result_to_vm(result, vm):
+          if type(result) == tuple:
+              vm.ds.extend(result)
+          elif result == None:
+              pass
+          else:
+              vm.ds.append(result)
+      #+end_src
+
+*** jo
+
+***** GET -- get local variable
 
       #+begin_src python
       class GET:
@@ -157,7 +174,7 @@
               vm.ds.append(value)
       #+end_src
 
-***** SET
+***** SET -- set local variable
 
       #+begin_src python
       class SET:
@@ -169,37 +186,33 @@
               rp.lr[self.name] = value
       #+end_src
 
-*** top level
-
-***** JOJO
+***** JOJO -- top level
 
       #+begin_src python
       class JOJO:
           def __init__(self, body):
               self.length = len(body)
-              self.body = vect(body)
+              self.body = Vect(body)
               self.lr = {}
 
           def jo_exe(self, rp, vm):
               vm.rs.append(RP(self))
       #+end_src
 
-***** MACRO
+***** MACRO -- top level
 
       #+begin_src python
       class MACRO:
           def __init__(self, body):
               self.length = len(body)
-              self.body = vect(body)
+              self.body = Vect(body)
               self.lr = {}
 
           def jo_exe(self, rp, vm):
               vm.rs.append(RP(self))
       #+end_src
 
-*** closure
-
-***** CLO
+***** CLO -- closure
 
       #+begin_src python
       class CLO:
@@ -222,9 +235,7 @@
               clo.jo_exe(rp, vm)
       #+end_src
 
-*** control
-
-***** IFTE
+***** IFTE -- branching
 
       #+begin_src python
       class IFTE:
@@ -239,9 +250,7 @@
                   vm.rs.append(RP(clo2))
       #+end_src
 
-*** object system
-
-***** MSG
+***** MSG -- message to object
 
       #+begin_src python
       class MSG:
@@ -254,7 +263,7 @@
               exe_jo(fun, rp, vm)
       #+end_src
 
-***** NEW
+***** NEW -- create object from class
 
       #+begin_src python
       class NEW:
@@ -268,9 +277,7 @@
               exe_fun(c, vm)
       #+end_src
 
-*** current compiling module
-
-***** CALL
+***** CALL -- call a name from a module
 
       #+begin_src python
       class CALL:
@@ -283,20 +290,18 @@
               exe_jo(jo, rp, vm)
       #+end_src
 
-* exe
-
 *** exe
 
-    #+begin_src python
-    def exe(vm):
-        while vm.rs != []:
-            exe_one_step(vm)
-            print (vm.ds)
-        print ("- exe end")
-        return vm
-    #+end_src
+***** exe
 
-*** exe_one_step
+      #+begin_src python
+      def exe(vm):
+          while vm.rs != []:
+              exe_one_step(vm)
+              print (vm.ds)
+          print ("- exe end")
+          return vm
+      #+end_src
 
 ***** exe_one_step
 
@@ -377,7 +382,7 @@
 
             if has_para_vect(parameters):
                 top_of_ds = vm.ds.pop()
-                if not isinstance(top_of_ds, vect):
+                if not vect_p(top_of_ds):
                     print ("- exe_fun fail")
                     print ("  when fun require a arg_vect")
                     print ("  the top of data stack is not a vect")
@@ -450,7 +455,7 @@
             return default_dict
         #+end_src
 
-* scan
+* scan -- sexp lexer
 
 *** scan_string_vect
 
@@ -532,79 +537,79 @@
         return s == '"'
     #+end_src
 
+* null & cons
+
+*** Null
+
+    #+begin_src python
+    class Null:
+        pass
+    #+end_src
+
+*** null
+
+    #+begin_src python
+    null = Null()
+    #+end_src
+
+*** null_p
+
+    #+begin_src python
+    def null_p(x):
+        return x == null
+    #+end_src
+
+*** Cons
+
+    #+begin_src python
+    class Cons:
+        def __init__(self, car, cdr):
+            self.car = car
+            self.cdr = cdr
+    #+end_src
+
+*** cons
+
+    #+begin_src python
+    def cons(car, cdr):
+        if list_p(cdr):
+            return Cons(car, cdr)
+        else:
+            print ("- cons fail")
+            print ("  cdr of cons must be a cons or null")
+            print ("  cdr : {}".format(cdr))
+            raise JOJO_ERROR()
+    #+end_src
+
+*** cons_p
+
+    #+begin_src python
+    def cons_p(x):
+        return isinstance(x, Cons)
+    #+end_src
+
+*** list_p
+
+    #+begin_src python
+    def list_p(x):
+        return null_p(x) or cons_p(x)
+    #+end_src
+
+*** cdr
+
+    #+begin_src python
+    def cdr(x):
+        return x.cdr
+    #+end_src
+
+*** car
+
+    #+begin_src python
+    def car(x):
+        return x.car
+    #+end_src
+
 * sexp -- string expression
-
-*** null & cons
-
-***** Null
-
-      #+begin_src python
-      class Null:
-          pass
-      #+end_src
-
-***** null
-
-      #+begin_src python
-      null = Null()
-      #+end_src
-
-***** null_p
-
-      #+begin_src python
-      def null_p(x):
-          return x == null
-      #+end_src
-
-***** Cons
-
-      #+begin_src python
-      class Cons:
-          def __init__(self, car, cdr):
-              self.car = car
-              self.cdr = cdr
-      #+end_src
-
-***** cons
-
-      #+begin_src python
-      def cons(car, cdr):
-          if list_p(cdr):
-              return Cons(car, cdr)
-          else:
-              print ("- cons fail")
-              print ("  cdr of cons must be a cons or null")
-              print ("  cdr : {}".format(cdr))
-              raise JOJO_ERROR()
-      #+end_src
-
-***** cons_p
-
-      #+begin_src python
-      def cons_p(x):
-          return isinstance(x, Cons)
-      #+end_src
-
-***** list_p
-
-      #+begin_src python
-      def list_p(x):
-          return null_p(x) or cons_p(x)
-      #+end_src
-
-***** cdr
-
-      #+begin_src python
-      def cdr(x):
-          return x.cdr
-      #+end_src
-
-***** car
-
-      #+begin_src python
-      def car(x):
-          return x.car
-      #+end_src
 
 *** parse_sexp_vect -- string vect to sexp vect
 
@@ -705,7 +710,7 @@
 
     #+begin_src python
     def vect_p(x):
-        return type(x) == vect
+        return type(x) == Vect
     #+end_src
 
 *** vect_to_sexp
@@ -1151,7 +1156,7 @@
     prim('tail-cons')(tail_cons)
     #+end_src
 
-*** >< stack
+*** >< dict
 
     #+begin_src python
 
@@ -1363,10 +1368,4 @@
       module.__file__ = path
 
       return module
-  #+end_src
-
-* play
-
-  #+begin_src python
-
   #+end_src
