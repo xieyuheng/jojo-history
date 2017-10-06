@@ -101,3 +101,16 @@ def test_7():
             [RP(module.t)])
     vm = vm.exe()
     assert vm.ds == ["a", "b", "c"]
+
+
+# def test_8():
+#     code = '''\
+#     (+jojo t
+#       null 0 cons)
+#     '''
+#     sexp_vect = parse_sexp_vect(scan_string_vect(code))
+#     module = compile_module('module', sexp_vect)
+#     vm = VM([],
+#             [RP(module.t)])
+#     vm = vm.exe()
+#     return vm.ds

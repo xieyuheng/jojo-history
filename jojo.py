@@ -31,6 +31,9 @@ def class_p(x):
 vect = list
 stack = list
 
+class JOJO_ERROR(Exception):
+    pass
+
 class RP:
     def __init__(self, fun):
         self.cursor = 0
@@ -130,6 +133,7 @@ class NEW:
         if not class_p(c):
             print ("- NEW.jo_exe fail")
             print ("  argument is not a class : {}".format(c))
+            raise JOJO_ERROR()
         exe_fun(c, vm)
 
 class CALL:
@@ -176,6 +180,7 @@ def exe_fun(fun, vm):
     if not signature:
         print ("- exe_fun fail to get signature")
         print ("  fun : {}".format(fun))
+        raise JOJO_ERROR()
 
     parameters = signature.parameters
 
@@ -188,6 +193,7 @@ def exe_fun(fun, vm):
             print ("  the top of data stack is not a dict")
             print ("  fun : {}".format(fun))
             print ("  top of data stack : {}".format(top_of_ds))
+            raise JOJO_ERROR()
         arg_dict.update(top_of_ds)
     else:
         arg_dict = None
@@ -200,6 +206,7 @@ def exe_fun(fun, vm):
             print ("  the top of data stack is not a vect")
             print ("  fun : {}".format(fun))
             print ("  top of data stack : {}".format(top_of_ds))
+            raise JOJO_ERROR()
         arg_vect = top_of_ds
     else:
         arg_vect = []
@@ -269,6 +276,7 @@ def scan_string_vect(string):
                 print ("- scan_string_vect fail")
                 print ("  doublequote mismatch")
                 print ("  string : {}".format(string))
+                raise JOJO_ERROR()
             end = doublequote_end_index + 1
             string_vect.append(string[i:end])
             i = end
@@ -328,6 +336,7 @@ def cons(car, cdr):
         print ("- cons fail")
         print ("  cdr of cons must be a cons or null")
         print ("  cdr : {}".format(cdr))
+        raise JOJO_ERROR()
 
 def cons_p(x):
     return isinstance(x, Cons)
@@ -412,6 +421,7 @@ def list_ref(l, i):
     if null_p(l):
         print ("- list_ref fail")
         print ("  index greater then length of list")
+        raise JOJO_ERROR()
     elif i == 0:
         return car(l)
     else:
@@ -503,7 +513,7 @@ def cons_emit(module, cons):
             print ("- cons_emit fail")
             print ("  must define a macro before using it")
             print ("  macro name : {}".format(keyword))
-            return
+            raise JOJO_ERROR()
         else:
             macro = getattr(module, keyword)
             vm = vm([cdr(cons)],
@@ -515,7 +525,7 @@ def cons_emit(module, cons):
     else:
         print("- cons_emit fail")
         print("  meet unknown keyword : {}".format(keyword))
-        return
+        raise JOJO_ERROR()
 
 def string_emit(module, string):
 
@@ -559,6 +569,7 @@ def string_emit(module, string):
 
     print ("- string_emit fail")
     print ("  meet undefined string : {}".format(string))
+    raise JOJO_ERROR()
 
 def int_string_p(string):
     length = len(string)
@@ -754,13 +765,13 @@ def create_module(name, path):
         print ("- create_module fail")
         print ("  path does not exist")
         print ("  path : {}".format(path))
-        return
+        raise JOJO_ERROR()
 
     if not os.path.isfile(path):
         print ("- create_module fail")
         print ("  path is not file")
         print ("  path : {}".format(path))
-        return
+        raise JOJO_ERROR()
 
     with open(path, "r") as f:
         code = f.read()

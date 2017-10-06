@@ -1,6 +1,5 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-- error handling
 - (cond) in python as keyword
 * [todo-stack]
 
@@ -94,6 +93,15 @@
     #+begin_src python
     vect = list
     stack = list
+    #+end_src
+
+* error handling
+
+*** JOJO_ERROR
+
+    #+begin_src python
+    class JOJO_ERROR(Exception):
+        pass
     #+end_src
 
 * VM
@@ -256,6 +264,7 @@
               if not class_p(c):
                   print ("- NEW.jo_exe fail")
                   print ("  argument is not a class : {}".format(c))
+                  raise JOJO_ERROR()
               exe_fun(c, vm)
       #+end_src
 
@@ -348,6 +357,7 @@
             if not signature:
                 print ("- exe_fun fail to get signature")
                 print ("  fun : {}".format(fun))
+                raise JOJO_ERROR()
 
             parameters = signature.parameters
 
@@ -360,6 +370,7 @@
                     print ("  the top of data stack is not a dict")
                     print ("  fun : {}".format(fun))
                     print ("  top of data stack : {}".format(top_of_ds))
+                    raise JOJO_ERROR()
                 arg_dict.update(top_of_ds)
             else:
                 arg_dict = None
@@ -372,6 +383,7 @@
                     print ("  the top of data stack is not a vect")
                     print ("  fun : {}".format(fun))
                     print ("  top of data stack : {}".format(top_of_ds))
+                    raise JOJO_ERROR()
                 arg_vect = top_of_ds
             else:
                 arg_vect = []
@@ -463,6 +475,7 @@
                     print ("- scan_string_vect fail")
                     print ("  doublequote mismatch")
                     print ("  string : {}".format(string))
+                    raise JOJO_ERROR()
                 end = doublequote_end_index + 1
                 string_vect.append(string[i:end])
                 i = end
@@ -562,6 +575,7 @@
               print ("- cons fail")
               print ("  cdr of cons must be a cons or null")
               print ("  cdr : {}".format(cdr))
+              raise JOJO_ERROR()
       #+end_src
 
 ***** cons_p
@@ -704,6 +718,7 @@
         if null_p(l):
             print ("- list_ref fail")
             print ("  index greater then length of list")
+            raise JOJO_ERROR()
         elif i == 0:
             return car(l)
         else:
@@ -866,7 +881,7 @@
                 print ("- cons_emit fail")
                 print ("  must define a macro before using it")
                 print ("  macro name : {}".format(keyword))
-                return
+                raise JOJO_ERROR()
             else:
                 macro = getattr(module, keyword)
                 vm = vm([cdr(cons)],
@@ -878,7 +893,7 @@
         else:
             print("- cons_emit fail")
             print("  meet unknown keyword : {}".format(keyword))
-            return
+            raise JOJO_ERROR()
     #+end_src
 
 *** string_emit
@@ -928,6 +943,7 @@
 
           print ("- string_emit fail")
           print ("  meet undefined string : {}".format(string))
+          raise JOJO_ERROR()
       #+end_src
 
 ***** int_string_p
@@ -1253,13 +1269,13 @@
           print ("- create_module fail")
           print ("  path does not exist")
           print ("  path : {}".format(path))
-          return
+          raise JOJO_ERROR()
 
       if not os.path.isfile(path):
           print ("- create_module fail")
           print ("  path is not file")
           print ("  path : {}".format(path))
-          return
+          raise JOJO_ERROR()
 
       with open(path, "r") as f:
           code = f.read()
