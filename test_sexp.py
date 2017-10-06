@@ -1,4 +1,4 @@
-from jojo import scan_symble_list, parse_sexp_list, write_sexp
+from jojo import scan_string_vect, parse_sexp_vect, write_sexp
 
 string = '''\
 (1 (1 2 3) 2 (1 2 3) 3 "123")
@@ -12,9 +12,9 @@ def newline():
     print("")
 
 def test_0():
-    symbol_list = scan_symble_list(string)
-    sexp_list = parse_sexp_list(symbol_list)
-    for sexp in sexp_list:
+    symbol_vect = scan_string_vect(string)
+    sexp_vect = parse_sexp_vect(symbol_vect)
+    for sexp in sexp_vect:
         write_sexp(sexp)
         newline()
 

@@ -29,6 +29,9 @@ def class_p(x):
     else:
         return True
 
+vect = list
+stack = list
+
 class RP:
     def __init__(self, fun):
         self.cursor = 0
@@ -71,7 +74,7 @@ class SET:
 class JOJO:
     def __init__(self, body):
         self.length = len(body)
-        self.body = list(body)
+        self.body = vect(body)
         self.lr = {}
 
     def jo_exe(self, rp, vm):
@@ -80,7 +83,7 @@ class JOJO:
 class MACRO:
     def __init__(self, body):
         self.length = len(body)
-        self.body = list(body)
+        self.body = vect(body)
         self.lr = {}
 
     def jo_exe(self, rp, vm):
@@ -190,17 +193,17 @@ def exe_fun(fun, vm):
     else:
         arg_dict = None
 
-    if has_para_list(parameters):
+    if has_para_vect(parameters):
         top_of_ds = vm.ds.pop()
-        if not isinstance(top_of_ds, list):
+        if not isinstance(top_of_ds, vect):
             print ("- exe_fun fail")
-            print ("  when fun require a arg_list")
-            print ("  the top of data stack is not a list")
+            print ("  when fun require a arg_vect")
+            print ("  the top of data stack is not a vect")
             print ("  fun : {}".format(fun))
             print ("  top of data stack : {}".format(top_of_ds))
-        arg_list = top_of_ds
+        arg_vect = top_of_ds
     else:
-        arg_list = []
+        arg_vect = []
 
     positional_para_length = get_positional_para_length(parameters)
     args = []
@@ -209,7 +212,7 @@ def exe_fun(fun, vm):
         args.append(vm.ds.pop())
         i = i + 1
     args.reverse()
-    args.extend(arg_list)
+    args.extend(arg_vect)
 
     if arg_dict == None:
         result = fun(*args)
@@ -226,7 +229,7 @@ def get_positional_para_length(parameters):
             n = n + 1
     return n
 
-def has_para_list(parameters):
+def has_para_vect(parameters):
     for v in parameters.values():
         if (v.kind == inspect.Parameter.VAR_POSITIONAL):
             return True
@@ -247,8 +250,8 @@ def get_default_arg_dict(parameters):
             default_dict[v.name] = v.default
     return default_dict
 
-def scan_symble_list(string):
-    symbol_list = []
+def scan_string_vect(string):
+    string_vect = []
     i = 0
     length = len(string)
     while i < length:
@@ -258,27 +261,25 @@ def scan_symble_list(string):
             i = i + 1
 
         elif delimiter_p(s):
-            symbol_list.append(s)
+            string_vect.append(s)
             i = i + 1
 
         elif doublequote_p(s):
             doublequote_end_index = string.find('"', i+1)
             if doublequote_end_index == -1:
-                print ("- scan_symble_list fail")
+                print ("- scan_string_vect fail")
                 print ("  doublequote mismatch")
                 print ("  string : {}".format(string))
             end = doublequote_end_index + 1
-            symbol = string[i:end]
-            symbol_list.append(symbol)
+            string_vect.append(string[i:end])
             i = end
 
         else:
             end = find_end(string, i+1)
-            symbol = string[i:end]
-            symbol_list.append(symbol)
+            string_vect.append(string[i:end])
             i = end
 
-    return symbol_list
+    return string_vect
 
 def find_end(string, begin):
     length = len(string)
@@ -341,42 +342,42 @@ def cdr(x):
 def car(x):
     return x.car
 
-def parse_sexp_list(symbol_list):
-    length = len(symbol_list)
+def parse_sexp_vect(string_vect):
+    length = len(string_vect)
     i = 0
-    sexp_list = []
+    sexp_vect = []
     while i < length:
-       s, i = parse_sexp(symbol_list, i)
-       sexp_list.append(s)
-    return sexp_list
+       s, i = parse_sexp(string_vect, i)
+       sexp_vect.append(s)
+    return sexp_vect
 
-def parse_sexp(symbol_list, i):
-    symbol = symbol_list[i]
-    if symbol == '(':
-        return parse_sexp_cons_until_ket(symbol_list, i+1, ')')
-    elif symbol == '[':
-        s_cons, i1 = parse_sexp_cons_until_ket(symbol_list, i+1, ']')
+def parse_sexp(string_vect, i):
+    string = string_vect[i]
+    if string == '(':
+        return parse_sexp_cons_until_ket(string_vect, i+1, ')')
+    elif string == '[':
+        s_cons, i1 = parse_sexp_cons_until_ket(string_vect, i+1, ']')
         return (cons('begin', s_cons), i1)
-    elif symbol == '{':
-        s_cons, i1 = parse_sexp_cons_until_ket(symbol_list, i+1, '}')
+    elif string == '{':
+        s_cons, i1 = parse_sexp_cons_until_ket(string_vect, i+1, '}')
         return (cons('clo', s_cons), i1)
-    elif symbol == "'":
-        s, i1 = parse_sexp(symbol_list, i+1)
+    elif string == "'":
+        s, i1 = parse_sexp(string_vect, i+1)
         return (cons('quote', cons(s, null)), i1)
-    elif symbol == "`":
-        s, i1 = parse_sexp(symbol_list, i+1)
+    elif string == "`":
+        s, i1 = parse_sexp(string_vect, i+1)
         return (cons('partquote', cons(s, null)), i1)
     else:
-        return (symbol, i+1)
+        return (string, i+1)
 
-def parse_sexp_cons_until_ket(symbol_list, i, ket):
-    symbol = symbol_list[i]
-    if symbol == ket:
+def parse_sexp_cons_until_ket(string_vect, i, ket):
+    string = string_vect[i]
+    if string == ket:
         return (null, i+1)
     else:
-        s, i1 = parse_sexp(symbol_list, i)
+        s, i1 = parse_sexp(string_vect, i)
         s_cons, i2 = \
-            parse_sexp_cons_until_ket(symbol_list, i1, ket)
+            parse_sexp_cons_until_ket(string_vect, i1, ket)
         return (cons(s, s_cons), i2)
 
 def write(x):
@@ -402,57 +403,81 @@ def write_sexp_cons(s_cons):
         write (" ")
         write_sexp_cons(cdr(s_cons))
 
-def list_to_stack(l):
+def list_length(l):
+    if null_p(l):
+        return 0
+    else:
+        return list_length(cdr(l)) + 1
+
+def list_ref(l, i):
+    if null_p(l):
+        print ("- list_ref fail")
+        print ("  index greater then length of list")
+    elif i == 0:
+        return car(l)
+    else:
+        return list_ref(cdr(l), i-1)
+
+def list_append(ante, succ):
+    if null_p(ante):
+        return succ
+    else:
+        return cons(car(ante),
+                    list_append(cdr (ante), succ))
+
+def tail_cons(ante, value):
+    return list_append(ante, cons(value, null))
+
+def list_to_vect(l):
     stack = []
     while not null_p(l):
         stack.append(car(l))
         l = cdr(l)
     return stack
 
-def get_jojo_name_list(sexp_list):
-    jojo_name_list = []
-    for sexp in sexp_list:
+def get_jojo_name_vect(sexp_vect):
+    jojo_name_vect = []
+    for sexp in sexp_vect:
         if not cons_p(sexp):
             pass
         elif car(sexp) == '+jojo':
             body = cdr(sexp)
             jojo_name = car(body)
-            jojo_name_list.append(jojo_name)
-    return jojo_name_list
+            jojo_name_vect.append(jojo_name)
+    return jojo_name_vect
 
-def get_macro_name_list(sexp_list):
-    macro_name_list = []
-    for sexp in sexp_list:
+def get_macro_name_vect(sexp_vect):
+    macro_name_vect = []
+    for sexp in sexp_vect:
         if not cons_p(sexp):
             pass
         elif car(sexp) == '+macro':
             body = cdr(sexp)
             macro_name = car(body)
-            macro_name_list.append(macro_name)
-    return macro_name_list
+            macro_name_vect.append(macro_name)
+    return macro_name_vect
 
-def compile_module(module_name, sexp_list):
+def compile_module(module_name, sexp_vect):
     module = types.ModuleType(module_name)
-    setattr(module, 'jojo_name_list',
-            get_jojo_name_list(sexp_list))
-    setattr(module, 'macro_name_list',
-            get_macro_name_list(sexp_list))
+    setattr(module, 'jojo_name_vect',
+            get_jojo_name_vect(sexp_vect))
+    setattr(module, 'macro_name_vect',
+            get_macro_name_vect(sexp_vect))
     setattr(module, 'imported_module_dict', {})
-    for sexp in sexp_list:
+    for sexp in sexp_vect:
         if cons_p(sexp):
             top_level_keyword = car(sexp)
             fun = top_level_keyword_dict[top_level_keyword]
             fun(module, cdr(sexp))
     return module
 
-def compile_jo_list(module, body):
-    jo_list = []
-    sexp_list = body
-    while not null_p(sexp_list):
-        sexp = car(sexp_list)
-        jo_list.extend(sexp_emit(module, sexp))
-        sexp_list = cdr(sexp_list)
-    return jo_list
+def sexp_vect_emit(module, sexp_vect):
+    jo_vect = []
+    while not null_p(sexp_vect):
+        sexp = car(sexp_vect)
+        jo_vect.extend(sexp_emit(module, sexp))
+        sexp_vect = cdr(sexp_vect)
+    return jo_vect
 
 def sexp_emit(module, sexp):
     if null_p(sexp):
@@ -460,7 +485,7 @@ def sexp_emit(module, sexp):
     elif cons_p(sexp):
         return cons_emit(module, sexp)
     else:
-        return symbol_emit(module, sexp)
+        return string_emit(module, sexp)
 
 def null_emit(module, sexp):
     return [null]
@@ -472,9 +497,9 @@ def cons_emit(module, cons):
         fun = keyword_dict[keyword]
         return fun(module, cdr(cons))
 
-    macro_name_list = getattr(module, "macro_name_list")
+    macro_name_vect = getattr(module, "macro_name_vect")
 
-    if keyword in macro_name_list:
+    if keyword in macro_name_vect:
         if not hasattr(module, keyword):
             print ("- cons_emit fail")
             print ("  must define a macro before using it")
@@ -493,87 +518,87 @@ def cons_emit(module, cons):
         print("  meet unknown keyword : {}".format(keyword))
         return
 
-def symbol_emit(module, symbol):
+def string_emit(module, string):
 
-    if int_symbol_p(symbol):
-        return [int(symbol)]
+    if int_string_p(string):
+        return [int(string)]
 
-    if string_symbol_p(symbol):
-        string = symbol[1:len(symbol)-1]
+    if doublequoted_string_p(string):
+        string = string[1:len(string)-1]
         return [string]
 
-    if local_symbol_p(symbol):
-        return [GET(symbol)]
-    if set_local_symbol_p(symbol):
-        symbol = symbol[:len(symbol)-1]
-        return [SET(symbol)]
+    if local_string_p(string):
+        return [GET(string)]
+    if set_local_string_p(string):
+        string = string[:len(string)-1]
+        return [SET(string)]
 
-    if message_symbol_p(symbol):
-        symbol = symbol[1:len(symbol)]
-        return [MSG(symbol)]
+    if message_string_p(string):
+        string = string[1:len(string)]
+        return [MSG(string)]
 
-    if symbol == 'apply':
+    if string == 'apply':
         return [APPLY]
-    if symbol == 'ifte':
+    if string == 'ifte':
         return [IFTE]
-    if symbol == 'new':
+    if string == 'new':
         return [NEW]
 
-    jojo_name_list = getattr(module, 'jojo_name_list')
-    if symbol in jojo_name_list:
-        return [CALL(module, symbol)]
+    jojo_name_vect = getattr(module, 'jojo_name_vect')
+    if string in jojo_name_vect:
+        return [CALL(module, string)]
 
     imported_module_dict = getattr(module, 'imported_module_dict')
-    if symbol in imported_module_dict.keys():
-        imported_module = imported_module_dict[symbol]
+    if string in imported_module_dict.keys():
+        imported_module = imported_module_dict[string]
         return [imported_module]
 
-    if symbol in prim_dict.keys():
-        return [prim_dict[symbol]]
+    if string in prim_dict.keys():
+        return [prim_dict[string]]
 
-    print ("- symbol_emit fail")
-    print ("  meet undefined symbol : {}".format(symbol))
+    print ("- string_emit fail")
+    print ("  meet undefined string : {}".format(string))
 
-def int_symbol_p(symbol):
+def int_string_p(string):
     p = re.compile(r"-?[0-9]+\Z")
-    if p.match(symbol):
+    if p.match(string):
         return True
     else:
         return False
 
-def string_symbol_p(symbol):
-    if len(symbol) <= 2:
+def doublequoted_string_p(string):
+    if len(string) <= 2:
         return False
-    elif symbol[0] != '"':
+    elif string[0] != '"':
         return False
-    elif symbol[len(symbol)-1] != '"':
-        return False
-    else:
-        return True
-
-def local_symbol_p(symbol):
-    if len(symbol) <= 1:
-        return False
-    if symbol[0] != ':':
-        return False
-    if symbol[len(symbol)-1] == '!':
+    elif string[len(string)-1] != '"':
         return False
     else:
         return True
 
-def set_local_symbol_p(symbol):
-    if len(symbol) <= 2:
+def local_string_p(string):
+    if len(string) <= 1:
         return False
-    if symbol[0] != ':':
+    if string[0] != ':':
         return False
-    if symbol[len(symbol)-1] != '!':
+    if string[len(string)-1] == '!':
         return False
     else:
         return True
 
-def message_symbol_p(symbol):
+def set_local_string_p(string):
+    if len(string) <= 2:
+        return False
+    if string[0] != ':':
+        return False
+    if string[len(string)-1] != '!':
+        return False
+    else:
+        return True
+
+def message_string_p(string):
     p = re.compile(r"\.\S+\Z")
-    if p.match(symbol):
+    if p.match(string):
         return True
     else:
         return False
@@ -596,12 +621,12 @@ def k_import(module, body):
 @top_level_keyword("+jojo")
 def plus_jojo(module, body):
     jojo_name = car(body)
-    setattr(module, jojo_name, JOJO(compile_jo_list(module, cdr(body))))
+    setattr(module, jojo_name, JOJO(sexp_vect_emit(module, cdr(body))))
 
 @top_level_keyword("+macro")
 def plus_macro(module, body):
     jojo_name = car(body)
-    setattr(module, jojo_name, MACRO(compile_jo_list(module, cdr(body))))
+    setattr(module, jojo_name, MACRO(sexp_vect_emit(module, cdr(body))))
 
 @top_level_keyword("note")
 def top_level_note(module, body):
@@ -617,22 +642,26 @@ def keyword(name):
 
 @keyword('begin')
 def k_begin(module, body):
-    return compile_jo_list(module, body)
+    return sexp_vect_emit(module, body)
 
 @keyword('clo')
 def k_clo(module, body):
-    return [CLO(compile_jo_list(module, body))]
+    return [CLO(sexp_vect_emit(module, body))]
 
 @keyword('if')
 def k_if(module, body):
-    jo_list = compile_jo_list(module, body)
-    jo_list.append(IFTE)
-    return jo_list
+    jo_vect = sexp_vect_emit(module, body)
+    jo_vect.append(IFTE)
+    return jo_vect
 
 @keyword('quote')
 def k_quote(module, body):
-    jo_list = list_to_stack(body)
-    return jo_list
+    jo_vect = list_to_vect(body)
+    return jo_vect
+
+@keyword('cond')
+def k_cond(module, body):
+    pass
 
 prim_dict = {}
 
@@ -701,6 +730,14 @@ prim('list?')(list_p)
 prim('car')(car)
 prim('cdr')(cdr)
 
+prim('sexp-write')(write_sexp)
+prim('sexp-list-write')(write_sexp_cons)
+
+prim('list-length')(list_length)
+prim('list-ref')(list_ref)
+prim('list-append')(list_append)
+prim('tail-cons')(tail_cons)
+
 
 
 def create_module(name, path):
@@ -720,8 +757,8 @@ def create_module(name, path):
 
     with open(path, "r") as f:
         code = f.read()
-        sexp_list = parse_sexp_list(scan_symble_list(code))
-        module = compile_module(name, sexp_list)
+        sexp_vect = parse_sexp_vect(scan_string_vect(code))
+        module = compile_module(name, sexp_vect)
 
     module.__file__ = path
 
