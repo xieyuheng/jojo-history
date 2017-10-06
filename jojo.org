@@ -5,7 +5,7 @@
 
 *** re-factor
 
-    - turn big dispatching in string_emit into dict search
+    - turn big dispatching in string_emit into key_jo_dict
 
 *** tuple
 
@@ -14,7 +14,6 @@
 
 *** macro
 
-    - (list)
     - (dict)
     - (vect)
     - (stack)
@@ -215,7 +214,7 @@
 
 *** exe_fun
 
-***** [note]
+***** [note] python funtion arguments
 
       - normal arguments are called positional arguments.
 
@@ -781,35 +780,51 @@
             write_sexp_cons(cdr(s_cons))
     #+end_src
 
+* [note] syntax
+
+*** top level
+
+    - (+jojo)
+    - (+macro)
+    - (+data) ><
+    - (+class) ><
+    - (+message) ><
+
+*** control
+
+    - (begin)
+    - (clo)
+    - (if)
+    - (cond)
+    - (case) ><
+
+*** sexp quote
+
+    - (quote)
+    - (partquote (@))
+
+*** data
+
+    - (list)
+    - (dict) ><
+    - (vect) ><
+    - (stack) ><
+    - (tuple) ><
+    - (set) ><
+
+*** key jo
+
+    - apply
+    - ifte
+    - new
+
+*** jo pattern
+
+    - :local
+    - :local!
+    - .message
+
 * compile_module
-
-*** [note] syntax
-
-    - top level :
-      - (+jojo)
-      - (+macro)
-      - (+data) ><
-
-    - in jojo :
-      - (begin)
-      - (clo)
-
-      - (quote)
-      - (partquote (@))
-
-      - (if)
-      - (cond)
-      - (case) ><
-
-    - key jo :
-      - apply
-      - ifte
-      - new
-
-    - jo pattern :
-      - :local
-      - :local!
-      - .message
 
 *** get_jojo_name_vect
 
@@ -1256,7 +1271,7 @@
 
 * top_level_keyword_dict
 
-*** [note]
+*** [note] type
 
     - top_level_keyword : (-> module, body -- [effect module])
 
@@ -1315,7 +1330,7 @@
 
 * keyword_dict
 
-*** [note]
+*** [note] type
 
     - keyword : (-> module, body -- jo vect)
 
@@ -1417,9 +1432,21 @@
         return jo_vect
     #+end_src
 
+*** (list)
+
+    #+begin_src python
+    @keyword('list')
+    def k_list(module, sexp_list):
+        jo_vect = []
+        jo_vect.extend([MARK])
+        jo_vect.extend(sexp_list_emit(module, sexp_list))
+        jo_vect.extend([COLLECT_VECT, vect_to_list])
+        return jo_vect
+    #+end_src
+
 * macro_dict
 
-*** [note]
+*** [note] type
 
     - macro : (-> body -- sexp)
       where body is sexp_list

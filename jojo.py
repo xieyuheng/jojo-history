@@ -877,6 +877,14 @@ def k_arrow(module, sexp_list):
     jo_vect.reverse()
     return jo_vect
 
+@keyword('list')
+def k_list(module, sexp_list):
+    jo_vect = []
+    jo_vect.extend([MARK])
+    jo_vect.extend(sexp_list_emit(module, sexp_list))
+    jo_vect.extend([COLLECT_VECT, vect_to_list])
+    return jo_vect
+
 macro_dict = {}
 
 def macro(name):
