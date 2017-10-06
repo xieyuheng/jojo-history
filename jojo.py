@@ -1,7 +1,6 @@
 import inspect
 import types
 import importlib
-import re
 import sys
 import os
 
@@ -562,11 +561,16 @@ def string_emit(module, string):
     print ("  meet undefined string : {}".format(string))
 
 def int_string_p(string):
-    p = re.compile(r"-?[0-9]+\Z")
-    if p.match(string):
-        return True
-    else:
+    length = len(string)
+    if length == 0:
         return False
+    elif string[0] == '-':
+        return nat_string_p(string[1:length-1])
+    else:
+        return nat_string_p(string)
+
+def nat_string_p(string):
+    return string.isdecimal()
 
 def doublequoted_string_p(string):
     if len(string) <= 2:
@@ -581,9 +585,9 @@ def doublequoted_string_p(string):
 def local_string_p(string):
     if len(string) <= 1:
         return False
-    if string[0] != ':':
+    elif string[0] != ':':
         return False
-    if string[len(string)-1] == '!':
+    elif string[len(string)-1] == '!':
         return False
     else:
         return True
@@ -591,19 +595,20 @@ def local_string_p(string):
 def set_local_string_p(string):
     if len(string) <= 2:
         return False
-    if string[0] != ':':
+    elif string[0] != ':':
         return False
-    if string[len(string)-1] != '!':
+    elif string[len(string)-1] != '!':
         return False
     else:
         return True
 
 def message_string_p(string):
-    p = re.compile(r"\.\S+\Z")
-    if p.match(string):
-        return True
-    else:
+    if len(string) <= 1:
         return False
+    elif string[0] != '.':
+        return False
+    else:
+        return True
 
 top_level_keyword_dict = {}
 

@@ -1,7 +1,6 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
 - error handling
-- stop using 'import re'
 - (cond) in python as keyword
 * [todo-stack]
 
@@ -48,7 +47,6 @@
   import inspect
   import types
   import importlib
-  import re
   import sys
   import os
   #+end_src
@@ -936,11 +934,20 @@
 
       #+begin_src python
       def int_string_p(string):
-          p = re.compile(r"-?[0-9]+\Z")
-          if p.match(string):
-              return True
-          else:
+          length = len(string)
+          if length == 0:
               return False
+          elif string[0] == '-':
+              return nat_string_p(string[1:length-1])
+          else:
+              return nat_string_p(string)
+      #+end_src
+
+***** nat_string_p
+
+      #+begin_src python
+      def nat_string_p(string):
+          return string.isdecimal()
       #+end_src
 
 ***** doublequoted_string_p
@@ -963,9 +970,9 @@
       def local_string_p(string):
           if len(string) <= 1:
               return False
-          if string[0] != ':':
+          elif string[0] != ':':
               return False
-          if string[len(string)-1] == '!':
+          elif string[len(string)-1] == '!':
               return False
           else:
               return True
@@ -977,9 +984,9 @@
       def set_local_string_p(string):
           if len(string) <= 2:
               return False
-          if string[0] != ':':
+          elif string[0] != ':':
               return False
-          if string[len(string)-1] != '!':
+          elif string[len(string)-1] != '!':
               return False
           else:
               return True
@@ -989,11 +996,12 @@
 
       #+begin_src python
       def message_string_p(string):
-          p = re.compile(r"\.\S+\Z")
-          if p.match(string):
-              return True
-          else:
+          if len(string) <= 1:
               return False
+          elif string[0] != '.':
+              return False
+          else:
+              return True
       #+end_src
 
 * top_level_keyword_dict
