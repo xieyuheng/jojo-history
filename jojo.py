@@ -411,6 +411,18 @@ def write_sexp_cons(s_cons):
         write (" ")
         write_sexp_cons(cdr(s_cons))
 
+def vect_p(x):
+    return type(x) == vect
+
+def vect_to_sexp(vect):
+    if vect == []:
+        return null
+    elif not vect_p(vect):
+        return vect
+    else:
+        return cons(vect_to_sexp(vect[0]),
+                    vect_to_sexp(vect[1:]))
+
 def list_length(l):
     if null_p(l):
         return 0
@@ -506,8 +518,12 @@ def cons_emit(module, cons):
         fun = keyword_dict[keyword]
         return fun(module, cdr(cons))
 
-    macro_name_vect = getattr(module, "macro_name_vect")
+    if keyword in macro_dict.keys():
+        fun = macro_dict[keyword]
+        new_sexp = fun(cdr(cons))
+        return sexp_emit(module, new_sexp)
 
+    macro_name_vect = getattr(module, "macro_name_vect")
     if keyword in macro_name_vect:
         if not hasattr(module, keyword):
             print ("- cons_emit fail")
@@ -519,8 +535,8 @@ def cons_emit(module, cons):
             vm = vm([cdr(cons)],
                     [RP(macro)])
             vm = vm.exe()
-            new_cons = vm.ds[0]
-            return cons_emit(module, new_cons)
+            new_sexp = vm.ds[0]
+            return sexp_emit(module, new_sexp)
 
     else:
         print("- cons_emit fail")
@@ -621,66 +637,6 @@ def message_string_p(string):
     else:
         return True
 
-top_level_keyword_dict = {}
-
-def top_level_keyword(name):
-    def decorator(fun):
-        top_level_keyword_dict[name] = fun
-        return fun
-    return decorator
-
-@top_level_keyword("import")
-def k_import(module, body):
-    module_name = car(body)
-    imported_module = importlib.import_module(module_name)
-    imported_module_dict = getattr(module, 'imported_module_dict')
-    imported_module_dict[module_name] = imported_module
-
-@top_level_keyword("+jojo")
-def plus_jojo(module, body):
-    jojo_name = car(body)
-    setattr(module, jojo_name, JOJO(sexp_vect_emit(module, cdr(body))))
-
-@top_level_keyword("+macro")
-def plus_macro(module, body):
-    jojo_name = car(body)
-    setattr(module, jojo_name, MACRO(sexp_vect_emit(module, cdr(body))))
-
-@top_level_keyword("note")
-def top_level_note(module, body):
-    pass
-
-keyword_dict = {}
-
-def keyword(name):
-    def decorator(fun):
-        keyword_dict[name] = fun
-        return fun
-    return decorator
-
-@keyword('begin')
-def k_begin(module, body):
-    return sexp_vect_emit(module, body)
-
-@keyword('clo')
-def k_clo(module, body):
-    return [CLO(sexp_vect_emit(module, body))]
-
-@keyword('if')
-def k_if(module, body):
-    jo_vect = sexp_vect_emit(module, body)
-    jo_vect.append(IFTE)
-    return jo_vect
-
-@keyword('quote')
-def k_quote(module, body):
-    jo_vect = list_to_vect(body)
-    return jo_vect
-
-@keyword('cond')
-def k_cond(module, body):
-    pass
-
 prim_dict = {}
 
 def prim(name):
@@ -757,6 +713,104 @@ prim('list-append')(list_append)
 prim('tail-cons')(tail_cons)
 
 
+
+top_level_keyword_dict = {}
+
+def top_level_keyword(name):
+    def decorator(fun):
+        top_level_keyword_dict[name] = fun
+        return fun
+    return decorator
+
+@top_level_keyword("import")
+def k_import(module, body):
+    module_name = car(body)
+    imported_module = importlib.import_module(module_name)
+    imported_module_dict = getattr(module, 'imported_module_dict')
+    imported_module_dict[module_name] = imported_module
+
+@top_level_keyword("+jojo")
+def plus_jojo(module, body):
+    jojo_name = car(body)
+    setattr(module, jojo_name, JOJO(sexp_vect_emit(module, cdr(body))))
+
+@top_level_keyword("+macro")
+def plus_macro(module, body):
+    jojo_name = car(body)
+    setattr(module, jojo_name, MACRO(sexp_vect_emit(module, cdr(body))))
+
+@top_level_keyword("note")
+def top_level_note(module, body):
+    pass
+
+keyword_dict = {}
+
+def keyword(name):
+    def decorator(fun):
+        keyword_dict[name] = fun
+        return fun
+    return decorator
+
+@keyword('begin')
+def k_begin(module, body):
+    return sexp_vect_emit(module, body)
+
+@keyword('clo')
+def k_clo(module, body):
+    return [CLO(sexp_vect_emit(module, body))]
+
+@keyword('if')
+def k_if(module, body):
+    jo_vect = sexp_vect_emit(module, body)
+    jo_vect.append(IFTE)
+    return jo_vect
+
+@keyword('quote')
+def k_quote(module, body):
+    jo_vect = list_to_vect(body)
+    return jo_vect
+
+macro_dict = {}
+
+def macro(name):
+    def decorator(fun):
+        macro_dict[name] = fun
+        return fun
+    return decorator
+
+@macro('cond')
+def k_cond(body):
+    def recur(rest):
+        if list_length(rest) == 2:
+            q = list_ref(rest, 0)
+            a = list_ref(rest, 1)
+            if q == 'else':
+                return a
+            else:
+                return vect_to_sexp(
+                    ['begin',
+                     q, ['clo', a],
+                     ['clo',
+                      ['quote', body],
+                      'report-cond-mismatch'],
+                     'ifte'])
+        else:
+            q = list_ref(rest, 0)
+            a = list_ref(rest, 1)
+            return vect_to_sexp(
+                ['begin',
+                 q, ['clo', a],
+                 ['clo', recur(cdr(cdr(rest)))],
+                 'ifte'])
+    return recur(body)
+
+@prim('report-cond-mismatch')
+def report_cond_mismatch(body):
+    print ("- cond mismatch")
+    write ("  body : ")
+    write_sexp(body)
+    print ("")
+    raise JOJO_ERROR()
 
 def create_module(name, path):
     path = os.path.abspath(path)

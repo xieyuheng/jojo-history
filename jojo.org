@@ -1,6 +1,6 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-- (cond) in python as keyword
+- do not handle tuple as multiple return values
 * [todo-stack]
 
 *** macro
@@ -699,6 +699,28 @@
             write_sexp_cons(cdr(s_cons))
     #+end_src
 
+* vect
+
+*** vect_p
+
+    #+begin_src python
+    def vect_p(x):
+        return type(x) == vect
+    #+end_src
+
+*** vect_to_sexp
+
+    #+begin_src python
+    def vect_to_sexp(vect):
+        if vect == []:
+            return null
+        elif not vect_p(vect):
+            return vect
+        else:
+            return cons(vect_to_sexp(vect[0]),
+                        vect_to_sexp(vect[1:]))
+    #+end_src
+
 * list
 
 *** list_length
@@ -761,7 +783,7 @@
       - (@)
 
       - (if)
-      - (cond) ><
+      - (cond)
       - (case) ><
 
     - key jo :
@@ -874,8 +896,12 @@
             fun = keyword_dict[keyword]
             return fun(module, cdr(cons))
 
-        macro_name_vect = getattr(module, "macro_name_vect")
+        if keyword in macro_dict.keys():
+            fun = macro_dict[keyword]
+            new_sexp = fun(cdr(cons))
+            return sexp_emit(module, new_sexp)
 
+        macro_name_vect = getattr(module, "macro_name_vect")
         if keyword in macro_name_vect:
             if not hasattr(module, keyword):
                 print ("- cons_emit fail")
@@ -887,8 +913,8 @@
                 vm = vm([cdr(cons)],
                         [RP(macro)])
                 vm = vm.exe()
-                new_cons = vm.ds[0]
-                return cons_emit(module, new_cons)
+                new_sexp = vm.ds[0]
+                return sexp_emit(module, new_sexp)
 
         else:
             print("- cons_emit fail")
@@ -1020,6 +1046,117 @@
               return True
       #+end_src
 
+* prim_dict
+
+*** prim_dict
+
+    #+begin_src python
+    prim_dict = {}
+    #+end_src
+
+*** @prim
+
+    #+begin_src python
+    def prim(name):
+        def decorator(fun):
+            prim_dict[name] = fun
+            return fun
+        return decorator
+    #+end_src
+
+*** stack operation
+
+    #+begin_src python
+    @prim('drop')
+    def drop(a):
+        return ()
+
+    @prim('dup')
+    def dup(a):
+        return (a, a)
+
+    @prim('over')
+    def over(a, b):
+        return (a, b, a)
+
+    @prim('tuck')
+    def tuck(a, b):
+        return (b, a, b)
+
+    @prim('swap')
+    def swap(a, b):
+        return (b, a)
+    #+end_src
+
+*** number
+
+    #+begin_src python
+    @prim('add')
+    def add(a, b):
+        return a + b
+
+    @prim('sub')
+    def sub(a, b):
+        return a - b
+
+    @prim('mul')
+    def mul(a, b):
+        return a * b
+    #+end_src
+
+*** bool
+
+    #+begin_src python
+    @prim('true')
+    def true():
+        return True
+
+    @prim('false')
+    def false():
+        return False
+    #+end_src
+
+*** equivalence
+
+    #+begin_src python
+    @prim('equal?')
+    def equal_p(a, b):
+        return a == b
+
+    @prim('eq?')
+    def eq_p(a, b):
+        return a is b
+    #+end_src
+
+*** list
+
+    #+begin_src python
+    prim('null')(null)
+    prim('null?')(null_p)
+
+    prim('cons')(cons)
+    prim('cons?')(cons_p)
+
+    prim('list?')(list_p)
+
+    prim('car')(car)
+    prim('cdr')(cdr)
+
+    prim('sexp-write')(write_sexp)
+    prim('sexp-list-write')(write_sexp_cons)
+
+    prim('list-length')(list_length)
+    prim('list-ref')(list_ref)
+    prim('list-append')(list_append)
+    prim('tail-cons')(tail_cons)
+    #+end_src
+
+*** >< stack
+
+    #+begin_src python
+
+    #+end_src
+
 * top_level_keyword_dict
 
 *** [note]
@@ -1140,123 +1277,64 @@
 
 *** >< (@)
 
-*** >< (cond)
+* macro_dict
+
+*** [note]
+
+    - macro : (-> body -- sexp)
+
+*** macro_dict
 
     #+begin_src python
-    @keyword('cond')
-    def k_cond(module, body):
-        pass
+    macro_dict = {}
     #+end_src
 
-* prim_dict
-
-*** prim_dict
+*** @macro
 
     #+begin_src python
-    prim_dict = {}
-    #+end_src
-
-*** @prim
-
-    #+begin_src python
-    def prim(name):
+    def macro(name):
         def decorator(fun):
-            prim_dict[name] = fun
+            macro_dict[name] = fun
             return fun
         return decorator
     #+end_src
 
-*** stack operation
+*** (cond)
 
     #+begin_src python
-    @prim('drop')
-    def drop(a):
-        return ()
+    @macro('cond')
+    def k_cond(body):
+        def recur(rest):
+            if list_length(rest) == 2:
+                q = list_ref(rest, 0)
+                a = list_ref(rest, 1)
+                if q == 'else':
+                    return a
+                else:
+                    return vect_to_sexp(
+                        ['begin',
+                         q, ['clo', a],
+                         ['clo',
+                          ['quote', body],
+                          'report-cond-mismatch'],
+                         'ifte'])
+            else:
+                q = list_ref(rest, 0)
+                a = list_ref(rest, 1)
+                return vect_to_sexp(
+                    ['begin',
+                     q, ['clo', a],
+                     ['clo', recur(cdr(cdr(rest)))],
+                     'ifte'])
+        return recur(body)
 
-    @prim('dup')
-    def dup(a):
-        return (a, a)
-
-    @prim('over')
-    def over(a, b):
-        return (a, b, a)
-
-    @prim('tuck')
-    def tuck(a, b):
-        return (b, a, b)
-
-    @prim('swap')
-    def swap(a, b):
-        return (b, a)
-    #+end_src
-
-*** number
-
-    #+begin_src python
-    @prim('add')
-    def add(a, b):
-        return a + b
-
-    @prim('sub')
-    def sub(a, b):
-        return a - b
-
-    @prim('mul')
-    def mul(a, b):
-        return a * b
-    #+end_src
-
-*** bool
-
-    #+begin_src python
-    @prim('true')
-    def true():
-        return True
-
-    @prim('false')
-    def false():
-        return False
-    #+end_src
-
-*** equivalence
-
-    #+begin_src python
-    @prim('equal?')
-    def equal_p(a, b):
-        return a == b
-
-    @prim('eq?')
-    def eq_p(a, b):
-        return a is b
-    #+end_src
-
-*** list
-
-    #+begin_src python
-    prim('null')(null)
-    prim('null?')(null_p)
-
-    prim('cons')(cons)
-    prim('cons?')(cons_p)
-
-    prim('list?')(list_p)
-
-    prim('car')(car)
-    prim('cdr')(cdr)
-
-    prim('sexp-write')(write_sexp)
-    prim('sexp-list-write')(write_sexp_cons)
-
-    prim('list-length')(list_length)
-    prim('list-ref')(list_ref)
-    prim('list-append')(list_append)
-    prim('tail-cons')(tail_cons)
-    #+end_src
-
-*** >< stack
-
-    #+begin_src python
-
+    @prim('report-cond-mismatch')
+    def report_cond_mismatch(body):
+        print ("- cond mismatch")
+        write ("  body : ")
+        write_sexp(body)
+        print ("")
+        raise JOJO_ERROR()
     #+end_src
 
 * create_module
