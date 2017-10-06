@@ -101,7 +101,7 @@ class CLO:
 
 class APPLY:
     @classmethod
-    def jo_exe(cls, rp, vm):
+    def jo_exe(self, rp, vm):
         clo = vm.ds.pop()
         clo.jo_exe(rp, vm)
 
@@ -143,6 +143,24 @@ class CALL:
     def jo_exe(self, rp, vm):
         jo = getattr(self.module, self.name)
         exe_jo(jo, rp, vm)
+
+class MARK:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        vm.ds.append(self)
+
+class COLLECT_VECT:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        vect = []
+        while True:
+            value = vm.ds.pop()
+            if value == MARK:
+                break
+            else:
+                vect.append(value)
+        vect.reverse()
+        vm.ds.append(vect)
 
 def exe(vm):
     while vm.rs != []:
@@ -410,51 +428,6 @@ def write_sexp_cons(s_cons):
         write (" ")
         write_sexp_cons(cdr(s_cons))
 
-def vect_p(x):
-    return type(x) == Vect
-
-def vect_to_sexp(vect):
-    if vect == []:
-        return null
-    elif not vect_p(vect):
-        return vect
-    else:
-        return cons(vect_to_sexp(vect[0]),
-                    vect_to_sexp(vect[1:]))
-
-def list_length(l):
-    if null_p(l):
-        return 0
-    else:
-        return list_length(cdr(l)) + 1
-
-def list_ref(l, i):
-    if null_p(l):
-        print ("- list_ref fail")
-        print ("  index greater then length of list")
-        raise JOJO_ERROR()
-    elif i == 0:
-        return car(l)
-    else:
-        return list_ref(cdr(l), i-1)
-
-def list_append(ante, succ):
-    if null_p(ante):
-        return succ
-    else:
-        return cons(car(ante),
-                    list_append(cdr (ante), succ))
-
-def tail_cons(ante, value):
-    return list_append(ante, cons(value, null))
-
-def list_to_vect(l):
-    stack = []
-    while not null_p(l):
-        stack.append(car(l))
-        l = cdr(l)
-    return stack
-
 def get_jojo_name_vect(sexp_vect):
     jojo_name_vect = []
     for sexp in sexp_vect:
@@ -491,12 +464,12 @@ def compile_module(module_name, sexp_vect):
             fun(module, cdr(sexp))
     return module
 
-def sexp_vect_emit(module, sexp_vect):
+def sexp_list_emit(module, sexp_list):
     jo_vect = []
-    while not null_p(sexp_vect):
-        sexp = car(sexp_vect)
+    while not null_p(sexp_list):
+        sexp = car(sexp_list)
         jo_vect.extend(sexp_emit(module, sexp))
-        sexp_vect = cdr(sexp_vect)
+        sexp_list = cdr(sexp_list)
     return jo_vect
 
 def sexp_emit(module, sexp):
@@ -567,6 +540,10 @@ def string_emit(module, string):
         return [IFTE]
     if string == 'new':
         return [NEW]
+    if string == 'mark':
+        return [MARK]
+    if string == 'collect-vect':
+        return [COLLECT_VECT]
     if string == ',':
         return []
 
@@ -706,12 +683,64 @@ prim('cdr')(cdr)
 prim('sexp-write')(write_sexp)
 prim('sexp-list-write')(write_sexp_cons)
 
-prim('list-length')(list_length)
-prim('list-ref')(list_ref)
-prim('list-append')(list_append)
-prim('tail-cons')(tail_cons)
+@prim('vect?')
+def vect_p(x):
+    return type(x) == Vect
 
+@prim('vect->sexp')
+def vect_to_sexp(vect):
+    if vect == []:
+        return null
+    elif not vect_p(vect):
+        return vect
+    else:
+        return cons(vect_to_sexp(vect[0]),
+                    vect_to_sexp(vect[1:]))
 
+@prim('vect->list')
+def vect_to_list(vect):
+    if vect == []:
+        return null
+    else:
+        return cons(vect[0], vect_to_list(vect[1:]))
+
+@prim('list->vect')
+def list_to_vect(l):
+    vect = []
+    while not null_p(l):
+        vect.append(car(l))
+        l = cdr(l)
+    return vect
+
+@prim('list-length')
+def list_length(l):
+    if null_p(l):
+        return 0
+    else:
+        return list_length(cdr(l)) + 1
+
+@prim('list-ref')
+def list_ref(l, i):
+    if null_p(l):
+        print ("- list_ref fail")
+        print ("  index greater then length of list")
+        raise JOJO_ERROR()
+    elif i == 0:
+        return car(l)
+    else:
+        return list_ref(cdr(l), i-1)
+
+@prim('list-append')
+def list_append(ante, succ):
+    if null_p(ante):
+        return succ
+    else:
+        return cons(car(ante),
+                    list_append(cdr (ante), succ))
+
+@prim('tail-cons')
+def tail_cons(ante, value):
+    return list_append(ante, cons(value, null))
 
 top_level_keyword_dict = {}
 
@@ -731,12 +760,12 @@ def k_import(module, body):
 @top_level_keyword("+jojo")
 def plus_jojo(module, body):
     jojo_name = car(body)
-    setattr(module, jojo_name, JOJO(sexp_vect_emit(module, cdr(body))))
+    setattr(module, jojo_name, JOJO(sexp_list_emit(module, cdr(body))))
 
 @top_level_keyword("+macro")
 def plus_macro(module, body):
     jojo_name = car(body)
-    setattr(module, jojo_name, MACRO(sexp_vect_emit(module, cdr(body))))
+    setattr(module, jojo_name, MACRO(sexp_list_emit(module, cdr(body))))
 
 @top_level_keyword("note")
 def top_level_note(module, body):
@@ -752,15 +781,15 @@ def keyword(name):
 
 @keyword('begin')
 def k_begin(module, body):
-    return sexp_vect_emit(module, body)
+    return sexp_list_emit(module, body)
 
 @keyword('clo')
 def k_clo(module, body):
-    return [CLO(sexp_vect_emit(module, body))]
+    return [CLO(sexp_list_emit(module, body))]
 
 @keyword('if')
 def k_if(module, body):
-    jo_vect = sexp_vect_emit(module, body)
+    jo_vect = sexp_list_emit(module, body)
     jo_vect.append(IFTE)
     return jo_vect
 
@@ -768,6 +797,28 @@ def k_if(module, body):
 def k_quote(module, body):
     jo_vect = list_to_vect(body)
     return jo_vect
+
+@keyword('partquote')
+def k_partquote(module, sexp_list):
+    jo_vect = []
+    while not null_p(sexp_list):
+        sexp = car(sexp_list)
+        jo_vect.extend(k_partquote_one(module, sexp))
+        sexp_list = cdr(sexp_list)
+    return jo_vect
+
+def k_partquote_one(module, sexp):
+    if cons_p(sexp):
+        if car(sexp) == '@':
+            return sexp_list_emit(module, cdr(sexp))
+        else:
+            jo_vect = []
+            jo_vect.extend([MARK])
+            jo_vect.extend(k_partquote(module, sexp))
+            jo_vect.extend([COLLECT_VECT, vect_to_list])
+            return jo_vect
+    else:
+        return [sexp]
 
 macro_dict = {}
 
