@@ -288,12 +288,12 @@ class LIST_SPREAD:
         recur(vm.ds.pop())
 
 class DATA_PRED:
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, data_class):
+        self.data_class = data_class
 
     def jo_exe(self, rp, vm):
         x = vm.ds.pop()
-        vm.ds.append(type(x) == self.data)
+        vm.ds.append(type(x) == self.data_class)
 
 class NEW:
     @classmethod
@@ -872,21 +872,41 @@ def plus_data(module, body):
             string = string[1:len(string)]
             field_name_vect.append(string)
 
-    data = create_data_class(data_name, field_name_vect)
-    data.__module__ = module
+    data_class = create_data_class(data_name, field_name_vect)
+    data_class.__module__ = module
 
     jojo_name_vect = getattr(module, 'jojo_name_vect')
 
     jojo_name_vect.append(data_name)
-    setattr(module, data_name, data)
+    setattr(module, data_name, data_class)
 
     constructor_name = data_name[1:-1]
     jojo_name_vect.append(constructor_name)
-    setattr(module, constructor_name, JOJO([data, NEW]))
+    setattr(module, constructor_name, JOJO([data_class, NEW]))
 
     predicate_name = "".join([constructor_name, "?"])
     jojo_name_vect.append(predicate_name)
-    setattr(module, predicate_name, DATA_PRED(data))
+    setattr(module, predicate_name, DATA_PRED(data_class))
+
+@top_level_keyword("+method")
+def plus_method(module, body):
+    class_name = car(body)
+    method_name = car(cdr(body))
+    body = cdr(cdr(body))
+    jojo = JOJO(sexp_list_emit(module, body))
+    # should not re define method
+    c = getattr(module, class_name)
+    name = method_name[1:]
+    if hasattr(c, name):
+        print ("- (+method) fail")
+        print ("  can not override established method")
+        print ("  class_name : {}".format(class_name))
+        print ("  method_name : {}".format(method_name))
+        write ("  body : ")
+        write_sexp_cons(body)
+        raise JOJO_ERROR()
+    else:
+        setattr(c, name, jojo)
 
 keyword_dict = {}
 

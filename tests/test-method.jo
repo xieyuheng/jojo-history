@@ -1,0 +1,40 @@
+(+data <zull>)
+(+data <zons> .zar .zdr)
+
+(+jojo t1
+  zull
+  1 swap zons
+  2 swap zons
+  3 swap zons
+  :l!
+  :l .zar print nl
+  :l .zdr .zar print nl
+  :l .zdr .zdr .zar print nl)
+
+(+jojo t2
+  <zull> new
+  1 swap <zons> new
+  2 swap <zons> new
+  3 swap <zons> new
+  :l!
+  :l .zar print nl
+  :l .zdr .zar print nl
+  :l .zdr .zdr .zar print nl)
+
+(+jojo t3
+  <zull> new zull? print space
+  zull       zull? print space
+  1          zull? not print space
+  nl
+
+  1 zull <zons> new zons? print space
+  1 zull zons       zons? print space
+  zull              zons? not print space
+  1                 zons? not print space
+  nl)
+
+
+(+method <zull> .w "zull" string-write)
+
+(+jojo t4
+  zull .w)
