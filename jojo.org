@@ -10,13 +10,13 @@
 *** tuple
 
     - do not view tuple result as multiple-return-value
-      only jojo can use multiple-return-value
+      use a interface class for that
 
 *** macro
 
     - (dict)
     - (stack)
-    - (tuple)
+    - (tuple) (*)
     - (set)
 
     - (conditional) in jojo as macro [as a macro system test]
@@ -36,10 +36,6 @@
 
       - import as python
 
-      - code in jojo can be module
-        - setuptools
-          to use dynamiclly generated module
-
 ***** command line
 
 *** prim
@@ -48,11 +44,11 @@
 
 *** docs
 
-***** vm
+    - specify the design of jo in jojo vm
 
-      - specify the design of jo in jojo vm
+    - specify which semantic subset of python is captured by jojo vm
 
-      - specify which semantic subset of python is captured by jojo vm
+    - specify jojo syntax
 
 * prolog
 
@@ -1184,6 +1180,13 @@
     prim('vect?')(vect_p)
     #+end_src
 
+*** vect_copy
+
+    #+begin_src python
+    def vect_copy(vect):
+        return vect[:]
+    #+end_src
+
 *** vect_to_sexp
 
     #+begin_src python
@@ -1517,30 +1520,49 @@
         raise JOJO_ERROR()
     #+end_src
 
-* create_module
+* interface
 
-  #+begin_src python
-  def create_module(name, path):
-      path = os.path.abspath(path)
+*** load
 
-      if not os.path.exists(path):
-          print ("- create_module fail")
-          print ("  path does not exist")
-          print ("  path : {}".format(path))
-          raise JOJO_ERROR()
+    - path is used as module name
 
-      if not os.path.isfile(path):
-          print ("- create_module fail")
-          print ("  path is not file")
-          print ("  path : {}".format(path))
-          raise JOJO_ERROR()
+    #+begin_src python
+    def load(path):
+        path = os.path.abspath(path)
 
-      with open(path, "r") as f:
-          code = f.read()
-          sexp_vect = parse_sexp_vect(scan_string_vect(code))
-          module = compile_module(name, sexp_vect)
+        if not os.path.exists(path):
+            print ("- load fail")
+            print ("  path does not exist")
+            print ("  path : {}".format(path))
+            raise JOJO_ERROR()
 
-      module.__file__ = path
+        if not os.path.isfile(path):
+            print ("- load fail")
+            print ("  path is not file")
+            print ("  path : {}".format(path))
+            raise JOJO_ERROR()
 
-      return module
-  #+end_src
+        with open(path, "r") as f:
+            code = f.read()
+            sexp_vect = parse_sexp_vect(scan_string_vect(code))
+            module = compile_module(path, sexp_vect)
+
+        module.__file__ = path
+
+        return module
+    #+end_src
+
+*** run
+
+    #+begin_src python
+    def run(data_stack, jojo_dict):
+        data_stack = vect_copy(data_stack)
+        for jojo in jojo_dict:
+            run_one(data_stack, jojo)
+        return data_stack
+
+    def run_one(data_stack, jojo):
+        vm = VM(data_stack,
+                [RP(jojo)])
+        vm = vm.exe()
+    #+end_src

@@ -727,6 +727,9 @@ prim('sexp-list-write')(write_sexp_cons)
 
 prim('vect?')(vect_p)
 
+def vect_copy(vect):
+    return vect[:]
+
 @prim('vect->sexp')
 def vect_to_sexp(vect):
     if vect == []:
@@ -935,17 +938,17 @@ def report_cond_mismatch(body):
     print ("")
     raise JOJO_ERROR()
 
-def create_module(name, path):
+def load(path):
     path = os.path.abspath(path)
 
     if not os.path.exists(path):
-        print ("- create_module fail")
+        print ("- load fail")
         print ("  path does not exist")
         print ("  path : {}".format(path))
         raise JOJO_ERROR()
 
     if not os.path.isfile(path):
-        print ("- create_module fail")
+        print ("- load fail")
         print ("  path is not file")
         print ("  path : {}".format(path))
         raise JOJO_ERROR()
@@ -953,8 +956,19 @@ def create_module(name, path):
     with open(path, "r") as f:
         code = f.read()
         sexp_vect = parse_sexp_vect(scan_string_vect(code))
-        module = compile_module(name, sexp_vect)
+        module = compile_module(path, sexp_vect)
 
     module.__file__ = path
 
     return module
+
+def run(data_stack, jojo_dict):
+    data_stack = vect_copy(data_stack)
+    for jojo in jojo_dict:
+        run_one(data_stack, jojo)
+    return data_stack
+
+def run_one(data_stack, jojo):
+    vm = VM(data_stack,
+            [RP(jojo)])
+    vm = vm.exe()
