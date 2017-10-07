@@ -65,8 +65,6 @@ def push_result_to_vm(result, vm):
 def exe(vm):
     while vm.rs != []:
         exe_one_step(vm)
-        print (vm.ds)
-    print ("- exe end")
     return vm
 
 def exe_one_step(vm):

@@ -15,7 +15,6 @@
 *** macro
 
     - (dict)
-    - (stack)
     - (tuple) (*)
     - (set)
 
@@ -30,13 +29,9 @@
 
     - (case)
 
-*** interface
+*** module interface
 
-***** module
-
-      - import as python
-
-***** command line
+    - import as python
 
 *** prim
 
@@ -172,8 +167,6 @@
     def exe(vm):
         while vm.rs != []:
             exe_one_step(vm)
-            print (vm.ds)
-        print ("- exe end")
         return vm
     #+end_src
 
@@ -802,9 +795,8 @@
 *** data
 
     - (list)
+    - (vect)
     - (dict) ><
-    - (vect) ><
-    - (stack) ><
     - (tuple) ><
     - (set) ><
 
@@ -1520,7 +1512,7 @@
         raise JOJO_ERROR()
     #+end_src
 
-* interface
+* epilog -- interface
 
 *** load
 
