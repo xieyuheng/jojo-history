@@ -171,22 +171,6 @@ def get_default_arg_dict(parameters):
             default_dict[v.name] = v.default
     return default_dict
 
-class GET:
-    def __init__(self, name):
-        self.name = name
-
-    def jo_exe(self, rp, vm):
-        value = rp.lr[self.name]
-        vm.ds.append(value)
-
-class SET:
-    def __init__(self, name):
-        self.name = name
-
-    def jo_exe(self, rp, vm):
-        value = vm.ds.pop()
-        rp.lr[self.name] = value
-
 class JOJO:
     def __init__(self, body):
         self.length = len(body)
@@ -231,25 +215,6 @@ class IFTE:
         else:
             vm.rs.append(RP(clo2))
 
-class MSG:
-    def __init__(self, message):
-        self.message = message
-
-    def jo_exe(self, rp, vm):
-        o = vm.ds.pop()
-        fun = getattr(o, self.message)
-        exe_jo(fun, rp, vm)
-
-class NEW:
-    @classmethod
-    def jo_exe(self, rp, vm):
-        c = vm.ds.pop()
-        if not class_p(c):
-            print ("- NEW.jo_exe fail")
-            print ("  argument is not a class : {}".format(c))
-            raise JOJO_ERROR()
-        exe_fun(c, vm)
-
 class CALL:
     def __init__(self, module, name):
         self.module = module
@@ -258,6 +223,22 @@ class CALL:
     def jo_exe(self, rp, vm):
         jo = getattr(self.module, self.name)
         exe_jo(jo, rp, vm)
+
+class GET:
+    def __init__(self, name):
+        self.name = name
+
+    def jo_exe(self, rp, vm):
+        value = rp.lr[self.name]
+        vm.ds.append(value)
+
+class SET:
+    def __init__(self, name):
+        self.name = name
+
+    def jo_exe(self, rp, vm):
+        value = vm.ds.pop()
+        rp.lr[self.name] = value
 
 class MARK:
     @classmethod
@@ -305,6 +286,67 @@ class LIST_SPREAD:
                 vm.ds.append(car(l))
                 recur(cdr(l))
         recur(vm.ds.pop())
+
+class DATA:
+    def __init__(self, data_name, field_name_vect):
+        self.data_name = data_name
+        self.field_name_vect = field_name_vect
+        constructor_name = data_name[1:-1]
+        self.constructor_name = constructor_name
+
+class NEW_DATA:
+    def __init__(self, data):
+        self.data = data
+        self.field_name_vect = data.field_name_vect
+        rev = vect_copy(data.field_name_vect)
+        rev.reverse()
+        self.reversed_field_name_vect = rev
+
+    def jo_exe(self, rp, vm):
+        data_dict = { '_data_': self.data }
+        for field_name in self.reversed_field_name_vect:
+            data_dict[field_name] = vm.ds.pop()
+        data_instance = DATA_INSTANCE(data_dict)
+        vm.ds.append(data_instance)
+
+
+class DATA_INSTANCE:
+    def __init__(self, kwargs):
+        self.__dict__.update(kwargs)
+
+class DATA_PRED:
+    def __init__(self, data):
+        self.data = data
+
+    def jo_exe(self, rp, vm):
+        x = vm.ds.pop()
+        if type(x) != DATA_INSTANCE:
+            vm.ds.append(False)
+        else:
+            vm.ds.append(x._data_ == self.data)
+
+class NEW:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        x = vm.ds.pop()
+        if type(x) == DATA:
+            jo = NEW_DATA(x)
+            exe_jo(jo, rp, vm)
+        elif not class_p(x):
+            print ("- NEW.jo_exe fail")
+            print ("  argument is not a class : {}".format(x))
+            raise JOJO_ERROR()
+        else:
+            exe_fun(x, vm)
+
+class MSG:
+    def __init__(self, message):
+        self.message = message
+
+    def jo_exe(self, rp, vm):
+        o = vm.ds.pop()
+        fun = getattr(o, self.message)
+        exe_jo(fun, rp, vm)
 
 def scan_string_vect(string):
     string_vect = []
@@ -461,34 +503,23 @@ def write_sexp_cons(s_cons):
         write (" ")
         write_sexp_cons(cdr(s_cons))
 
-def get_jojo_name_vect(sexp_vect):
-    jojo_name_vect = []
+def filter_name_vect(keyword, sexp_vect):
+    name_vect = []
     for sexp in sexp_vect:
         if not cons_p(sexp):
             pass
-        elif car(sexp) == '+jojo':
+        elif car(sexp) == keyword:
             body = cdr(sexp)
-            jojo_name = car(body)
-            jojo_name_vect.append(jojo_name)
-    return jojo_name_vect
-
-def get_macro_name_vect(sexp_vect):
-    macro_name_vect = []
-    for sexp in sexp_vect:
-        if not cons_p(sexp):
-            pass
-        elif car(sexp) == '+macro':
-            body = cdr(sexp)
-            macro_name = car(body)
-            macro_name_vect.append(macro_name)
-    return macro_name_vect
+            name = car(body)
+            name_vect.append(name)
+    return name_vect
 
 def compile_module(module_name, sexp_vect):
     module = types.ModuleType(module_name)
     setattr(module, 'jojo_name_vect',
-            get_jojo_name_vect(sexp_vect))
+            filter_name_vect('+jojo', sexp_vect))
     setattr(module, 'macro_name_vect',
-            get_macro_name_vect(sexp_vect))
+            filter_name_vect('+macro', sexp_vect))
     setattr(module, 'imported_module_dict', {})
     for sexp in sexp_vect:
         if cons_p(sexp):
@@ -528,7 +559,7 @@ def cons_emit(module, cons):
         new_sexp = fun(cdr(cons))
         return sexp_emit(module, new_sexp)
 
-    macro_name_vect = getattr(module, "macro_name_vect")
+    macro_name_vect = getattr(module, 'macro_name_vect')
     if keyword in macro_name_vect:
         if not hasattr(module, keyword):
             print ("- cons_emit fail")
@@ -693,6 +724,10 @@ def sub(a, b):
 def mul(a, b):
     return a * b
 
+@prim('int-write')
+def int_write(i):
+    write(i)
+
 @prim('true')
 def true():
     return True
@@ -700,6 +735,10 @@ def true():
 @prim('false')
 def false():
     return False
+
+@prim('not')
+def p_not(b):
+    return not b
 
 @prim('equal?')
 def equal_p(a, b):
@@ -722,6 +761,10 @@ prim('cdr')(cdr)
 
 prim('sexp-write')(write_sexp)
 prim('sexp-list-write')(write_sexp_cons)
+
+@prim('string-write')
+def string_write(string):
+    write(string)
 
 prim('vect?')(vect_p)
 
@@ -783,6 +826,18 @@ def list_append(ante, succ):
 def tail_cons(ante, value):
     return list_append(ante, cons(value, null))
 
+prim('print')(write)
+
+@prim('newline')
+def newline():
+    print ("")
+
+prim('nl')(newline)
+
+@prim('space')
+def newline():
+    write(" ")
+
 top_level_keyword_dict = {}
 
 def top_level_keyword(name):
@@ -790,6 +845,10 @@ def top_level_keyword(name):
         top_level_keyword_dict[name] = fun
         return fun
     return decorator
+
+@top_level_keyword("note")
+def top_level_note(module, body):
+    pass
 
 @top_level_keyword("import")
 def k_import(module, body):
@@ -801,16 +860,37 @@ def k_import(module, body):
 @top_level_keyword("+jojo")
 def plus_jojo(module, body):
     jojo_name = car(body)
-    setattr(module, jojo_name, JOJO(sexp_list_emit(module, cdr(body))))
+    setattr(module, jojo_name,
+            JOJO(sexp_list_emit(module, cdr(body))))
 
 @top_level_keyword("+macro")
 def plus_macro(module, body):
     jojo_name = car(body)
-    setattr(module, jojo_name, MACRO(sexp_list_emit(module, cdr(body))))
+    setattr(module, jojo_name,
+            MACRO(sexp_list_emit(module, cdr(body))))
 
-@top_level_keyword("note")
-def top_level_note(module, body):
-    pass
+@top_level_keyword("+data")
+def plus_data(module, body):
+    data_name = car(body)
+    field_name_vect = []
+    for string in list_to_vect(cdr(body)):
+        if message_string_p(string):
+            string = string[1:len(string)]
+            field_name_vect.append(string)
+
+    jojo_name_vect = getattr(module, 'jojo_name_vect')
+
+    data = DATA(data_name, field_name_vect)
+    jojo_name_vect.append(data_name)
+    setattr(module, data_name, data)
+
+    constructor_name = data_name[1:-1]
+    jojo_name_vect.append(constructor_name)
+    setattr(module, constructor_name, NEW_DATA(data))
+
+    predicate_name = "".join([constructor_name, "?"])
+    jojo_name_vect.append(predicate_name)
+    setattr(module, predicate_name, DATA_PRED(data))
 
 keyword_dict = {}
 
