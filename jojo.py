@@ -40,11 +40,11 @@ class JOJO_ERROR(Exception):
     pass
 
 class RP:
-    def __init__(self, fun):
+    def __init__(self, jojo):
         self.cursor = 0
-        self.length = fun.length
-        self.body = fun.body
-        self.lr = fun.lr.copy()
+        self.length = jojo.length
+        self.body = jojo.body
+        self.lr = jojo.lr.copy()
 
 class VM:
     def __init__(self, ds, rs):
@@ -890,11 +890,17 @@ def plus_data(module, body):
 
 @top_level_keyword("+method")
 def plus_method(module, body):
+    if list_length(body) < 2:
+        print ("- (+method) fail")
+        print ("  body must at least contain two string")
+        write ("  body : ")
+        write_sexp_cons(body)
+        raise JOJO_ERROR()
+
     class_name = car(body)
     method_name = car(cdr(body))
-    body = cdr(cdr(body))
-    jojo = JOJO(sexp_list_emit(module, body))
-    # should not re define method
+    rest = cdr(cdr(body))
+    jojo = JOJO(sexp_list_emit(module, rest))
     c = getattr(module, class_name)
     name = method_name[1:]
     if hasattr(c, name):
@@ -902,8 +908,8 @@ def plus_method(module, body):
         print ("  can not override established method")
         print ("  class_name : {}".format(class_name))
         print ("  method_name : {}".format(method_name))
-        write ("  body : ")
-        write_sexp_cons(body)
+        write ("  rest of body : ")
+        write_sexp_cons(rest)
         raise JOJO_ERROR()
     else:
         setattr(c, name, jojo)
