@@ -34,7 +34,14 @@
   nl)
 
 
-(+method <zull> .w "zull" string-write)
+(+method <zull> .w (-> :self --)
+  "zull" string-write)
 
 (+jojo t4
   zull .w)
+
+(note
+  (+method String .ww "StringString" print)
+
+  (+jojo t5
+    "123" .ww))

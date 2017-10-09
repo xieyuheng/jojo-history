@@ -20,6 +20,14 @@ def fun_p(x):
     else:
         return False
 
+def method_p(x):
+    if isinstance(x, types.MethodType):
+        return True
+    elif isinstance(x, types.BuiltinMethodType):
+        return get_signature(x)
+    else:
+        return False
+
 def class_p(x):
     if not inspect.isclass(x):
         return False
@@ -309,8 +317,14 @@ class MSG:
 
     def jo_exe(self, rp, vm):
         o = vm.ds.pop()
-        fun = getattr(o, self.message)
-        exe_jo(fun, rp, vm)
+        v = getattr(o, self.message)
+        if method_p(v):
+            exe_fun(v, vm)
+        elif type(v) == JOJO:
+            vm.ds.append(o)
+            exe_jo(v, rp, vm)
+        else:
+            exe_jo(v, rp, vm)
 
 def scan_string_vect(string):
     string_vect = []
@@ -483,11 +497,17 @@ def jojo_plus(module, name, value):
     jojo_name_vect.append(name)
     setattr(module, name, value)
 
+def merge_prim_dict(module):
+    for name, value in prim_dict.items():
+        jojo_plus(module, name, value)
+
 def compile_module(module_name, sexp_vect):
     module = types.ModuleType(module_name)
 
     setattr(module, 'jojo_name_vect',
             filter_name_vect('+jojo', sexp_vect))
+
+    merge_prim_dict(module)
 
     for sexp in sexp_vect:
         if cons_p(sexp):
@@ -626,9 +646,6 @@ def string_emit(module, string):
     if string in jojo_name_vect:
         return [CALL(module, string)]
 
-    if string in prim_dict.keys():
-        return [prim_dict[string]]
-
     print ("- string_emit fail")
     print ("  meet undefined string : {}".format(string))
     newline()
@@ -711,6 +728,8 @@ prim('cdr')(cdr)
 
 prim('sexp-write')(write_sexp)
 prim('sexp-list-write')(write_sexp_cons)
+
+prim('String')(str)
 
 @prim('string-write')
 def string_write(string):
@@ -944,14 +963,7 @@ def create_data_class(data_name, field_name_vect):
 
 @top_level_keyword("+method")
 def plus_method(module, body):
-    if list_length(body) < 2:
-        print ("- (+method) fail")
-        print ("  body must at least contain two string")
-        write ("  body : ")
-        write_sexp_cons(body)
-        newline()
-        raise JOJO_ERROR()
-
+    plus_method_syntax_check(body)
     class_name = car(body)
     method_name = car(cdr(body))
     rest = cdr(cdr(body))
@@ -969,6 +981,15 @@ def plus_method(module, body):
         raise JOJO_ERROR()
     else:
         setattr(c, name, jojo)
+
+def plus_method_syntax_check(body):
+    if list_length(body) < 2:
+        print ("- (+method) syntax error")
+        print ("  body must at least contain two string")
+        write ("  body : ")
+        write_sexp_cons(body)
+        newline()
+        raise JOJO_ERROR()
 
 keyword_dict = {}
 
