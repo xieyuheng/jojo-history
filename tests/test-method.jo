@@ -49,6 +49,17 @@
   print)
 
 
+
+(+jojo sixsixsix 666)
+
+(+method <zull> .echo (-> :body :self -- 'nop)
+  :body sexp-list-write nl
+  'sixsixsix)
+
+(+jojo t6
+  (zull.echo (echo (echo (echo ...)))) print)
+
+
 (note
   (+method String .ww (-> :self --)
     :self print

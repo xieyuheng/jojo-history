@@ -166,7 +166,9 @@
             self.rs = rs
 
         def exe(self):
-            return exe(self)
+            while self.rs != []:
+                exe_one_step(self)
+            return self
     #+end_src
 
 *** push_result_to_vm
@@ -179,15 +181,6 @@
             pass
         else:
             vm.ds.append(result)
-    #+end_src
-
-*** exe
-
-    #+begin_src python
-    def exe(vm):
-        while vm.rs != []:
-            exe_one_step(vm)
-        return vm
     #+end_src
 
 *** exe_one_step
@@ -946,41 +939,65 @@
 
 *** cons_emit
 
-    #+begin_src python
-    def cons_emit(module, cons):
-        keyword = car(cons)
+***** cons_emit
 
-        if keyword in keyword_dict.keys():
-            fun = keyword_dict[keyword]
-            return fun(module, cdr(cons))
+      #+begin_src python
+      def cons_emit(module, cons):
+          keyword = car(cons)
+          if keyword in keyword_dict.keys():
+              fun = keyword_dict[keyword]
+              return fun(module, cdr(cons))
+          elif keyword in macro_dict.keys():
+              fun = macro_dict[keyword]
+              new_sexp = fun(cdr(cons))
+              return sexp_emit(module, new_sexp)
+          else:
+              vm = VM([cdr(cons)],
+                      [RP(JOJO(string_emit(module, keyword)))])
+              vm = vm.exe()
+              new_sexp = vm.ds[0]
+              return sexp_emit(module, new_sexp)
+      #+end_src
 
-        if keyword in macro_dict.keys():
-            fun = macro_dict[keyword]
-            new_sexp = fun(cdr(cons))
-            return sexp_emit(module, new_sexp)
+***** cons_emit_keyword_find
 
-        jojo_name_vect = getattr(module, 'jojo_name_vect')
-        if keyword in jojo_name_vect:
-            if not hasattr(module, keyword):
-                print ("- cons_emit fail")
-                print ("  must define a jojo before using it as macro")
-                print ("  name : {}".format(keyword))
-                newline()
-                raise JOJO_ERROR()
-            else:
-                jojo = getattr(module, keyword)
-                vm = vm([cdr(cons)],
-                        [RP(jojo)])
-                vm = vm.exe()
-                new_sexp = vm.ds[0]
-                return sexp_emit(module, new_sexp)
+      #+begin_src python
+      # def cons_emit_keyword_find(module, keyword):
+      #     found = jojo_find(module, keyword)
+      #     if found != None:
+      #         return found
+      #     elif name_message_string_p(keyword):
+      #         string_vect = keyword.split('.')
+      #         name_string = string_vect[0]
+      #         found = jojo_find(module, name_string)
+      #         if found == None:
+      #             return None
+      #         else:
+      #             message_string_vect = string_vect[1:]
+      #             i = 0
+      #             m = found
+      #             try:
+      #                 while i < len(message_string_vect):
+      #                     m = getattr(m, message_string_vect[i])
+      #                     i = i + 1
+      #                 return m
+      #             except AttributeError:
+      #                 return None
+      #     else:
+      #         return None
+      #+end_src
 
-        else:
-            print("- cons_emit fail")
-            print("  meet unknown keyword : {}".format(keyword))
-            newline()
-            raise JOJO_ERROR()
-    #+end_src
+***** jojo_find
+
+      #+begin_src python
+      # def jojo_find(module, name):
+      #     jojo_name_vect = getattr(module, 'jojo_name_vect')
+      #     if name in jojo_name_vect:
+      #         if not hasattr(module, name):
+      #             return None
+      #         else:
+      #             return getattr(module, name)
+      #+end_src
 
 *** string_emit
 
@@ -1218,7 +1235,7 @@
           string_vect = string.split('.')
 
           name_string = string_vect[0]
-          jo_vect.append(string_emit(module, name_string))
+          jo_vect.extend(string_emit(module, name_string))
 
           message_string_vect = string_vect[1:]
           for message_string in message_string_vect:
@@ -1725,6 +1742,16 @@
     #+begin_src python
     @top_level_keyword("+jojo")
     def plus_jojo(module, body):
+        if list_length(body) == 0:
+            print ("- (+jojo) syntax error")
+            print ("  body of (+jojo) can not be empty")
+            raise JOJO_ERROR()
+
+        if list_length(body) == 1:
+            print ("- (+jojo) syntax error")
+            print ("  body of (+jojo) can not only contain a name")
+            raise JOJO_ERROR()
+
         jojo_name = car(body)
         setattr(module, jojo_name,
                 JOJO(sexp_list_emit(module, cdr(body))))
