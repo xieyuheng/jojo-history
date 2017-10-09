@@ -1,0 +1,2 @@
+(+jojo even? 2 mod 0 eq?)
+(+jojo odd? even? not)

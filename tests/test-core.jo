@@ -1,0 +1,3 @@
+(+jojo test1
+  4 even? print nl
+  4 odd?  print nl)

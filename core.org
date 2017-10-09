@@ -1,0 +1,11 @@
+#+property: tangle core.jo
+#+title: core
+
+* [todo-stack]
+
+* Int
+
+  #+begin_src jojo
+  (+jojo even? 2 mod 0 eq?)
+  (+jojo odd? even? not)
+  #+end_src

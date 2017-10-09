@@ -3,23 +3,19 @@
 
 * [todo-stack]
 
-*** now now
+*** move recursive functions about vect and list to core.jo
 
-    - core.jo
-      move recursive functions about vect and list to core.jo
+*** do not view tuple result as multiple-return-value
 
-    - do not view tuple result as multiple-return-value
-      use a interface class for that
-
-*** cover python's builtin classes and their methods
-
-    - to be able to (+method) to them
+    - use a interface class for that
 
 *** '.equal?' as method
 
 *** '.w' as method
 
 *** repl
+
+*** unit test
 
 *** python data
 
@@ -35,9 +31,15 @@
 
     - with class methods
 
-*** cover python's builtin functions
+*** cover python
 
-*** cover python's standard libraries
+***** cover python's builtin classes and their methods
+
+      - to be able to (+method) to them
+
+***** cover python's builtin functions
+
+***** cover python's standard libraries
 
 *** docs
 
@@ -887,16 +889,28 @@
             jojo_plus(module, name, value)
     #+end_src
 
-*** compile_module
+*** merge_module
 
     #+begin_src python
-    def compile_module(module_name, sexp_vect):
+    def merge_module(module, merging_module):
+        if merging_module == None:
+            return
+        for name in merging_module.jojo_name_vect:
+            jojo = getattr(merging_module, name)
+            jojo_plus(module, name, jojo)
+    #+end_src
+
+*** merge_compile_module
+
+    #+begin_src python
+    def merge_compile_module(module_name, merging_module, sexp_vect):
         module = types.ModuleType(module_name)
 
         setattr(module, 'jojo_name_vect',
                 filter_name_vect('+jojo', sexp_vect))
 
         merge_prim_dict(module)
+        merge_module(module, merging_module)
 
         for sexp in sexp_vect:
             if cons_p(sexp):
@@ -904,6 +918,13 @@
                 fun = top_level_keyword_dict[top_level_keyword]
                 fun(module, cdr(sexp))
         return module
+    #+end_src
+
+*** compile_module
+
+    #+begin_src python
+    def compile_module(module_name, sexp_vect):
+        return merge_compile_module(module_name, core_module, sexp_vect)
     #+end_src
 
 *** sexp_list_emit
@@ -939,65 +960,23 @@
 
 *** cons_emit
 
-***** cons_emit
-
-      #+begin_src python
-      def cons_emit(module, cons):
-          keyword = car(cons)
-          if keyword in keyword_dict.keys():
-              fun = keyword_dict[keyword]
-              return fun(module, cdr(cons))
-          elif keyword in macro_dict.keys():
-              fun = macro_dict[keyword]
-              new_sexp = fun(cdr(cons))
-              return sexp_emit(module, new_sexp)
-          else:
-              vm = VM([cdr(cons)],
-                      [RP(JOJO(string_emit(module, keyword)))])
-              vm = vm.exe()
-              new_sexp = vm.ds[0]
-              return sexp_emit(module, new_sexp)
-      #+end_src
-
-***** cons_emit_keyword_find
-
-      #+begin_src python
-      # def cons_emit_keyword_find(module, keyword):
-      #     found = jojo_find(module, keyword)
-      #     if found != None:
-      #         return found
-      #     elif name_message_string_p(keyword):
-      #         string_vect = keyword.split('.')
-      #         name_string = string_vect[0]
-      #         found = jojo_find(module, name_string)
-      #         if found == None:
-      #             return None
-      #         else:
-      #             message_string_vect = string_vect[1:]
-      #             i = 0
-      #             m = found
-      #             try:
-      #                 while i < len(message_string_vect):
-      #                     m = getattr(m, message_string_vect[i])
-      #                     i = i + 1
-      #                 return m
-      #             except AttributeError:
-      #                 return None
-      #     else:
-      #         return None
-      #+end_src
-
-***** jojo_find
-
-      #+begin_src python
-      # def jojo_find(module, name):
-      #     jojo_name_vect = getattr(module, 'jojo_name_vect')
-      #     if name in jojo_name_vect:
-      #         if not hasattr(module, name):
-      #             return None
-      #         else:
-      #             return getattr(module, name)
-      #+end_src
+    #+begin_src python
+    def cons_emit(module, cons):
+        keyword = car(cons)
+        if keyword in keyword_dict.keys():
+            fun = keyword_dict[keyword]
+            return fun(module, cdr(cons))
+        elif keyword in macro_dict.keys():
+            fun = macro_dict[keyword]
+            new_sexp = fun(cdr(cons))
+            return sexp_emit(module, new_sexp)
+        else:
+            vm = VM([cdr(cons)],
+                    [RP(JOJO(string_emit(module, keyword)))])
+            vm = vm.exe()
+            new_sexp = vm.ds[0]
+            return sexp_emit(module, new_sexp)
+    #+end_src
 
 *** string_emit
 
@@ -1382,6 +1361,14 @@
     @prim('mul')
     def mul(a, b):
         return a * b
+
+    @prim('div')
+    def div(a, b):
+        return a // b
+
+    @prim('mod')
+    def mod(a, b):
+        return a % b
     #+end_src
 
 *** int_write
@@ -2121,3 +2108,49 @@
                 [RP(jojo)])
         vm = vm.exe()
     #+end_src
+
+*** core_module
+
+***** load_core
+
+      #+begin_src python
+      def load_core(path):
+          path = os.path.abspath(path)
+
+          if not os.path.exists(path):
+              print ("- load_core fail")
+              print ("  path does not exist")
+              print ("  path : {}".format(path))
+              raise JOJO_ERROR()
+
+          if not os.path.isfile(path):
+              print ("- load_core fail")
+              print ("  path is not file")
+              print ("  path : {}".format(path))
+              raise JOJO_ERROR()
+
+          with open(path, "r") as f:
+              code = f.read()
+              sexp_vect = parse_sexp_vect(scan_string_vect(code))
+              module = compile_core_module(path, sexp_vect)
+
+          module.__file__ = path
+
+          return module
+      #+end_src
+
+***** compile_core_module
+
+      #+begin_src python
+      def compile_core_module(module_name, sexp_vect):
+          return merge_compile_module(module_name, None, sexp_vect)
+      #+end_src
+
+***** core_module
+
+      #+begin_src python
+      current_module = sys.modules[__name__]
+      current_module_dir = os.path.dirname(current_module.__file__)
+      core_path = "/".join([current_module_dir, "core.jo"])
+      core_module = load_core(core_path)
+      #+end_src

@@ -498,13 +498,21 @@ def merge_prim_dict(module):
     for name, value in prim_dict.items():
         jojo_plus(module, name, value)
 
-def compile_module(module_name, sexp_vect):
+def merge_module(module, merging_module):
+    if merging_module == None:
+        return
+    for name in merging_module.jojo_name_vect:
+        jojo = getattr(merging_module, name)
+        jojo_plus(module, name, jojo)
+
+def merge_compile_module(module_name, merging_module, sexp_vect):
     module = types.ModuleType(module_name)
 
     setattr(module, 'jojo_name_vect',
             filter_name_vect('+jojo', sexp_vect))
 
     merge_prim_dict(module)
+    merge_module(module, merging_module)
 
     for sexp in sexp_vect:
         if cons_p(sexp):
@@ -512,6 +520,9 @@ def compile_module(module_name, sexp_vect):
             fun = top_level_keyword_dict[top_level_keyword]
             fun(module, cdr(sexp))
     return module
+
+def compile_module(module_name, sexp_vect):
+    return merge_compile_module(module_name, core_module, sexp_vect)
 
 def sexp_list_emit(module, sexp_list):
     jo_vect = []
@@ -547,38 +558,6 @@ def cons_emit(module, cons):
         vm = vm.exe()
         new_sexp = vm.ds[0]
         return sexp_emit(module, new_sexp)
-
-# def cons_emit_keyword_find(module, keyword):
-#     found = jojo_find(module, keyword)
-#     if found != None:
-#         return found
-#     elif name_message_string_p(keyword):
-#         string_vect = keyword.split('.')
-#         name_string = string_vect[0]
-#         found = jojo_find(module, name_string)
-#         if found == None:
-#             return None
-#         else:
-#             message_string_vect = string_vect[1:]
-#             i = 0
-#             m = found
-#             try:
-#                 while i < len(message_string_vect):
-#                     m = getattr(m, message_string_vect[i])
-#                     i = i + 1
-#                 return m
-#             except AttributeError:
-#                 return None
-#     else:
-#         return None
-
-# def jojo_find(module, name):
-#     jojo_name_vect = getattr(module, 'jojo_name_vect')
-#     if name in jojo_name_vect:
-#         if not hasattr(module, name):
-#             return None
-#         else:
-#             return getattr(module, name)
 
 def string_emit(module, string):
     i = 0
@@ -814,6 +793,14 @@ def sub(a, b):
 @prim('mul')
 def mul(a, b):
     return a * b
+
+@prim('div')
+def div(a, b):
+    return a // b
+
+@prim('mod')
+def mod(a, b):
+    return a % b
 
 @prim('int-write')
 def int_write(i):
@@ -1299,3 +1286,35 @@ def run_one(data_stack, jojo):
     vm = VM(data_stack,
             [RP(jojo)])
     vm = vm.exe()
+
+def load_core(path):
+    path = os.path.abspath(path)
+
+    if not os.path.exists(path):
+        print ("- load_core fail")
+        print ("  path does not exist")
+        print ("  path : {}".format(path))
+        raise JOJO_ERROR()
+
+    if not os.path.isfile(path):
+        print ("- load_core fail")
+        print ("  path is not file")
+        print ("  path : {}".format(path))
+        raise JOJO_ERROR()
+
+    with open(path, "r") as f:
+        code = f.read()
+        sexp_vect = parse_sexp_vect(scan_string_vect(code))
+        module = compile_core_module(path, sexp_vect)
+
+    module.__file__ = path
+
+    return module
+
+def compile_core_module(module_name, sexp_vect):
+    return merge_compile_module(module_name, None, sexp_vect)
+
+current_module = sys.modules[__name__]
+current_module_dir = os.path.dirname(current_module.__file__)
+core_path = "/".join([current_module_dir, "core.jo"])
+core_module = load_core(core_path)
