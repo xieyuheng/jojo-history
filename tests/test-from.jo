@@ -1,0 +1,6 @@
+(from os import name)
+(from sys import copyright)
+
+(+jojo main
+  name print nl
+  copyright print)

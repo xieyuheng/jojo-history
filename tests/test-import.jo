@@ -1,0 +1,5 @@
+(import os sys)
+
+(+jojo main
+  os .name print nl
+  sys .copyright print)

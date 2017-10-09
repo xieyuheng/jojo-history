@@ -487,13 +487,19 @@ def filter_name_vect(keyword, sexp_vect):
             name_vect.append(name)
     return name_vect
 
+def jojo_plus(module, name, value):
+    jojo_name_vect = getattr(module, 'jojo_name_vect')
+    jojo_name_vect.append(name)
+    setattr(module, name, value)
+
 def compile_module(module_name, sexp_vect):
     module = types.ModuleType(module_name)
+
     setattr(module, 'jojo_name_vect',
             filter_name_vect('+jojo', sexp_vect))
     setattr(module, 'macro_name_vect',
             filter_name_vect('+macro', sexp_vect))
-    setattr(module, 'imported_module_dict', {})
+
     for sexp in sexp_vect:
         if cons_p(sexp):
             top_level_keyword = car(sexp)
@@ -594,11 +600,6 @@ def string_emit(module, string):
     jojo_name_vect = getattr(module, 'jojo_name_vect')
     if string in jojo_name_vect:
         return [CALL(module, string)]
-
-    imported_module_dict = getattr(module, 'imported_module_dict')
-    if string in imported_module_dict.keys():
-        imported_module = imported_module_dict[string]
-        return [imported_module]
 
     if string in prim_dict.keys():
         return [prim_dict[string]]
@@ -808,7 +809,7 @@ def newline():
 prim('nl')(newline)
 
 @prim('space')
-def newline():
+def space():
     write(" ")
 
 top_level_keyword_dict = {}
@@ -825,10 +826,98 @@ def top_level_note(module, body):
 
 @top_level_keyword("import")
 def k_import(module, body):
+    name_vect = list_to_vect(body)
+    if 'as' in name_vect:
+        k_import_as(module, body)
+        return
+    if null_p(body):
+        return
+    for name in name_vect:
+        if '.' in name:
+            print ("- (import) syntax error")
+            print ("  module name can not contain '.'")
+            print ("  module name : {}".format(name))
+            write ("  import body : ")
+            write_sexp_cons(body)
+            newline()
+            raise JOJO_ERROR()
+    for name in name_vect:
+        k_import_one(module, name)
+
+def k_import_one(module, name):
+    imported_module = importlib.import_module(name)
+    jojo_plus(module, name, imported_module)
+
+def k_import_as(module, body):
+    name_vect = list_to_vect(body)
+    if (len(name_vect) != 3 or
+        name_vect[0] == 'as' or
+        name_vect[1] != 'as' or
+        name_vect[2] == 'as'):
+        print ("- (import) syntax error")
+        print ("  syntax for (import as) should be :")
+        print ("  (import <module-name> as <name>)")
+        write ("  import body : ")
+        write_sexp_cons(body)
+        newline()
+        raise JOJO_ERROR()
+    name = name_vect[0]
+    as_name = name_vect[2]
+    imported_module = importlib.import_module(name)
+    jojo_plus(module, as_name, imported_module)
+
+@top_level_keyword("from")
+def k_from(module, body):
+    vect_body = list_to_vect(body)
+    if 'as' in vect_body:
+        k_from_as(module, body)
+        return
+
+    k_from_syntax_check(body)
     module_name = car(body)
+    name_vect = list_to_vect(cdr(cdr(body)))
     imported_module = importlib.import_module(module_name)
-    imported_module_dict = getattr(module, 'imported_module_dict')
-    imported_module_dict[module_name] = imported_module
+    for name in name_vect:
+        jojo_plus(module, name, getattr(imported_module, name))
+
+def k_from_syntax_check(body):
+    vect_body = list_to_vect(body)
+    if len(vect_body) > 2:
+        pass
+    if vect_body[1] == 'import':
+        return
+    print ("- (from) syntax error")
+    print ("  syntax for (from import) should be :")
+    print ("  (from <module-name> import <name> ...)")
+    write ("  import body : ")
+    write_sexp_cons(body)
+    newline()
+    raise JOJO_ERROR()
+
+def k_from_as(module, body):
+    k_from_as_syntax_check(body)
+    vect_body = list_to_vect(body)
+    module_name = vect_body[0]
+    name = vect_body[2]
+    as_name = vect_body[4]
+    imported_module = importlib.import_module(module_name)
+    jojo_plus(module, as_name, getattr(imported_module, name))
+
+def k_from_as_syntax_check(body):
+    vect_body = list_to_vect(body)
+    if len(vect_body) == 5:
+        pass
+    if vect_body[1] == 'import':
+        pass
+    if vect_body[3] == 'as':
+        return
+    print ("- (from) syntax error")
+    print ("  syntax for (from import as) should be :")
+    print ("  (from <module-name> import <name> as <name>)")
+    write ("  import body : ")
+    write_sexp_cons(body)
+    newline()
+    raise JOJO_ERROR()
 
 @top_level_keyword("+jojo")
 def plus_jojo(module, body):
@@ -841,6 +930,27 @@ def plus_macro(module, body):
     jojo_name = car(body)
     setattr(module, jojo_name,
             MACRO(sexp_list_emit(module, cdr(body))))
+
+@top_level_keyword("+data")
+def plus_data(module, body):
+    data_name = car(body)
+
+    field_name_vect = []
+    for string in list_to_vect(cdr(body)):
+        if message_string_p(string):
+            string = string[1:len(string)]
+            field_name_vect.append(string)
+
+    data_class = create_data_class(data_name, field_name_vect)
+    data_class.__module__ = module
+
+    jojo_plus(module, data_name, data_class)
+
+    constructor_name = data_name[1:-1]
+    jojo_plus(module, constructor_name, JOJO([data_class, NEW]))
+
+    predicate_name = "".join([constructor_name, "?"])
+    jojo_plus(module, predicate_name, DATA_PRED(data_class))
 
 class JOJO_DATA:
     pass
@@ -862,32 +972,6 @@ def create_data_class(data_name, field_name_vect):
         kwds = None,
         exec_body = update_ns)
 
-@top_level_keyword("+data")
-def plus_data(module, body):
-    data_name = car(body)
-
-    field_name_vect = []
-    for string in list_to_vect(cdr(body)):
-        if message_string_p(string):
-            string = string[1:len(string)]
-            field_name_vect.append(string)
-
-    data_class = create_data_class(data_name, field_name_vect)
-    data_class.__module__ = module
-
-    jojo_name_vect = getattr(module, 'jojo_name_vect')
-
-    jojo_name_vect.append(data_name)
-    setattr(module, data_name, data_class)
-
-    constructor_name = data_name[1:-1]
-    jojo_name_vect.append(constructor_name)
-    setattr(module, constructor_name, JOJO([data_class, NEW]))
-
-    predicate_name = "".join([constructor_name, "?"])
-    jojo_name_vect.append(predicate_name)
-    setattr(module, predicate_name, DATA_PRED(data_class))
-
 @top_level_keyword("+method")
 def plus_method(module, body):
     if list_length(body) < 2:
@@ -895,6 +979,7 @@ def plus_method(module, body):
         print ("  body must at least contain two string")
         write ("  body : ")
         write_sexp_cons(body)
+        newline()
         raise JOJO_ERROR()
 
     class_name = car(body)
@@ -910,6 +995,7 @@ def plus_method(module, body):
         print ("  method_name : {}".format(method_name))
         write ("  rest of body : ")
         write_sexp_cons(rest)
+        newline()
         raise JOJO_ERROR()
     else:
         setattr(c, name, jojo)
@@ -1035,7 +1121,7 @@ def report_cond_mismatch(body):
     print ("- cond mismatch")
     write ("  body : ")
     write_sexp(body)
-    print ("")
+    newline()
     raise JOJO_ERROR()
 
 def load(path):
