@@ -615,30 +615,32 @@ string_emitter(int_string_p,
                int_string_emitter)
 
 def doublequoted_string_p(string):
-    if len(string) <= 2:
+    if len(string) < 3:
         return False
     elif string[0] != '"':
         return False
-    elif string[len(string)-1] != '"':
+    elif string[-1] != '"':
         return False
     else:
         return True
 
 def doublequoted_string_emitter(module, string):
-    string = string[1:len(string)-1]
+    string = string[1:-1]
     return [string]
 
 string_emitter(doublequoted_string_p,
                doublequoted_string_emitter)
 
 def local_string_p(string):
-    if len(string) <= 1:
+    if len(string) < 2:
         return False
     elif string.count('.') != 0:
         return False
+    elif string.count(':') != 1:
+        return False
     elif string[0] != ':':
         return False
-    elif string[len(string)-1] == '!':
+    elif string[-1] == '!':
         return False
     else:
         return True
@@ -650,26 +652,26 @@ string_emitter(local_string_p,
                local_string_emitter)
 
 def set_local_string_p(string):
-    if len(string) <= 2:
+    if len(string) < 3:
         return False
     elif string.count('.') != 0:
         return False
     elif string[0] != ':':
         return False
-    elif string[len(string)-1] != '!':
+    elif string[-1] != '!':
         return False
     else:
         return True
 
 def set_local_string_emitter(module, string):
-    string = string[:len(string)-1]
+    string = string[:-1]
     return [SET(string)]
 
 string_emitter(set_local_string_p,
                set_local_string_emitter)
 
 def message_string_p(string):
-    if len(string) <= 1:
+    if len(string) < 2:
         return False
     elif string[0] != '.':
         return False
@@ -679,17 +681,88 @@ def message_string_p(string):
         return True
 
 def message_string_emitter(module, string):
-    string = string[1:len(string)]
+    string = string[1:]
     return [MSG(string)]
 
 string_emitter(message_string_p,
                message_string_emitter)
 
+def name_message_string_p(string):
+    if len(string) < 3: # example : 'n.s'
+        return False
+    elif string[0] == '.':
+        return False
+    elif string.count('.') == 0:
+        return False
+    elif string.count('..') != 0:
+        return False
+    elif string.count(':') != 0:
+        return False
+    elif string[-1] == '.':
+        return False
+    else:
+        return True
 
+def name_message_string_emitter(module, string):
+    jo_vect = []
+    string_vect = string.split('.')
 
+    name_string = string_vect[0]
+    jo_vect.append(string_emit(module, name_string))
 
+    message_string_vect = string_vect[1:]
+    for message_string in message_string_vect:
+        jo_vect.append(MSG(message_string))
 
+    return jo_vect
 
+string_emitter(name_message_string_p,
+               name_message_string_emitter)
+
+def local_message_string_p(string):
+    if len(string) < 4:
+        return False
+    elif string[0] != ':':
+        return False
+    else:
+        return name_message_string_p(string[1:])
+
+def local_message_string_emitter(module, string):
+    jo_vect = []
+    string_vect = string.split('.')
+
+    local_string = string_vect[0]
+    jo_vect.append(GET(local_string))
+
+    message_string_vect = string_vect[1:]
+    for message_string in message_string_vect:
+        jo_vect.append(MSG(message_string))
+
+    return jo_vect
+
+string_emitter(local_message_string_p,
+               local_message_string_emitter)
+
+def message_message_string_p(string):
+    if len(string) < 4:
+        return False
+    elif string[0] != '.':
+        return False
+    else:
+        return name_message_string_p(string[1:])
+
+def message_message_string_emitter(module, string):
+    jo_vect = []
+    string_vect = string.split('.')
+
+    message_string_vect = string_vect[1:]
+    for message_string in message_string_vect:
+        jo_vect.append(MSG(message_string))
+
+    return jo_vect
+
+string_emitter(message_message_string_p,
+               message_message_string_emitter)
 
 prim_dict = {}
 
