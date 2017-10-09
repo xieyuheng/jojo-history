@@ -40,8 +40,16 @@
 (+jojo t4
   zull .w)
 
-(note
-  (+method String .ww "StringString" print)
 
-  (+jojo t5
-    "123" .ww))
+(+jojo t5
+  (vect
+    (vect 1 2 3)
+    (vect 1 2 3)
+    (vect 1 2 3))
+  print)
+
+
+(note
+  (+method String .ww (-> :self --)
+    :self print
+    :self print))

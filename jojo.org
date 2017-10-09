@@ -1,27 +1,19 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-
+- the use of name.message.message and :local.message.message
+- core.jo
+- repl
+- do not view tuple result as multiple-return-value
+  use a interface class for that
 * [todo-stack]
 
-*** the use of name.message.message and :local.message.message
+*** cover python's builtin classes and their methods
 
-*** core.jo
+    - to be able to (+method) to them
 
-*** repl
+*** '.equal?' as method
 
-*** tuple
-
-    - do not view tuple result as multiple-return-value
-      use a interface class for that
-
-*** class
-
-    - (+class)
-
-*** message
-
-    - 'equal?' as message
-    - 'write' & 'w' as message
+*** '.w' as method
 
 *** python data
 
@@ -29,13 +21,17 @@
     - (tuple) (*)
     - (set)
 
-*** macro
+*** (case)
 
-    - (case)
+    - over class and data
 
-*** prim_dict
+*** (+class)
 
-    - cover python's builtin and standard libraries
+    - with class methods
+
+*** cover python's builtin functions
+
+*** cover python's standard libraries
 
 *** docs
 
@@ -831,7 +827,7 @@
     - (clo)
     - (if)
     - (cond)
-    - (case) ><
+    - (case)
 
 *** sexp quote
 
@@ -842,9 +838,9 @@
 
     - (list)
     - (vect)
-    - (dict) ><
-    - (tuple) ><
-    - (set) ><
+    - (dict)
+    - (tuple) (*)
+    - (set)
 
 *** key jo
 
@@ -980,7 +976,48 @@
             raise JOJO_ERROR()
     #+end_src
 
-*** string predicates
+*** string_emit
+
+    #+begin_src python
+    def string_emit(module, string):
+        i = 0
+        while i < len(string_emitter_vect):
+            p = string_emitter_vect[i][0]
+            e = string_emitter_vect[i][1]
+            if p(string):
+                return e(module, string)
+            else:
+                i = i + 1
+
+        if string in key_jo_dict.keys():
+            return key_jo_dict[string]
+
+        jojo_name_vect = getattr(module, 'jojo_name_vect')
+        if string in jojo_name_vect:
+            return [CALL(module, string)]
+
+        print ("- string_emit fail")
+        print ("  meet undefined string : {}".format(string))
+        newline()
+        raise JOJO_ERROR()
+    #+end_src
+
+* string_emitter_vect
+
+*** string_emitter_vect
+
+    #+begin_src python
+    string_emitter_vect = []
+    #+end_src
+
+*** string_emitter
+
+    #+begin_src python
+    def string_emitter(p, emitter):
+        string_emitter_vect.append((p, emitter))
+    #+end_src
+
+*** int_string
 
 ***** int_string_p
 
@@ -1002,6 +1039,22 @@
           return string.isdecimal()
       #+end_src
 
+***** int_string_emitter
+
+      #+begin_src python
+      def int_string_emitter(module, string):
+          return [int(string)]
+      #+end_src
+
+***** record
+
+      #+begin_src python
+      string_emitter(int_string_p,
+                     int_string_emitter)
+      #+end_src
+
+*** doublequoted_string
+
 ***** doublequoted_string_p
 
       #+begin_src python
@@ -1016,11 +1069,30 @@
               return True
       #+end_src
 
+***** doublequoted_string_emitter
+
+      #+begin_src python
+      def doublequoted_string_emitter(module, string):
+          string = string[1:len(string)-1]
+          return [string]
+      #+end_src
+
+***** record
+
+      #+begin_src python
+      string_emitter(doublequoted_string_p,
+                     doublequoted_string_emitter)
+      #+end_src
+
+*** local_string
+
 ***** local_string_p
 
       #+begin_src python
       def local_string_p(string):
           if len(string) <= 1:
+              return False
+          elif string.count('.') != 0:
               return False
           elif string[0] != ':':
               return False
@@ -1030,11 +1102,29 @@
               return True
       #+end_src
 
+***** local_string_emitter
+
+      #+begin_src python
+      def local_string_emitter(module, string):
+          return [GET(string)]
+      #+end_src
+
+***** record
+
+      #+begin_src python
+      string_emitter(local_string_p,
+                     local_string_emitter)
+      #+end_src
+
+*** set_local_string
+
 ***** set_local_string_p
 
       #+begin_src python
       def set_local_string_p(string):
           if len(string) <= 2:
+              return False
+          elif string.count('.') != 0:
               return False
           elif string[0] != ':':
               return False
@@ -1044,6 +1134,23 @@
               return True
       #+end_src
 
+***** set_local_string_emitter
+
+      #+begin_src python
+      def set_local_string_emitter(module, string):
+          string = string[:len(string)-1]
+          return [SET(string)]
+      #+end_src
+
+***** record
+
+      #+begin_src python
+      string_emitter(set_local_string_p,
+                     set_local_string_emitter)
+      #+end_src
+
+*** message_string
+
 ***** message_string_p
 
       #+begin_src python
@@ -1052,45 +1159,50 @@
               return False
           elif string[0] != '.':
               return False
+          elif string.count('.') != 1:
+              return False
           else:
               return True
       #+end_src
 
-*** string_emit
+***** message_string_emitter
 
-    #+begin_src python
-    def string_emit(module, string):
+      #+begin_src python
+      def message_string_emitter(module, string):
+          string = string[1:len(string)]
+          return [MSG(string)]
+      #+end_src
 
-        if int_string_p(string):
-            return [int(string)]
+***** record
 
-        if doublequoted_string_p(string):
-            string = string[1:len(string)-1]
-            return [string]
+      #+begin_src python
+      string_emitter(message_string_p,
+                     message_string_emitter)
+      #+end_src
 
-        if local_string_p(string):
-            return [GET(string)]
+*** >< name_message_string
 
-        if set_local_string_p(string):
-            string = string[:len(string)-1]
-            return [SET(string)]
+***** name_message_string_p
 
-        if message_string_p(string):
-            string = string[1:len(string)]
-            return [MSG(string)]
+      #+begin_src python
 
-        if string in key_jo_dict.keys():
-            return key_jo_dict[string]
+      #+end_src
 
-        jojo_name_vect = getattr(module, 'jojo_name_vect')
-        if string in jojo_name_vect:
-            return [CALL(module, string)]
+*** >< local_message_string
 
-        print ("- string_emit fail")
-        print ("  meet undefined string : {}".format(string))
-        newline()
-        raise JOJO_ERROR()
-    #+end_src
+***** local_message_string_p
+
+      #+begin_src python
+
+      #+end_src
+
+*** >< message_message_string
+
+***** message_message_string_p
+
+      #+begin_src python
+
+      #+end_src
 
 * prim_dict
 

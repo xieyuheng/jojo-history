@@ -569,75 +569,15 @@ def cons_emit(module, cons):
         newline()
         raise JOJO_ERROR()
 
-def int_string_p(string):
-    length = len(string)
-    if length == 0:
-        return False
-    elif string[0] == '-':
-        return nat_string_p(string[1:length-1])
-    else:
-        return nat_string_p(string)
-
-def nat_string_p(string):
-    return string.isdecimal()
-
-def doublequoted_string_p(string):
-    if len(string) <= 2:
-        return False
-    elif string[0] != '"':
-        return False
-    elif string[len(string)-1] != '"':
-        return False
-    else:
-        return True
-
-def local_string_p(string):
-    if len(string) <= 1:
-        return False
-    elif string[0] != ':':
-        return False
-    elif string[len(string)-1] == '!':
-        return False
-    else:
-        return True
-
-def set_local_string_p(string):
-    if len(string) <= 2:
-        return False
-    elif string[0] != ':':
-        return False
-    elif string[len(string)-1] != '!':
-        return False
-    else:
-        return True
-
-def message_string_p(string):
-    if len(string) <= 1:
-        return False
-    elif string[0] != '.':
-        return False
-    else:
-        return True
-
 def string_emit(module, string):
-
-    if int_string_p(string):
-        return [int(string)]
-
-    if doublequoted_string_p(string):
-        string = string[1:len(string)-1]
-        return [string]
-
-    if local_string_p(string):
-        return [GET(string)]
-
-    if set_local_string_p(string):
-        string = string[:len(string)-1]
-        return [SET(string)]
-
-    if message_string_p(string):
-        string = string[1:len(string)]
-        return [MSG(string)]
+    i = 0
+    while i < len(string_emitter_vect):
+        p = string_emitter_vect[i][0]
+        e = string_emitter_vect[i][1]
+        if p(string):
+            return e(module, string)
+        else:
+            i = i + 1
 
     if string in key_jo_dict.keys():
         return key_jo_dict[string]
@@ -650,6 +590,106 @@ def string_emit(module, string):
     print ("  meet undefined string : {}".format(string))
     newline()
     raise JOJO_ERROR()
+
+string_emitter_vect = []
+
+def string_emitter(p, emitter):
+    string_emitter_vect.append((p, emitter))
+
+def int_string_p(string):
+    length = len(string)
+    if length == 0:
+        return False
+    elif string[0] == '-':
+        return nat_string_p(string[1:length-1])
+    else:
+        return nat_string_p(string)
+
+def nat_string_p(string):
+    return string.isdecimal()
+
+def int_string_emitter(module, string):
+    return [int(string)]
+
+string_emitter(int_string_p,
+               int_string_emitter)
+
+def doublequoted_string_p(string):
+    if len(string) <= 2:
+        return False
+    elif string[0] != '"':
+        return False
+    elif string[len(string)-1] != '"':
+        return False
+    else:
+        return True
+
+def doublequoted_string_emitter(module, string):
+    string = string[1:len(string)-1]
+    return [string]
+
+string_emitter(doublequoted_string_p,
+               doublequoted_string_emitter)
+
+def local_string_p(string):
+    if len(string) <= 1:
+        return False
+    elif string.count('.') != 0:
+        return False
+    elif string[0] != ':':
+        return False
+    elif string[len(string)-1] == '!':
+        return False
+    else:
+        return True
+
+def local_string_emitter(module, string):
+    return [GET(string)]
+
+string_emitter(local_string_p,
+               local_string_emitter)
+
+def set_local_string_p(string):
+    if len(string) <= 2:
+        return False
+    elif string.count('.') != 0:
+        return False
+    elif string[0] != ':':
+        return False
+    elif string[len(string)-1] != '!':
+        return False
+    else:
+        return True
+
+def set_local_string_emitter(module, string):
+    string = string[:len(string)-1]
+    return [SET(string)]
+
+string_emitter(set_local_string_p,
+               set_local_string_emitter)
+
+def message_string_p(string):
+    if len(string) <= 1:
+        return False
+    elif string[0] != '.':
+        return False
+    elif string.count('.') != 1:
+        return False
+    else:
+        return True
+
+def message_string_emitter(module, string):
+    string = string[1:len(string)]
+    return [MSG(string)]
+
+string_emitter(message_string_p,
+               message_string_emitter)
+
+
+
+
+
+
 
 prim_dict = {}
 
