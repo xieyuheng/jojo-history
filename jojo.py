@@ -549,56 +549,6 @@ def cons_emit(module, cons):
         newline()
         raise JOJO_ERROR()
 
-def string_emit(module, string):
-
-    if int_string_p(string):
-        return [int(string)]
-
-    if doublequoted_string_p(string):
-        string = string[1:len(string)-1]
-        return [string]
-
-    if local_string_p(string):
-        return [GET(string)]
-    if set_local_string_p(string):
-        string = string[:len(string)-1]
-        return [SET(string)]
-
-    if message_string_p(string):
-        string = string[1:len(string)]
-        return [MSG(string)]
-
-    if string == 'apply':
-        return [APPLY]
-    if string == 'ifte':
-        return [IFTE]
-    if string == 'new':
-        return [NEW]
-    if string == ',':
-        return []
-
-    if string == 'mark':
-        return [MARK]
-    if string == 'collect-vect':
-        return [COLLECT_VECT]
-    if string == 'vect-spread':
-        return [VECT_SPREAD]
-    if string == 'collect-list':
-        return [COLLECT_LIST]
-    if string == 'list-spread':
-        return [LIST_SPREAD]
-
-    jojo_name_vect = getattr(module, 'jojo_name_vect')
-    if string in jojo_name_vect:
-        return [CALL(module, string)]
-
-    if string in prim_dict.keys():
-        return [prim_dict[string]]
-
-    print ("- string_emit fail")
-    print ("  meet undefined string : {}".format(string))
-    raise JOJO_ERROR()
-
 def int_string_p(string):
     length = len(string)
     if length == 0:
@@ -648,6 +598,41 @@ def message_string_p(string):
         return False
     else:
         return True
+
+def string_emit(module, string):
+
+    if int_string_p(string):
+        return [int(string)]
+
+    if doublequoted_string_p(string):
+        string = string[1:len(string)-1]
+        return [string]
+
+    if local_string_p(string):
+        return [GET(string)]
+
+    if set_local_string_p(string):
+        string = string[:len(string)-1]
+        return [SET(string)]
+
+    if message_string_p(string):
+        string = string[1:len(string)]
+        return [MSG(string)]
+
+    if string in key_jo_dict.keys():
+        return key_jo_dict[string]
+
+    jojo_name_vect = getattr(module, 'jojo_name_vect')
+    if string in jojo_name_vect:
+        return [CALL(module, string)]
+
+    if string in prim_dict.keys():
+        return [prim_dict[string]]
+
+    print ("- string_emit fail")
+    print ("  meet undefined string : {}".format(string))
+    newline()
+    raise JOJO_ERROR()
 
 prim_dict = {}
 
@@ -1066,6 +1051,22 @@ def k_vect(module, sexp_list):
     jo_vect.extend(sexp_list_emit(module, sexp_list))
     jo_vect.extend([COLLECT_VECT])
     return jo_vect
+
+key_jo_dict = {}
+
+def key_jo(name, jo_vect):
+    key_jo_dict[name] = jo_vect
+
+key_jo('apply', [APPLY])
+key_jo('ifte', [IFTE])
+key_jo('new', [NEW])
+key_jo(',', [])
+
+key_jo('mark', [MARK])
+key_jo('collect-vect', [COLLECT_VECT])
+key_jo('vect-spread', [VECT_SPREAD])
+key_jo('collect-list', [COLLECT_LIST])
+key_jo('list-spread', [LIST_SPREAD])
 
 macro_dict = {}
 
