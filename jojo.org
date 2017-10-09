@@ -5,18 +5,6 @@
 
 *** the use of name.message.message and :local.message.message
 
-*** specify jojo vm
-
-    - the design of jo in jojo vm
-
-    - which semantic subset of python is captured by jojo vm
-
-*** specify jojo syntax
-
-*** specify compiler
-
-    - the generated python module
-
 *** core.jo
 
 *** repl
@@ -52,6 +40,20 @@
 *** prim_dict
 
     - cover python's builtin and standard libraries
+
+*** docs
+
+***** specify jojo vm
+
+      - the design of jo in jojo vm
+
+      - which semantic subset of python is captured by jojo vm
+
+***** specify jojo syntax
+
+***** specify compiler
+
+      - the generated python module
 
 * prolog
 
@@ -338,19 +340,6 @@
 
       #+begin_src python
       class JOJO:
-          def __init__(self, body):
-              self.length = len(body)
-              self.body = Vect(body)
-              self.lr = {}
-
-          def jo_exe(self, rp, vm):
-              vm.rs.append(RP(self))
-      #+end_src
-
-***** MACRO
-
-      #+begin_src python
-      class MACRO:
           def __init__(self, body):
               self.length = len(body)
               self.body = Vect(body)
@@ -889,8 +878,6 @@
 
         setattr(module, 'jojo_name_vect',
                 filter_name_vect('+jojo', sexp_vect))
-        setattr(module, 'macro_name_vect',
-                filter_name_vect('+macro', sexp_vect))
 
         for sexp in sexp_vect:
             if cons_p(sexp):
@@ -946,17 +933,18 @@
             new_sexp = fun(cdr(cons))
             return sexp_emit(module, new_sexp)
 
-        macro_name_vect = getattr(module, 'macro_name_vect')
-        if keyword in macro_name_vect:
+        jojo_name_vect = getattr(module, 'jojo_name_vect')
+        if keyword in jojo_name_vect:
             if not hasattr(module, keyword):
                 print ("- cons_emit fail")
-                print ("  must define a macro before using it")
-                print ("  macro name : {}".format(keyword))
+                print ("  must define a jojo before using it as macro")
+                print ("  name : {}".format(keyword))
+                newline()
                 raise JOJO_ERROR()
             else:
-                macro = getattr(module, keyword)
+                jojo = getattr(module, keyword)
                 vm = vm([cdr(cons)],
-                        [RP(macro)])
+                        [RP(jojo)])
                 vm = vm.exe()
                 new_sexp = vm.ds[0]
                 return sexp_emit(module, new_sexp)
@@ -964,6 +952,7 @@
         else:
             print("- cons_emit fail")
             print("  meet unknown keyword : {}".format(keyword))
+            newline()
             raise JOJO_ERROR()
     #+end_src
 
@@ -1512,16 +1501,6 @@
         jojo_name = car(body)
         setattr(module, jojo_name,
                 JOJO(sexp_list_emit(module, cdr(body))))
-    #+end_src
-
-*** (+macro)
-
-    #+begin_src python
-    @top_level_keyword("+macro")
-    def plus_macro(module, body):
-        jojo_name = car(body)
-        setattr(module, jojo_name,
-                MACRO(sexp_list_emit(module, cdr(body))))
     #+end_src
 
 *** (+data)

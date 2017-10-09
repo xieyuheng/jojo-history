@@ -180,15 +180,6 @@ class JOJO:
     def jo_exe(self, rp, vm):
         vm.rs.append(RP(self))
 
-class MACRO:
-    def __init__(self, body):
-        self.length = len(body)
-        self.body = Vect(body)
-        self.lr = {}
-
-    def jo_exe(self, rp, vm):
-        vm.rs.append(RP(self))
-
 class CLO:
     def __init__(self, body):
         self.body = body
@@ -497,8 +488,6 @@ def compile_module(module_name, sexp_vect):
 
     setattr(module, 'jojo_name_vect',
             filter_name_vect('+jojo', sexp_vect))
-    setattr(module, 'macro_name_vect',
-            filter_name_vect('+macro', sexp_vect))
 
     for sexp in sexp_vect:
         if cons_p(sexp):
@@ -538,17 +527,18 @@ def cons_emit(module, cons):
         new_sexp = fun(cdr(cons))
         return sexp_emit(module, new_sexp)
 
-    macro_name_vect = getattr(module, 'macro_name_vect')
-    if keyword in macro_name_vect:
+    jojo_name_vect = getattr(module, 'jojo_name_vect')
+    if keyword in jojo_name_vect:
         if not hasattr(module, keyword):
             print ("- cons_emit fail")
-            print ("  must define a macro before using it")
-            print ("  macro name : {}".format(keyword))
+            print ("  must define a jojo before using it as macro")
+            print ("  name : {}".format(keyword))
+            newline()
             raise JOJO_ERROR()
         else:
-            macro = getattr(module, keyword)
+            jojo = getattr(module, keyword)
             vm = vm([cdr(cons)],
-                    [RP(macro)])
+                    [RP(jojo)])
             vm = vm.exe()
             new_sexp = vm.ds[0]
             return sexp_emit(module, new_sexp)
@@ -556,6 +546,7 @@ def cons_emit(module, cons):
     else:
         print("- cons_emit fail")
         print("  meet unknown keyword : {}".format(keyword))
+        newline()
         raise JOJO_ERROR()
 
 def string_emit(module, string):
@@ -924,12 +915,6 @@ def plus_jojo(module, body):
     jojo_name = car(body)
     setattr(module, jojo_name,
             JOJO(sexp_list_emit(module, cdr(body))))
-
-@top_level_keyword("+macro")
-def plus_macro(module, body):
-    jojo_name = car(body)
-    setattr(module, jojo_name,
-            MACRO(sexp_list_emit(module, cdr(body))))
 
 @top_level_keyword("+data")
 def plus_data(module, body):
