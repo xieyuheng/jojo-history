@@ -8,22 +8,23 @@ from jojo import (
     APPLY, IFTE,
     NEW,
     CALL,
+    VALUES,
 )
 
 def drop(a):
-    return ()
+    return VALUES()
 
 def dup(a):
-    return (a, a)
+    return VALUES(a, a)
 
 def over(a, b):
-    return (a, b, a)
+    return VALUES(a, b, a)
 
 def tuck(a, b):
-    return (b, a, b)
+    return VALUES(b, a, b)
 
 def swap(a, b):
-    return (b, a)
+    return VALUES(b, a)
 
 def add(a, b):
     return a + b

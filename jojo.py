@@ -64,11 +64,15 @@ class VM:
             exe_one_step(self)
         return self
 
+class VALUES:
+    def __init__(self, *values):
+        self.values = values
+
 def push_result_to_vm(result, vm):
-    if type(result) == tuple:
-        vm.ds.extend(result)
+    if type(result) == VALUES:
+        vm.ds.extend(result.values)
     elif result == None:
-        pass
+        return
     else:
         vm.ds.append(result)
 
@@ -764,23 +768,23 @@ def prim(name):
 
 @prim('drop')
 def drop(a):
-    return ()
+    return None
 
 @prim('dup')
 def dup(a):
-    return (a, a)
+    return VALUES(a, a)
 
 @prim('over')
 def over(a, b):
-    return (a, b, a)
+    return VALUES(a, b, a)
 
 @prim('tuck')
 def tuck(a, b):
-    return (b, a, b)
+    return VALUES(b, a, b)
 
 @prim('swap')
 def swap(a, b):
-    return (b, a)
+    return VALUES(b, a)
 
 @prim('add')
 def add(a, b):
