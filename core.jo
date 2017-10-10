@@ -1,2 +1,24 @@
 (+jojo even? 2 mod 0 eq?)
 (+jojo odd? even? not)
+
+(+jojo list-length (-> :list -- Int)
+  (cond [:list null?] 0
+        else [:list .cdr list-length inc]))
+
+(+jojo list-ref (-> :list :index -- Value)
+  (cond [:list null?]
+        ["- list-ref fail"
+         string-write newline
+         "  index greater then length of list"
+         string-write newline
+         error]
+        [:index 0 eq?] [:list .car]
+        else [:list .cdr :index dec list-ref]))
+
+(+jojo list-append (-> :ante :succ -> List)
+  (cond
+    [:ante null?] [:succ]
+    [:ante cons?] [:ante .cdr :succ list-append
+                   :ante .car swap cons]))
+
+(+jojo tail-cons null cons list-append)

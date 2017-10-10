@@ -1,0 +1,8 @@
+(+jojo test1
+  '(1 2 3 4 5) '(1 2 3 4 5) list-append
+  '10 tail-cons
+  dup list-length print nl
+  sexp-write nl)
+
+(+jojo test2
+  (list 1 2 3 4 5) 2 list-ref print)

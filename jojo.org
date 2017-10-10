@@ -3,8 +3,6 @@
 
 * [todo-stack]
 
-*** move recursive functions about vect and list to core.jo
-
 *** '.equal?' as method
 
 *** '.w' as method
@@ -1325,35 +1323,51 @@
         return decorator
     #+end_src
 
-*** stack operation
+* *stack operation*
 
-    #+begin_src python
-    @prim('drop')
-    def drop(a):
-        return None
+  #+begin_src python
+  @prim('drop')
+  def drop(a):
+      return None
 
-    @prim('dup')
-    def dup(a):
-        return VALUES(a, a)
+  @prim('dup')
+  def dup(a):
+      return VALUES(a, a)
 
-    @prim('over')
-    def over(a, b):
-        return VALUES(a, b, a)
+  @prim('over')
+  def over(a, b):
+      return VALUES(a, b, a)
 
-    @prim('tuck')
-    def tuck(a, b):
-        return VALUES(b, a, b)
+  @prim('tuck')
+  def tuck(a, b):
+      return VALUES(b, a, b)
 
-    @prim('swap')
-    def swap(a, b):
-        return VALUES(b, a)
-    #+end_src
+  @prim('swap')
+  def swap(a, b):
+      return VALUES(b, a)
+  #+end_src
+
+* *error*
+
+  #+begin_src python
+  @prim('error')
+  def error():
+      raise JOJO_ERROR()
+  #+end_src
 
 * *int*
 
 *** primary school
 
     #+begin_src python
+    @prim('inc')
+    def inc(a):
+        return a + 1
+
+    @prim('dec')
+    def dec(a):
+        return a - 1
+
     @prim('add')
     def add(a, b):
         return a + b
@@ -1502,7 +1516,6 @@
 *** list_length
 
     #+begin_src python
-    @prim('list-length')
     def list_length(l):
         if null_p(l):
             return 0
@@ -1513,7 +1526,6 @@
 *** list_ref
 
     #+begin_src python
-    @prim('list-ref')
     def list_ref(l, i):
         if null_p(l):
             print ("- list_ref fail")
@@ -1528,7 +1540,6 @@
 *** list_append
 
     #+begin_src python
-    @prim('list-append')
     def list_append(ante, succ):
         if null_p(ante):
             return succ
@@ -1540,7 +1551,6 @@
 *** tail_cons
 
     #+begin_src python
-    @prim('tail-cons')
     def tail_cons(ante, value):
         return list_append(ante, cons(value, null))
     #+end_src

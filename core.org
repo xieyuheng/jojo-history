@@ -9,3 +9,43 @@
   (+jojo even? 2 mod 0 eq?)
   (+jojo odd? even? not)
   #+end_src
+
+* List
+
+*** list-length
+
+    #+begin_src jojo
+    (+jojo list-length (-> :list -- Int)
+      (cond [:list null?] 0
+            else [:list .cdr list-length inc]))
+    #+end_src
+
+*** list-ref
+
+    #+begin_src jojo
+    (+jojo list-ref (-> :list :index -- Value)
+      (cond [:list null?]
+            ["- list-ref fail"
+             string-write newline
+             "  index greater then length of list"
+             string-write newline
+             error]
+            [:index 0 eq?] [:list .car]
+            else [:list .cdr :index dec list-ref]))
+    #+end_src
+
+*** list-append
+
+    #+begin_src jojo
+    (+jojo list-append (-> :ante :succ -> List)
+      (cond
+        [:ante null?] [:succ]
+        [:ante cons?] [:ante .cdr :succ list-append
+                       :ante .car swap cons]))
+    #+end_src
+
+*** tail-cons
+
+    #+begin_src jojo
+    (+jojo tail-cons null cons list-append)
+    #+end_src

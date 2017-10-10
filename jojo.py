@@ -786,6 +786,18 @@ def tuck(a, b):
 def swap(a, b):
     return VALUES(b, a)
 
+@prim('error')
+def error():
+    raise JOJO_ERROR()
+
+@prim('inc')
+def inc(a):
+    return a + 1
+
+@prim('dec')
+def dec(a):
+    return a - 1
+
 @prim('add')
 def add(a, b):
     return a + b
@@ -880,14 +892,12 @@ def list_to_vect(l):
         l = cdr(l)
     return vect
 
-@prim('list-length')
 def list_length(l):
     if null_p(l):
         return 0
     else:
         return list_length(cdr(l)) + 1
 
-@prim('list-ref')
 def list_ref(l, i):
     if null_p(l):
         print ("- list_ref fail")
