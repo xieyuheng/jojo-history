@@ -1453,37 +1453,6 @@ def arrow_get_type_tuple_vect(module, arrow):
     type_vect_vect = type_vect_to_type_vect_vect(type_vect)
     return Vect(itertools.product(*type_vect_vect))
 
-@keyword("+method")
-def plus_method(module, body):
-    plus_method_syntax_check(body)
-    class_name = car(body)
-    method_name = car(cdr(body))
-    rest = cdr(cdr(body))
-    jojo = JOJO(sexp_list_emit(module, rest))
-    c = getattr(module, class_name)
-    name = method_name[1:]
-    if hasattr(c, name):
-        print ("- (+method) fail")
-        print ("  can not override established method")
-        print ("  class_name : {}".format(class_name))
-        print ("  method_name : {}".format(method_name))
-        write ("  rest of body : ")
-        write_sexp_cons(rest)
-        newline()
-        raise JOJO_ERROR()
-    else:
-        setattr(c, name, jojo)
-        return []
-
-def plus_method_syntax_check(body):
-    if list_length(body) < 2:
-        print ("- (+method) syntax error")
-        print ("  body must at least contain two string")
-        write ("  body : ")
-        write_sexp_cons(body)
-        newline()
-        raise JOJO_ERROR()
-
 key_jo_dict = {}
 
 def key_jo(name, jo_vect):

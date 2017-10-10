@@ -11,12 +11,6 @@
 
 *** repl
 
-*** (+class)
-
-    - with non trivial init function
-
-*** class methods
-
 *** vm < thread < process -- concurrency levels
 
 *** docs
@@ -857,9 +851,6 @@
     - (+union)
     - (+gene)
     - (+disp)
-
-    - (+class)
-    - (+method)
 
 *** control
 
@@ -2326,47 +2317,6 @@
           type_vect = arrow_get_type_vect(module, arrow)
           type_vect_vect = type_vect_to_type_vect_vect(type_vect)
           return Vect(itertools.product(*type_vect_vect))
-      #+end_src
-
-*** (+method)
-
-***** plus_method
-
-      #+begin_src python
-      @keyword("+method")
-      def plus_method(module, body):
-          plus_method_syntax_check(body)
-          class_name = car(body)
-          method_name = car(cdr(body))
-          rest = cdr(cdr(body))
-          jojo = JOJO(sexp_list_emit(module, rest))
-          c = getattr(module, class_name)
-          name = method_name[1:]
-          if hasattr(c, name):
-              print ("- (+method) fail")
-              print ("  can not override established method")
-              print ("  class_name : {}".format(class_name))
-              print ("  method_name : {}".format(method_name))
-              write ("  rest of body : ")
-              write_sexp_cons(rest)
-              newline()
-              raise JOJO_ERROR()
-          else:
-              setattr(c, name, jojo)
-              return []
-      #+end_src
-
-***** plus_method_syntax_check
-
-      #+begin_src python
-      def plus_method_syntax_check(body):
-          if list_length(body) < 2:
-              print ("- (+method) syntax error")
-              print ("  body must at least contain two string")
-              write ("  body : ")
-              write_sexp_cons(body)
-              newline()
-              raise JOJO_ERROR()
       #+end_src
 
 * key_jo_dict
