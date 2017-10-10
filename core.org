@@ -3,6 +3,8 @@
 
 * [todo-stack]
 
+*** (case) over class and data
+
 * Int
 
   #+begin_src jojo

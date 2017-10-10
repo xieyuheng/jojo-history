@@ -1,6 +1,4 @@
-(+jojo test1
-  (assert! (list 1 2 3 4 5) (list 1 2 3 4 5) list-append
-    10 tail-cons list-length 11 eq?))
+(assert! (list 1 2 3 4 5) (list 1 2 3 4 5) list-append
+  10 tail-cons list-length 11 eq?)
 
-(+jojo test2
-  (assert! (list 1 2 3 4 5) 2 list-ref 3 eq?))
+(assert! (list 1 2 3 4 5) 2 list-ref 3 eq?)
