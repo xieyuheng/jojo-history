@@ -52,7 +52,7 @@
 
 (+jojo sixsixsix 666)
 
-(+method <zull> .echo (-> :body :self -- 'nop)
+(+method <zull> .echo (-> :body :self -- 'sixsixsix)
   :body sexp-list-write nl
   'sixsixsix)
 

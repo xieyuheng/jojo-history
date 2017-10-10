@@ -3,13 +3,13 @@
 
 * [todo-stack]
 
+*** each module has its vm for top level sexp
+
 *** '.equal?' as method
 
 *** '.w' as method
 
 *** repl
-
-*** unit test
 
 *** python data
 
@@ -192,6 +192,9 @@
     #+begin_src python
     def exe_one_step(vm):
         rp = vm.rs.pop()
+        if rp.length == 0:
+            return
+
         jo = rp.body[rp.cursor]
 
         # handle tail call
@@ -1746,11 +1749,6 @@
         if list_length(body) == 0:
             print ("- (+jojo) syntax error")
             print ("  body of (+jojo) can not be empty")
-            raise JOJO_ERROR()
-
-        if list_length(body) == 1:
-            print ("- (+jojo) syntax error")
-            print ("  body of (+jojo) can not only contain a name")
             raise JOJO_ERROR()
 
         jojo_name = car(body)

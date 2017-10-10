@@ -49,3 +49,24 @@
     #+begin_src jojo
     (+jojo tail-cons null cons list-append)
     #+end_src
+
+* testing
+
+*** (assert) & (assert!)
+
+    #+begin_src jojo
+    (+jojo assert (-> :body -- sexp)
+      `(if (@ :body list-spread)
+         {}
+         {"- (assert) fail" string-write newline
+          "  assertion : " string-write
+          (quote (@ :body)) sexp-list-write newline}))
+
+    (+jojo assert! (-> :body -- sexp)
+      `(if (@ :body list-spread)
+         {}
+         {"- (assert!) fail" string-write newline
+          "  assertion : " string-write
+          (quote (@ :body)) sexp-list-write newline
+          error}))
+    #+end_src

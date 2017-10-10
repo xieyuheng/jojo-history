@@ -78,6 +78,9 @@ def push_result_to_vm(result, vm):
 
 def exe_one_step(vm):
     rp = vm.rs.pop()
+    if rp.length == 0:
+        return
+
     jo = rp.body[rp.cursor]
 
     # handle tail call
@@ -908,7 +911,6 @@ def list_ref(l, i):
     else:
         return list_ref(cdr(l), i-1)
 
-@prim('list-append')
 def list_append(ante, succ):
     if null_p(ante):
         return succ
@@ -916,7 +918,6 @@ def list_append(ante, succ):
         return cons(car(ante),
                     list_append(cdr (ante), succ))
 
-@prim('tail-cons')
 def tail_cons(ante, value):
     return list_append(ante, cons(value, null))
 
@@ -1046,10 +1047,10 @@ def plus_jojo(module, body):
         print ("  body of (+jojo) can not be empty")
         raise JOJO_ERROR()
 
-    if list_length(body) == 1:
-        print ("- (+jojo) syntax error")
-        print ("  body of (+jojo) can not only contain a name")
-        raise JOJO_ERROR()
+    # if list_length(body) == 1:
+    #     print ("- (+jojo) syntax error")
+    #     print ("  body of (+jojo) can not only contain a name")
+    #     raise JOJO_ERROR()
 
     jojo_name = car(body)
     setattr(module, jojo_name,

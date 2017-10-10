@@ -22,3 +22,18 @@
                    :ante .car swap cons]))
 
 (+jojo tail-cons null cons list-append)
+
+(+jojo assert (-> :body -- sexp)
+  `(if (@ :body list-spread)
+     {}
+     {"- (assert) fail" string-write newline
+      "  assertion : " string-write
+      (quote (@ :body)) sexp-list-write newline}))
+
+(+jojo assert! (-> :body -- sexp)
+  `(if (@ :body list-spread)
+     {}
+     {"- (assert!) fail" string-write newline
+      "  assertion : " string-write
+      (quote (@ :body)) sexp-list-write newline
+      error}))
