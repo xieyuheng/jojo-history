@@ -72,3 +72,11 @@
           (quote (@ :body)) sexp-list-write newline
           error}))
     #+end_src
+
+* ><
+
+  #+begin_src jojo
+  (+gene w (-> :x --) ...)
+  (+disp w (-> (: :x Int) --) ...)
+  (+disp w (-> :x Int  --) ...)
+  #+end_src

@@ -330,6 +330,25 @@ class MSG:
         else:
             exe_jo(v, rp, vm)
 
+class GENE:
+    def __init__(self, arity, default_jojo):
+        self.arity = arity
+        self.default_jojo = default_jojo
+        self.disp_dict = {}
+
+    def jo_exe(self, rp, vm):
+        value_vect = vm.ds[(- self.arity):]
+        type_vect = []
+        for value in value_vect:
+            type_vect.append(type(value))
+
+        type_tuple = tuple(type_vect)
+        if type_tuple in self.disp_dict:
+            jojo = self.disp_dict[type_tuple]
+            jojo.jo_exe(rp, vm)
+        else:
+            self.default_jojo.jo_exe(rp, vm)
+
 def scan_string_vect(string):
     string_vect = []
     i = 0
@@ -496,21 +515,21 @@ def filter_name_vect(keyword, sexp_vect):
             name_vect.append(name)
     return name_vect
 
-def jojo_plus(module, name, value):
+def jojo_define(module, name, value):
     jojo_name_vect = getattr(module, 'jojo_name_vect')
     jojo_name_vect.append(name)
     setattr(module, name, value)
 
 def merge_prim_dict(module):
     for name, value in prim_dict.items():
-        jojo_plus(module, name, value)
+        jojo_define(module, name, value)
 
 def merge_module(module, merging_module):
     if merging_module == None:
         return
     for name in merging_module.jojo_name_vect:
         jojo = getattr(merging_module, name)
-        jojo_plus(module, name, jojo)
+        jojo_define(module, name, jojo)
 
 def merge_compile_module(module_name, merging_module, sexp_vect):
     module = types.ModuleType(module_name)
@@ -561,7 +580,7 @@ def cons_emit(module, cons):
     else:
         vm = VM([cdr(cons)],
                 [RP(JOJO(string_emit(module, keyword)))])
-        vm = vm.exe()
+        vm.exe()
         new_sexp = vm.ds[0]
         return sexp_emit(module, new_sexp)
 
@@ -587,6 +606,24 @@ def string_emit(module, string):
     newline()
     raise JOJO_ERROR()
 
+def sexp_value(module, sexp):
+    jo_vect = sexp_emit(module, sexp)
+    jojo = JOJO(jo_vect)
+    vm = VM([], [RP(jojo)])
+    vm.exe()
+    if len(vm.ds) != 1:
+        print ("- sexp_value fail")
+        print ("  sexp must return one value")
+        write ("  sexp : ")
+        write_sexp(sexp)
+        newline()
+        print ("  number of values : {}".format(len(vm.ds)))
+        print ("  returned : {}".format(vm.ds))
+        raise JOJO_ERROR()
+
+    value = vm.ds[0]
+    return value
+
 string_emitter_vect = []
 
 def string_emitter(p, emitter):
@@ -597,7 +634,7 @@ def int_string_p(string):
     if length == 0:
         return False
     elif string[0] == '-':
-        return nat_string_p(string[1:length-1])
+        return nat_string_p(string[1:])
     else:
         return nat_string_p(string)
 
@@ -1112,7 +1149,7 @@ def k_import(module, body):
 
 def k_import_one(module, name):
     imported_module = importlib.import_module(name)
-    jojo_plus(module, name, imported_module)
+    jojo_define(module, name, imported_module)
 
 def k_import_as(module, body):
     name_vect = list_to_vect(body)
@@ -1130,7 +1167,7 @@ def k_import_as(module, body):
     name = name_vect[0]
     as_name = name_vect[2]
     imported_module = importlib.import_module(name)
-    jojo_plus(module, as_name, imported_module)
+    jojo_define(module, as_name, imported_module)
 
 @keyword("from")
 def k_from(module, body):
@@ -1144,7 +1181,7 @@ def k_from(module, body):
     name_vect = list_to_vect(cdr(cdr(body)))
     imported_module = importlib.import_module(module_name)
     for name in name_vect:
-        jojo_plus(module, name, getattr(imported_module, name))
+        jojo_define(module, name, getattr(imported_module, name))
 
     return []
 
@@ -1169,7 +1206,7 @@ def k_from_as(module, body):
     name = vect_body[2]
     as_name = vect_body[4]
     imported_module = importlib.import_module(module_name)
-    jojo_plus(module, as_name, getattr(imported_module, name))
+    jojo_define(module, as_name, getattr(imported_module, name))
 
 def k_from_as_syntax_check(body):
     vect_body = list_to_vect(body)
@@ -1203,25 +1240,48 @@ def plus_jojo(module, body):
 @keyword("+data")
 def plus_data(module, body):
     data_name = car(body)
+    if not data_name_string_p(data_name):
+        print ("- (+data) syntax error")
+        print ("  data_name must be of form <...>")
+        print ("  data_name : {}".format(data_name))
+        raise JOJO_ERROR()
 
     field_name_vect = []
     for string in list_to_vect(cdr(body)):
         if message_string_p(string):
-            string = string[1:len(string)]
+            string = string[1:]
             field_name_vect.append(string)
 
     data_class = create_data_class(data_name, field_name_vect)
     data_class.__module__ = module
 
-    jojo_plus(module, data_name, data_class)
+    jojo_define(module, data_name, data_class)
 
     constructor_name = data_name[1:-1]
-    jojo_plus(module, constructor_name, JOJO([data_class, NEW]))
+    jojo_define(module, constructor_name, JOJO([data_class, NEW]))
 
     predicate_name = "".join([constructor_name, "?"])
-    jojo_plus(module, predicate_name, DATA_PRED(data_class))
+    jojo_define(module, predicate_name, DATA_PRED(data_class))
 
     return []
+
+def data_name_string_p(string):
+    if len(string) < 3: # example : '<n>'
+        return False
+    elif string[0] != '<':
+        return False
+    elif string[-1] != '>':
+        return False
+    elif string.count('<') != 1:
+        return False
+    elif string.count('>') != 1:
+        return False
+    elif string.count('.') != 0:
+        return False
+    elif string.count(':') != 0:
+        return False
+    else:
+        return True
 
 class JOJO_DATA:
     pass
@@ -1242,6 +1302,84 @@ def create_data_class(data_name, field_name_vect):
         bases = (JOJO_DATA, ),
         kwds = None,
         exec_body = update_ns)
+
+@keyword("+gene")
+def plus_gene(module, body):
+    name = car(body)
+    rest = cdr(body)
+    arrow = car(rest)
+    arity = arrow_get_arity(arrow)
+    if arity == 0:
+        print ("- (+gene) syntax error")
+        print ("  arity of arrow is zero")
+        print ("  gene dispatches on types of arguments")
+        print ("  can not define gene over nothing")
+        print ("  name : {}".format(name))
+        write ("  arrow : ")
+        write_sexp(arrow)
+        newline()
+        raise JOJO_ERROR()
+
+    default_jojo = JOJO(sexp_list_emit(module, rest))
+    jojo_define(module, name, GENE(arity, default_jojo))
+    return []
+
+def arrow_get_arity(arrow):
+    arity = 0
+    sexp_vect = list_to_vect(cdr(arrow))
+    for sexp in sexp_vect:
+        if local_string_p(sexp):
+            arity = arity + 1
+        elif sexp == '--':
+            break
+        else:
+            pass
+
+    return arity
+
+@keyword("+disp")
+def plus_disp(module, body):
+    name = car(body)
+    rest = cdr(body)
+    arrow = car(rest)
+    type_tuple = arrow_get_type_tuple(module, arrow)
+
+    if not hasattr(module, name):
+        print ("- (+disp) syntax error")
+        print ("  name is undefined")
+        print ("  name : {}".format(name))
+        raise JOJO_ERROR()
+
+    gene = getattr(module, name)
+    if type(gene) != GENE:
+        print ("- (+disp) syntax error")
+        print ("  type of name must be a gene")
+        print ("  name : {}".format(name))
+        print ("  type of name : {}".format(type(name)))
+        raise JOJO_ERROR()
+
+    jojo = JOJO(sexp_list_emit(module, rest))
+    gene.disp_dict[type_tuple] = jojo
+    return []
+
+def arrow_get_type_tuple(module, arrow):
+    sexp_vect = list_to_vect(cdr(arrow))
+    new_sexp_vect = []
+    for sexp in sexp_vect:
+        if local_string_p(sexp):
+            pass
+        elif sexp == '--':
+            break
+        else:
+            new_sexp_vect.append(sexp)
+
+    new_sexp_list = vect_to_list(new_sexp_vect)
+    jo_vect = sexp_list_emit(module, new_sexp_list)
+    jojo = JOJO(jo_vect)
+    vm = VM([], [RP(jojo)])
+    vm.exe()
+
+    return tuple(vm.ds)
 
 @keyword("+method")
 def plus_method(module, body):
@@ -1365,7 +1503,7 @@ def run(data_stack, jojo_dict):
 def run_one(data_stack, jojo):
     vm = VM(data_stack,
             [RP(jojo)])
-    vm = vm.exe()
+    vm.exe()
 
 def load_core(path):
     path = os.path.abspath(path)
