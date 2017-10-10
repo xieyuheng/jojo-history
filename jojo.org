@@ -3,13 +3,8 @@
 
 * [todo-stack]
 
-*** repl
-
-*** vm < thread < process
-
 *** python data
 
-    - (dict)
     - (tuple) (*)
     - (set)
 
@@ -19,7 +14,13 @@
 
 *** (+class)
 
-    - with class methods
+    - with non trivial init function
+
+*** repl
+
+*** class methods
+
+*** vm < thread < process -- concurrency levels
 
 *** cover python
 
@@ -1457,7 +1458,7 @@
         write(string)
     #+end_src
 
-* *dict*
+* *vect*
 
 *** vect_p
 
@@ -1551,6 +1552,33 @@
     #+begin_src python
     def tail_cons(ante, value):
         return list_append(ante, cons(value, null))
+    #+end_src
+
+* *dict*
+
+
+*** vect_to_dict
+
+    #+begin_src python
+    @prim('vect->dict')
+    def vect_to_dict(vect):
+        length = len(vect)
+        if length % 2 != 0:
+            print ("- vect->dict fail")
+            print ("  length of vect must be even")
+            print ("  length : {}".format(length))
+            print ("  vect : {}".format(vect))
+            raise JOJO_ERROR()
+
+        d = {}
+        i = 0
+        while i < length:
+            k = vect[i]
+            v = vect[i+1]
+            d[k] = v
+            i = i + 2
+
+        return d
     #+end_src
 
 * *io*
@@ -1712,6 +1740,18 @@
         jo_vect.extend([MARK])
         jo_vect.extend(sexp_list_emit(module, sexp_list))
         jo_vect.extend([COLLECT_VECT])
+        return jo_vect
+    #+end_src
+
+*** (dict)
+
+    #+begin_src python
+    @keyword('dict')
+    def k_dict(module, sexp_list):
+        jo_vect = []
+        jo_vect.extend([MARK])
+        jo_vect.extend(sexp_list_emit(module, sexp_list))
+        jo_vect.extend([COLLECT_VECT, vect_to_dict])
         return jo_vect
     #+end_src
 
@@ -2154,3 +2194,10 @@
       core_path = "/".join([current_module_dir, "core.jo"])
       core_module = load_core(core_path)
       #+end_src
+
+*** >< repl
+
+    #+begin_src python
+    def repl():
+        pass
+    #+end_src

@@ -920,6 +920,26 @@ def list_append(ante, succ):
 def tail_cons(ante, value):
     return list_append(ante, cons(value, null))
 
+@prim('vect->dict')
+def vect_to_dict(vect):
+    length = len(vect)
+    if length % 2 != 0:
+        print ("- vect->dict fail")
+        print ("  length of vect must be even")
+        print ("  length : {}".format(length))
+        print ("  vect : {}".format(vect))
+        raise JOJO_ERROR()
+
+    d = {}
+    i = 0
+    while i < length:
+        k = vect[i]
+        v = vect[i+1]
+        d[k] = v
+        i = i + 2
+
+    return d
+
 prim('print')(write)
 
 @prim('newline')
@@ -1016,6 +1036,14 @@ def k_vect(module, sexp_list):
     jo_vect.extend([MARK])
     jo_vect.extend(sexp_list_emit(module, sexp_list))
     jo_vect.extend([COLLECT_VECT])
+    return jo_vect
+
+@keyword('dict')
+def k_dict(module, sexp_list):
+    jo_vect = []
+    jo_vect.extend([MARK])
+    jo_vect.extend(sexp_list_emit(module, sexp_list))
+    jo_vect.extend([COLLECT_VECT, vect_to_dict])
     return jo_vect
 
 @keyword("import")
@@ -1332,3 +1360,6 @@ current_module = sys.modules[__name__]
 current_module_dir = os.path.dirname(current_module.__file__)
 core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
+
+def repl():
+    pass
