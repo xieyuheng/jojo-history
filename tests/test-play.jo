@@ -1,0 +1,8 @@
+(assert
+  100 13 div dup print nl (-> :div1)
+  100 13 mod dup print nl (-> :mod1)
+
+  100 13 divmod (-> :div2 :mod2)
+
+  :div1 :div2 eq?
+  :mod1 :mod2 eq? and)

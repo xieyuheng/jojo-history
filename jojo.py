@@ -820,6 +820,10 @@ def div(a, b):
 def mod(a, b):
     return a % b
 
+@prim('divmod')
+def p_divmod(a, b):
+    return VALUES(*divmod(a, b))
+
 @prim('int-write')
 def int_write(i):
     write(i)
@@ -835,6 +839,14 @@ def false():
 @prim('not')
 def p_not(b):
     return not b
+
+@prim('and')
+def p_and(a, b):
+    return (a and b)
+
+@prim('or')
+def p_or(a, b):
+    return (a or b)
 
 @prim('equal?')
 def equal_p(a, b):
@@ -939,6 +951,10 @@ def vect_to_dict(vect):
         i = i + 2
 
     return d
+
+@prim('vect->tuple')
+def vect_to_tuple(vect):
+    return tuple(vect)
 
 prim('print')(write)
 
@@ -1045,6 +1061,16 @@ def k_dict(module, sexp_list):
     jo_vect.extend(sexp_list_emit(module, sexp_list))
     jo_vect.extend([COLLECT_VECT, vect_to_dict])
     return jo_vect
+
+@keyword('tuple')
+def k_tuple(module, sexp_list):
+    jo_vect = []
+    jo_vect.extend([MARK])
+    jo_vect.extend(sexp_list_emit(module, sexp_list))
+    jo_vect.extend([COLLECT_VECT, vect_to_tuple])
+    return jo_vect
+
+keyword('*')(k_tuple)
 
 @keyword("import")
 def k_import(module, body):

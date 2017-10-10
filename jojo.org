@@ -1,12 +1,7 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-
+- (set)
 * [todo-stack]
-
-*** python data
-
-    - (tuple) (*)
-    - (set)
 
 *** '.equal?' as method
 
@@ -1386,6 +1381,10 @@
     @prim('mod')
     def mod(a, b):
         return a % b
+
+    @prim('divmod')
+    def p_divmod(a, b):
+        return VALUES(*divmod(a, b))
     #+end_src
 
 *** int_write
@@ -1410,6 +1409,14 @@
   @prim('not')
   def p_not(b):
       return not b
+
+  @prim('and')
+  def p_and(a, b):
+      return (a and b)
+
+  @prim('or')
+  def p_or(a, b):
+      return (a or b)
   #+end_src
 
 * *equivalence*
@@ -1556,7 +1563,6 @@
 
 * *dict*
 
-
 *** vect_to_dict
 
     #+begin_src python
@@ -1579,6 +1585,16 @@
             i = i + 2
 
         return d
+    #+end_src
+
+* *tuple*
+
+*** vect_to_tuple
+
+    #+begin_src python
+    @prim('vect->tuple')
+    def vect_to_tuple(vect):
+        return tuple(vect)
     #+end_src
 
 * *io*
@@ -1753,6 +1769,20 @@
         jo_vect.extend(sexp_list_emit(module, sexp_list))
         jo_vect.extend([COLLECT_VECT, vect_to_dict])
         return jo_vect
+    #+end_src
+
+*** (tuple)
+
+    #+begin_src python
+    @keyword('tuple')
+    def k_tuple(module, sexp_list):
+        jo_vect = []
+        jo_vect.extend([MARK])
+        jo_vect.extend(sexp_list_emit(module, sexp_list))
+        jo_vect.extend([COLLECT_VECT, vect_to_tuple])
+        return jo_vect
+
+    keyword('*')(k_tuple)
     #+end_src
 
 * top_level_keyword
