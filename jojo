@@ -5,6 +5,4 @@ import sys
 
 if __name__ == '__main__':
     path = sys.argv[1]
-    name = sys.argv[2]
     module = jojo.load(path)
-    jojo.run([], [getattr(module, name)])

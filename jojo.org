@@ -3,9 +3,9 @@
 
 * [todo-stack]
 
-*** vm < thread < process
-
 *** repl
+
+*** vm < thread < process
 
 *** python data
 

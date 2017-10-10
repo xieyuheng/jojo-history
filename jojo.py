@@ -940,6 +940,10 @@ def keyword(name):
         return fun
     return decorator
 
+@keyword("note")
+def k_note(module, body):
+    return []
+
 @keyword('begin')
 def k_begin(module, body):
     return sexp_list_emit(module, body)
@@ -1013,10 +1017,6 @@ def k_vect(module, sexp_list):
     jo_vect.extend(sexp_list_emit(module, sexp_list))
     jo_vect.extend([COLLECT_VECT])
     return jo_vect
-
-@keyword("note")
-def top_level_note(module, body):
-    return []
 
 @keyword("import")
 def k_import(module, body):
