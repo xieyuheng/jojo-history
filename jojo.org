@@ -1,6 +1,6 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-- (set)
+
 * [todo-stack]
 
 *** '.equal?' as method
@@ -1467,6 +1467,14 @@
 
 * *vect*
 
+*** [note]
+
+    - vect is the pivot among :
+      - list
+      - dict
+      - tuple
+      - set
+
 *** vect_p
 
     #+begin_src python
@@ -1494,6 +1502,8 @@
                         vect_to_sexp(vect[1:]))
     #+end_src
 
+* *list*
+
 *** vect_to_list
 
     #+begin_src python
@@ -1504,8 +1514,6 @@
         else:
             return cons(vect[0], vect_to_list(vect[1:]))
     #+end_src
-
-* *list*
 
 *** list_to_vect
 
@@ -1595,6 +1603,16 @@
     @prim('vect->tuple')
     def vect_to_tuple(vect):
         return tuple(vect)
+    #+end_src
+
+* *set*
+
+*** vect_to_set
+
+    #+begin_src python
+    @prim('vect->set')
+    def vect_to_set(vect):
+        return set(vect)
     #+end_src
 
 * *io*
@@ -1783,6 +1801,18 @@
         return jo_vect
 
     keyword('*')(k_tuple)
+    #+end_src
+
+*** (set)
+
+    #+begin_src python
+    @keyword('set')
+    def k_set(module, sexp_list):
+        jo_vect = []
+        jo_vect.extend([MARK])
+        jo_vect.extend(sexp_list_emit(module, sexp_list))
+        jo_vect.extend([COLLECT_VECT, vect_to_set])
+        return jo_vect
     #+end_src
 
 * top_level_keyword

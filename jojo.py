@@ -956,6 +956,10 @@ def vect_to_dict(vect):
 def vect_to_tuple(vect):
     return tuple(vect)
 
+@prim('vect->set')
+def vect_to_set(vect):
+    return set(vect)
+
 prim('print')(write)
 
 @prim('newline')
@@ -1071,6 +1075,14 @@ def k_tuple(module, sexp_list):
     return jo_vect
 
 keyword('*')(k_tuple)
+
+@keyword('set')
+def k_set(module, sexp_list):
+    jo_vect = []
+    jo_vect.extend([MARK])
+    jo_vect.extend(sexp_list_emit(module, sexp_list))
+    jo_vect.extend([COLLECT_VECT, vect_to_set])
+    return jo_vect
 
 @keyword("import")
 def k_import(module, body):
