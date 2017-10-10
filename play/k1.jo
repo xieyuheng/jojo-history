@@ -1,0 +1,15 @@
+(+gene ww (-> :x :y --) :x print space :y print)
+
+(+disp ww (-> Int Int --) drop drop "Int Int" print nl)
+(+disp ww (-> Str Int --) drop drop "Str Int" print nl)
+(+disp ww (-> Int Str --) drop drop "Int Str" print nl)
+
+1 1     ww
+1 "a"   ww
+"a" 1   ww
+"a" "a" ww
+
+
+"123" w
+
+(list 1 2 3) w

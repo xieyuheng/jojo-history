@@ -14,6 +14,14 @@
 
 * List
 
+*** List
+
+    #+begin_src jojo
+    (+union List
+      <null>
+      <cons>)
+    #+end_src
+
 *** list-length
 
     #+begin_src jojo
@@ -73,10 +81,25 @@
           error}))
     #+end_src
 
-* ><
+* w -- gene
 
   #+begin_src jojo
-  (+gene w (-> :x --) ...)
-  (+disp w (-> (: :x Int) --) ...)
-  (+disp w (-> :x Int  --) ...)
+  (+gene w (-> :x --) :x print)
+
+  (+disp w (-> :list List --)
+    (cond [:list null?] ["()" w]
+          [:list cons?] ["(" w :list list-write/loop ")" w]))
+
+  (+jojo list-write/loop (-> :list --)
+    (cond
+      [:list null?] []
+      [:list .cdr null?] [:list .car w]
+      else [:list .car w space
+            :list .cdr list-write/loop]))
+  #+end_src
+
+* equal? -- gene
+
+  #+begin_src jojo
+  (+gene equal? (-> :x :y -- Bool) false)
   #+end_src

@@ -1,6 +1,10 @@
 (+jojo even? 2 mod 0 eq?)
 (+jojo odd? even? not)
 
+(+union List
+  <null>
+  <cons>)
+
 (+jojo list-length (-> :list -- Int)
   (cond [:list null?] 0
         else [:list .cdr list-length inc]))
@@ -37,3 +41,18 @@
       "  assertion : " string-write
       (quote (@ :body)) sexp-list-write newline
       error}))
+
+(+gene w (-> :x --) :x print)
+
+(+disp w (-> :list List --)
+  (cond [:list null?] ["()" w]
+        [:list cons?] ["(" w :list list-write/loop ")" w]))
+
+(+jojo list-write/loop (-> :list --)
+  (cond
+    [:list null?] []
+    [:list .cdr null?] [:list .car w]
+    else [:list .car w space
+          :list .cdr list-write/loop]))
+
+(+gene equal? (-> :x :y -- Bool) false)

@@ -9,15 +9,11 @@
 
 *** cover python's standard libraries
 
-*** 'equal?' as gene
-
-*** 'w' as gene
+*** repl
 
 *** (+class)
 
     - with non trivial init function
-
-*** repl
 
 *** class methods
 
@@ -37,6 +33,7 @@
 
       - the generated python module
 
+* ------
 * prolog
 
 *** import
@@ -47,6 +44,7 @@
     import importlib
     import sys
     import os
+    import itertools
     #+end_src
 
 *** utility
@@ -119,6 +117,25 @@
           return type(x) == str
       #+end_src
 
+***** fill_vect
+
+      #+begin_src python
+      def fill_vect(value, length):
+          vect = []
+          i = 0
+          while i < length:
+              vect.append(value)
+              i = i + 1
+          return vect
+      #+end_src
+
+***** fill_tuple
+
+      #+begin_src python
+      def fill_tuple(value, length):
+          return tuple(fill_vect(value, length))
+      #+end_src
+
 *** error handling
 
 ***** JOJO_ERROR
@@ -128,6 +145,7 @@
           pass
       #+end_src
 
+* ------
 * vm
 
 *** RP
@@ -574,6 +592,7 @@
                 self.default_jojo.jo_exe(rp, vm)
     #+end_src
 
+* ------
 * scan -- sexp lexer
 
 *** scan_string_vect
@@ -835,6 +854,10 @@
     - (+macro)
 
     - (+data)
+    - (+union)
+    - (+gene)
+    - (+disp)
+
     - (+class)
     - (+method)
 
@@ -892,8 +915,8 @@
 
     #+begin_src python
     def jojo_define(module, name, value):
-        jojo_name_vect = getattr(module, 'jojo_name_vect')
-        jojo_name_vect.append(name)
+        defined_name_set = getattr(module, 'defined_name_set')
+        defined_name_set.add(name)
         setattr(module, name, value)
     #+end_src
 
@@ -911,7 +934,7 @@
     def merge_module(module, merging_module):
         if merging_module == None:
             return
-        for name in merging_module.jojo_name_vect:
+        for name in merging_module.defined_name_set:
             jojo = getattr(merging_module, name)
             jojo_define(module, name, jojo)
     #+end_src
@@ -922,7 +945,13 @@
     def merge_compile_module(module_name, merging_module, sexp_vect):
         module = types.ModuleType(module_name)
 
-        module.jojo_name_vect = filter_name_vect('+jojo', sexp_vect)
+        # for name can occur before been defined
+        defined_name_set = set()
+        defined_name_set.update(filter_name_vect('+jojo', sexp_vect))
+        defined_name_set.update(filter_name_vect('+data', sexp_vect))
+        module.defined_name_set = defined_name_set
+
+        # for top level sexp
         module.vm = VM([], [])
 
         merge_prim_dict(module)
@@ -932,6 +961,7 @@
             jo_vect = sexp_emit(module, sexp)
             module.vm.rs.append(RP(JOJO(jo_vect)))
             module.vm.exe()
+
         return module
     #+end_src
 
@@ -1009,8 +1039,8 @@
         if string in key_jo_dict.keys():
             return key_jo_dict[string]
 
-        jojo_name_vect = getattr(module, 'jojo_name_vect')
-        if string in jojo_name_vect:
+        defined_name_set = getattr(module, 'defined_name_set')
+        if string in defined_name_set:
             return [CALL(module, string)]
 
         print ("- string_emit fail")
@@ -1041,6 +1071,7 @@
         return value
     #+end_src
 
+* ------
 * string_emitter_vect
 
 *** string_emitter_vect
@@ -1358,6 +1389,7 @@
         return decorator
     #+end_src
 
+* ------
 * *stack operation*
 
   #+begin_src python
@@ -1391,6 +1423,12 @@
   #+end_src
 
 * *int*
+
+*** Int
+
+    #+begin_src python
+    prim('Int')(int)
+    #+end_src
 
 *** primary school
 
@@ -1438,27 +1476,35 @@
 
 * *bool*
 
-  #+begin_src python
-  @prim('true')
-  def true():
-      return True
+*** Bool
 
-  @prim('false')
-  def false():
-      return False
+    #+begin_src python
+    prim('Bool')(bool)
+    #+end_src
 
-  @prim('not')
-  def p_not(b):
-      return not b
+*** basic
 
-  @prim('and')
-  def p_and(a, b):
-      return (a and b)
+    #+begin_src python
+    @prim('true')
+    def true():
+        return True
 
-  @prim('or')
-  def p_or(a, b):
-      return (a or b)
-  #+end_src
+    @prim('false')
+    def false():
+        return False
+
+    @prim('not')
+    def p_not(b):
+        return not b
+
+    @prim('and')
+    def p_and(a, b):
+        return (a and b)
+
+    @prim('or')
+    def p_or(a, b):
+        return (a or b)
+    #+end_src
 
 * *equivalence*
 
@@ -1492,10 +1538,11 @@
 
 * *string*
 
-*** String
+*** String & Str
 
     #+begin_src python
     prim('String')(str)
+    prim('Str')(str)
     #+end_src
 
 *** string_write
@@ -1544,6 +1591,13 @@
     #+end_src
 
 * *list*
+
+*** List
+
+    #+begin_src python
+    prim('<null>')(Null)
+    prim('<cons>')(Cons)
+    #+end_src
 
 *** vect_to_list
 
@@ -1682,6 +1736,7 @@
         write(" ")
     #+end_src
 
+* ------
 * keyword_dict
 
 *** [note] type
@@ -1856,7 +1911,7 @@
         return jo_vect
     #+end_src
 
-* top_level_keyword
+* top_level_keywordm
 
 *** (import)
 
@@ -2094,22 +2149,53 @@
               exec_body = update_ns)
       #+end_src
 
+*** (+union)
+
+***** plus_union
+
+      #+begin_src python
+      @keyword("+union")
+      def plus_union(module, body):
+          name = car(body)
+          rest = cdr(body)
+          jo_vect = sexp_list_emit(module, rest)
+          jojo = JOJO(jo_vect)
+          jojo_define(module, name, UNION(jojo))
+          return []
+      #+end_src
+
+***** UNION
+
+      #+begin_src python
+      class UNION:
+          def __init__(self, jojo):
+              self.jojo = jojo
+
+          def get_type_vect(self):
+              vm = VM([], [RP(self.jojo)])
+              vm.exe()
+              return vm.ds
+      #+end_src
+
+*** [note] gene and disp
+
+    - a gene in a module maintains a dict
+      form tuple of type to disp
+
+    - suppose
+
+      in module m1 we have (+gene g1 ...)
+
+      in module m2 we (import m1) and
+      (+disp m1.g1 ...) for data in m2
+
+      this means the the global state g1 of module m1
+      can be changed by module m2
+
+    - in such a hopelessly dynamic language,
+      this is the only place we make use of the dynamic type.
+
 *** (+gene)
-
-**** [note]
-
-      - a gene in a module maintains a dict
-        form tuple of type to disp
-
-      - suppose
-
-        in module m1 we have (+gene g1 ...)
-
-        in module m2 we (import m1) and
-        (+disp m1.g1 ...) for data in m2
-
-        this means the the global state g1 of module m1
-        can be changed by module m2
 
 ***** plus_gene
 
@@ -2163,7 +2249,7 @@
           name = car(body)
           rest = cdr(body)
           arrow = car(rest)
-          type_tuple = arrow_get_type_tuple(module, arrow)
+          type_tuple_vect = arrow_get_type_tuple_vect(module, arrow)
 
           if not hasattr(module, name):
               print ("- (+disp) syntax error")
@@ -2180,14 +2266,26 @@
               raise JOJO_ERROR()
 
           jojo = JOJO(sexp_list_emit(module, rest))
-          gene.disp_dict[type_tuple] = jojo
+          for type_tuple in type_tuple_vect:
+              if type_tuple in gene.disp_dict:
+                  print ("- (+disp) fail")
+                  print ("  type_tuple for gene is already defined")
+                  print ("  type_tuple : {}".format(type_tuple))
+                  print ("  gene name : {}".format(name))
+                  write ("  arrow : ")
+                  write_sexp(arrow)
+                  newline()
+                  raise JOJO_ERROR()
+              else:
+                  gene.disp_dict[type_tuple] = jojo
+
           return []
       #+end_src
 
-***** arrow_get_type_tuple
+***** arrow_get_type_vect
 
       #+begin_src python
-      def arrow_get_type_tuple(module, arrow):
+      def arrow_get_type_vect(module, arrow):
           sexp_vect = list_to_vect(cdr(arrow))
           new_sexp_vect = []
           for sexp in sexp_vect:
@@ -2204,7 +2302,30 @@
           vm = VM([], [RP(jojo)])
           vm.exe()
 
-          return tuple(vm.ds)
+          return vm.ds
+      #+end_src
+
+***** type_vect_to_type_vect_vect
+
+      #+begin_src python
+      def type_vect_to_type_vect_vect(type_vect):
+          type_vect_vect = []
+          for t in type_vect:
+              if type(t) == UNION:
+                  type_vect_vect.append(t.get_type_vect())
+              else:
+                  type_vect_vect.append([t])
+
+          return type_vect_vect
+      #+end_src
+
+***** arrow_get_type_tuple_vect
+
+      #+begin_src python
+      def arrow_get_type_tuple_vect(module, arrow):
+          type_vect = arrow_get_type_vect(module, arrow)
+          type_vect_vect = type_vect_to_type_vect_vect(type_vect)
+          return Vect(itertools.product(*type_vect_vect))
       #+end_src
 
 *** (+method)
@@ -2343,6 +2464,7 @@
         raise JOJO_ERROR()
     #+end_src
 
+* ------
 * epilog -- interface
 
 *** load
@@ -2378,9 +2500,9 @@
 *** run
 
     #+begin_src python
-    def run(data_stack, jojo_dict):
+    def run(data_stack, jojo_vect):
         data_stack = vect_copy(data_stack)
-        for jojo in jojo_dict:
+        for jojo in jojo_vect:
             run_one(data_stack, jojo)
         return data_stack
 
@@ -2442,3 +2564,5 @@
     def repl():
         pass
     #+end_src
+
+* ------

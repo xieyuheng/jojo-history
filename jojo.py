@@ -3,6 +3,7 @@ import types
 import importlib
 import sys
 import os
+import itertools
 
 def get_signature(fun):
     try:
@@ -43,6 +44,17 @@ def vect_p(x):
 
 def string_p(x):
     return type(x) == str
+
+def fill_vect(value, length):
+    vect = []
+    i = 0
+    while i < length:
+        vect.append(value)
+        i = i + 1
+    return vect
+
+def fill_tuple(value, length):
+    return tuple(fill_vect(value, length))
 
 class JOJO_ERROR(Exception):
     pass
@@ -516,8 +528,8 @@ def filter_name_vect(keyword, sexp_vect):
     return name_vect
 
 def jojo_define(module, name, value):
-    jojo_name_vect = getattr(module, 'jojo_name_vect')
-    jojo_name_vect.append(name)
+    defined_name_set = getattr(module, 'defined_name_set')
+    defined_name_set.add(name)
     setattr(module, name, value)
 
 def merge_prim_dict(module):
@@ -527,14 +539,20 @@ def merge_prim_dict(module):
 def merge_module(module, merging_module):
     if merging_module == None:
         return
-    for name in merging_module.jojo_name_vect:
+    for name in merging_module.defined_name_set:
         jojo = getattr(merging_module, name)
         jojo_define(module, name, jojo)
 
 def merge_compile_module(module_name, merging_module, sexp_vect):
     module = types.ModuleType(module_name)
 
-    module.jojo_name_vect = filter_name_vect('+jojo', sexp_vect)
+    # for name can occur before been defined
+    defined_name_set = set()
+    defined_name_set.update(filter_name_vect('+jojo', sexp_vect))
+    defined_name_set.update(filter_name_vect('+data', sexp_vect))
+    module.defined_name_set = defined_name_set
+
+    # for top level sexp
     module.vm = VM([], [])
 
     merge_prim_dict(module)
@@ -544,6 +562,7 @@ def merge_compile_module(module_name, merging_module, sexp_vect):
         jo_vect = sexp_emit(module, sexp)
         module.vm.rs.append(RP(JOJO(jo_vect)))
         module.vm.exe()
+
     return module
 
 def compile_module(module_name, sexp_vect):
@@ -597,8 +616,8 @@ def string_emit(module, string):
     if string in key_jo_dict.keys():
         return key_jo_dict[string]
 
-    jojo_name_vect = getattr(module, 'jojo_name_vect')
-    if string in jojo_name_vect:
+    defined_name_set = getattr(module, 'defined_name_set')
+    if string in defined_name_set:
         return [CALL(module, string)]
 
     print ("- string_emit fail")
@@ -829,6 +848,8 @@ def swap(a, b):
 def error():
     raise JOJO_ERROR()
 
+prim('Int')(int)
+
 @prim('inc')
 def inc(a):
     return a + 1
@@ -864,6 +885,8 @@ def p_divmod(a, b):
 @prim('int-write')
 def int_write(i):
     write(i)
+
+prim('Bool')(bool)
 
 @prim('true')
 def true():
@@ -908,6 +931,7 @@ prim('sexp-write')(write_sexp)
 prim('sexp-list-write')(write_sexp_cons)
 
 prim('String')(str)
+prim('Str')(str)
 
 @prim('string-write')
 def string_write(string):
@@ -927,6 +951,9 @@ def vect_to_sexp(vect):
     else:
         return cons(vect_to_sexp(vect[0]),
                     vect_to_sexp(vect[1:]))
+
+prim('<null>')(Null)
+prim('<cons>')(Cons)
 
 @prim('vect->list')
 def vect_to_list(vect):
@@ -1303,6 +1330,24 @@ def create_data_class(data_name, field_name_vect):
         kwds = None,
         exec_body = update_ns)
 
+@keyword("+union")
+def plus_union(module, body):
+    name = car(body)
+    rest = cdr(body)
+    jo_vect = sexp_list_emit(module, rest)
+    jojo = JOJO(jo_vect)
+    jojo_define(module, name, UNION(jojo))
+    return []
+
+class UNION:
+    def __init__(self, jojo):
+        self.jojo = jojo
+
+    def get_type_vect(self):
+        vm = VM([], [RP(self.jojo)])
+        vm.exe()
+        return vm.ds
+
 @keyword("+gene")
 def plus_gene(module, body):
     name = car(body)
@@ -1342,7 +1387,7 @@ def plus_disp(module, body):
     name = car(body)
     rest = cdr(body)
     arrow = car(rest)
-    type_tuple = arrow_get_type_tuple(module, arrow)
+    type_tuple_vect = arrow_get_type_tuple_vect(module, arrow)
 
     if not hasattr(module, name):
         print ("- (+disp) syntax error")
@@ -1359,10 +1404,22 @@ def plus_disp(module, body):
         raise JOJO_ERROR()
 
     jojo = JOJO(sexp_list_emit(module, rest))
-    gene.disp_dict[type_tuple] = jojo
+    for type_tuple in type_tuple_vect:
+        if type_tuple in gene.disp_dict:
+            print ("- (+disp) fail")
+            print ("  type_tuple for gene is already defined")
+            print ("  type_tuple : {}".format(type_tuple))
+            print ("  gene name : {}".format(name))
+            write ("  arrow : ")
+            write_sexp(arrow)
+            newline()
+            raise JOJO_ERROR()
+        else:
+            gene.disp_dict[type_tuple] = jojo
+
     return []
 
-def arrow_get_type_tuple(module, arrow):
+def arrow_get_type_vect(module, arrow):
     sexp_vect = list_to_vect(cdr(arrow))
     new_sexp_vect = []
     for sexp in sexp_vect:
@@ -1379,7 +1436,22 @@ def arrow_get_type_tuple(module, arrow):
     vm = VM([], [RP(jojo)])
     vm.exe()
 
-    return tuple(vm.ds)
+    return vm.ds
+
+def type_vect_to_type_vect_vect(type_vect):
+    type_vect_vect = []
+    for t in type_vect:
+        if type(t) == UNION:
+            type_vect_vect.append(t.get_type_vect())
+        else:
+            type_vect_vect.append([t])
+
+    return type_vect_vect
+
+def arrow_get_type_tuple_vect(module, arrow):
+    type_vect = arrow_get_type_vect(module, arrow)
+    type_vect_vect = type_vect_to_type_vect_vect(type_vect)
+    return Vect(itertools.product(*type_vect_vect))
 
 @keyword("+method")
 def plus_method(module, body):
@@ -1494,9 +1566,9 @@ def load(path):
 
     return module
 
-def run(data_stack, jojo_dict):
+def run(data_stack, jojo_vect):
     data_stack = vect_copy(data_stack)
-    for jojo in jojo_dict:
+    for jojo in jojo_vect:
         run_one(data_stack, jojo)
     return data_stack
 
