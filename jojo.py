@@ -4,6 +4,7 @@ import importlib
 import sys
 import os
 import itertools
+import collections
 
 def get_signature(fun):
     try:
@@ -366,16 +367,16 @@ def scan_string_vect(string):
     i = 0
     length = len(string)
     while i < length:
-        s = string[i]
+        char = string[i]
 
-        if space_p(s):
+        if space_p(char):
             i = i + 1
 
-        elif delimiter_p(s):
-            string_vect.append(s)
+        elif delimiter_p(char):
+            string_vect.append(char)
             i = i + 1
 
-        elif doublequote_p(s):
+        elif doublequote_p(char):
             doublequote_end_index = string.find('"', i+1)
             if doublequote_end_index == -1:
                 print ("- scan_string_vect fail")
@@ -399,27 +400,29 @@ def find_end(string, begin):
     while True:
        if i == length:
            return i
-       s = string[i]
-       if space_p(s) or delimiter_p(s) or doublequote_p(s):
+       char = string[i]
+       if (space_p(char) or
+           delimiter_p(char) or
+           doublequote_p(char)):
            return i
        i = i + 1
 
-def space_p(s):
-    return s.isspace()
+def space_p(char):
+    return char.isspace()
 
-def delimiter_p(s):
-    return (s == '(' or
-            s == ')' or
-            s == '[' or
-            s == ']' or
-            s == '{' or
-            s == '}' or
-            s == ',' or
-            s == '`' or
-            s == "'")
+def delimiter_p(char):
+    return (char == '(' or
+            char == ')' or
+            char == '[' or
+            char == ']' or
+            char == '{' or
+            char == '}' or
+            char == ',' or
+            char == '`' or
+            char == "'")
 
-def doublequote_p(s):
-    return s == '"'
+def doublequote_p(char):
+    return char == '"'
 
 class Null:
     pass
@@ -516,8 +519,13 @@ def sexp_list_write(s_cons):
         write (" ")
         sexp_list_write(cdr(s_cons))
 
-def read_sexp():
-    pass
+def new_module(name):
+    module = types.ModuleType(name)
+    # for top level sexp
+    module.vm = VM([], [])
+    # for name can occur before been defined
+    module.defined_name_set = set()
+    return module
 
 def filter_name_vect(keyword, sexp_vect):
     name_vect = []
@@ -539,37 +547,32 @@ def merge_prim_dict(module):
     for name, value in prim_dict.items():
         jojo_define(module, name, value)
 
-def merge_module(module, merging_module):
-    if merging_module == None:
-        return
-    for name in merging_module.defined_name_set:
-        jojo = getattr(merging_module, name)
+def merge_module(module, src_module):
+    for name in src_module.defined_name_set:
+        jojo = getattr(src_module, name)
         jojo_define(module, name, jojo)
 
-def merge_compile_module(module_name, merging_module, sexp_vect):
-    module = types.ModuleType(module_name)
-
-    # for name can occur before been defined
-    defined_name_set = set()
-    defined_name_set.update(filter_name_vect('+jojo', sexp_vect))
-    defined_name_set.update(filter_name_vect('+data', sexp_vect))
-    module.defined_name_set = defined_name_set
-
-    # for top level sexp
-    module.vm = VM([], [])
-
-    merge_prim_dict(module)
-    merge_module(module, merging_module)
-
+def merge_sexp_vect(module, sexp_vect):
+    module.defined_name_set.update(filter_name_vect('+jojo', sexp_vect))
+    module.defined_name_set.update(filter_name_vect('+data', sexp_vect))
     for sexp in sexp_vect:
         jo_vect = sexp_emit(module, sexp)
         module.vm.rs.append(RP(JOJO(jo_vect)))
         module.vm.exe()
-
     return module
 
-def compile_module(module_name, sexp_vect):
-    return merge_compile_module(module_name, core_module, sexp_vect)
+def compile_module(name, sexp_vect):
+    module = new_module(name)
+    merge_prim_dict(module)
+    merge_module(module, core_module)
+    merge_sexp_vect(module, sexp_vect)
+    return module
+
+def compile_core_module(name, sexp_vect):
+    module = new_module(name)
+    merge_prim_dict(module)
+    merge_sexp_vect(module, sexp_vect)
+    return module
 
 def sexp_list_emit(module, sexp_list):
     jo_vect = []
@@ -1573,13 +1576,100 @@ def load_core(path):
 
     return module
 
-def compile_core_module(module_name, sexp_vect):
-    return merge_compile_module(module_name, None, sexp_vect)
-
 current_module = sys.modules[__name__]
 current_module_dir = os.path.dirname(current_module.__file__)
 core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
 
+def read_char(char_stack):
+    if len(char_stack) == 0:
+        return sys.stdin.read(1)
+    else:
+        return char_stack.pop()
+
+def read_string(char_stack):
+    char_vect = []
+    collecting_bytes_p = False
+
+    while True:
+        char = read_char(char_stack)
+        if not collecting_bytes_p:
+            if space_p(char):
+                pass
+            elif doublequote_p(char):
+                return read_doublequoted_string(char_stack)
+            elif delimiter_p(char):
+                char_vect.append(char)
+                break
+            else:
+                char_vect.append(char)
+                collecting_bytes_p = True
+
+        else:
+            if (doublequote_p(char) or
+                delimiter_p(char) or
+                space_p(char)):
+                char_stack.append(char)
+                break
+            else:
+                char_vect.append(char)
+
+    return "".join(char_vect)
+
+def read_doublequoted_string(char_stack):
+    char_vect = []
+    while True:
+        char = read_char(char_stack)
+        if char == '"':
+            break
+        else:
+            char_vect.append(char)
+
+    return "".join(char_vect)
+
+def read_sexp(char_stack):
+    string = read_string(char_stack)
+    if string == '(':
+        sexp_list = read_sexp_list_until_ket(char_stack, ')')
+        return sexp_list
+    elif string == '[':
+        sexp_list = read_sexp_list_until_ket(char_stack, ']')
+        return cons('begin', sexp_list)
+    elif string == '{':
+        sexp_list = read_sexp_list_until_ket(char_stack, '}')
+        return cons('clo', sexp_list)
+    elif string == '"':
+        return read_doublequoted_string(char_stack)
+    elif string == "'":
+        sexp = read_sexp(char_stack)
+        return cons('quote', cons(sexp, null))
+    elif string == "`":
+        sexp = read_sexp(char_stack)
+        return cons('partquote', cons(sexp, null))
+    else:
+        return string
+
+def read_sexp_list_until_ket(char_stack, ket):
+    string = read_string(char_stack)
+    if string == ket:
+        return null
+    else:
+        char_vect = Vect(string)
+        char_vect.reverse()
+        char_stack.extend(char_vect)
+        sexp = read_sexp(char_stack)
+        recur = read_sexp_list_until_ket(char_stack, ket)
+        return cons(sexp, recur)
+
 def repl():
-    pass
+    module = new_module('repl')
+    merge_prim_dict(module)
+    merge_module(module, core_module)
+    module.repl_char_stack = []
+    while True:
+        sexp = read_sexp(module.repl_char_stack)
+        if sexp == 'exit':
+            return
+        else:
+            merge_sexp_vect(module, [sexp])
+            print (module.vm.ds)
