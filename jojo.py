@@ -496,25 +496,28 @@ def parse_sexp_cons_until_ket(string_vect, i, ket):
 def write(x):
     print(x, end="")
 
-def write_sexp(s):
+def sexp_write(s):
     if null_p(s):
         write ("null")
     elif cons_p(s):
         write ("(")
-        write_sexp_cons(s)
+        sexp_list_write(s)
         write (")")
     else:
         write (s)
 
-def write_sexp_cons(s_cons):
+def sexp_list_write(s_cons):
     if null_p(s_cons):
         pass
     elif null_p(cdr(s_cons)):
-        write_sexp(car(s_cons))
+        sexp_write(car(s_cons))
     else:
-        write_sexp(car(s_cons))
+        sexp_write(car(s_cons))
         write (" ")
-        write_sexp_cons(cdr(s_cons))
+        sexp_list_write(cdr(s_cons))
+
+def read_sexp():
+    pass
 
 def filter_name_vect(keyword, sexp_vect):
     name_vect = []
@@ -634,7 +637,7 @@ def sexp_value(module, sexp):
         print ("- sexp_value fail")
         print ("  sexp must return one value")
         write ("  sexp : ")
-        write_sexp(sexp)
+        sexp_write(sexp)
         newline()
         print ("  number of values : {}".format(len(vm.ds)))
         print ("  returned : {}".format(vm.ds))
@@ -927,8 +930,8 @@ prim('list?')(list_p)
 prim('car')(car)
 prim('cdr')(cdr)
 
-prim('sexp-write')(write_sexp)
-prim('sexp-list-write')(write_sexp_cons)
+prim('sexp-write')(sexp_write)
+prim('sexp-list-write')(sexp_list_write)
 
 prim('String')(str)
 prim('Str')(str)
@@ -1165,7 +1168,7 @@ def k_import(module, body):
             print ("  module name can not contain '.'")
             print ("  module name : {}".format(name))
             write ("  import body : ")
-            write_sexp_cons(body)
+            sexp_list_write(body)
             newline()
             raise JOJO_ERROR()
 
@@ -1188,7 +1191,7 @@ def k_import_as(module, body):
         print ("  syntax for (import as) should be :")
         print ("  (import <module-name> as <name>)")
         write ("  import body : ")
-        write_sexp_cons(body)
+        sexp_list_write(body)
         newline()
         raise JOJO_ERROR()
     name = name_vect[0]
@@ -1222,7 +1225,7 @@ def k_from_syntax_check(body):
     print ("  syntax for (from import) should be :")
     print ("  (from <module-name> import <name> ...)")
     write ("  import body : ")
-    write_sexp_cons(body)
+    sexp_list_write(body)
     newline()
     raise JOJO_ERROR()
 
@@ -1247,7 +1250,7 @@ def k_from_as_syntax_check(body):
     print ("  syntax for (from import as) should be :")
     print ("  (from <module-name> import <name> as <name>)")
     write ("  import body : ")
-    write_sexp_cons(body)
+    sexp_list_write(body)
     newline()
     raise JOJO_ERROR()
 
@@ -1361,7 +1364,7 @@ def plus_gene(module, body):
         print ("  can not define gene over nothing")
         print ("  name : {}".format(name))
         write ("  arrow : ")
-        write_sexp(arrow)
+        sexp_write(arrow)
         newline()
         raise JOJO_ERROR()
 
@@ -1411,7 +1414,7 @@ def plus_disp(module, body):
             print ("  type_tuple : {}".format(type_tuple))
             print ("  gene name : {}".format(name))
             write ("  arrow : ")
-            write_sexp(arrow)
+            sexp_write(arrow)
             newline()
             raise JOJO_ERROR()
         else:
@@ -1507,7 +1510,7 @@ def k_cond(body):
 def report_cond_mismatch(body):
     print ("- cond mismatch")
     write ("  body : ")
-    write_sexp(body)
+    sexp_write(body)
     newline()
     raise JOJO_ERROR()
 

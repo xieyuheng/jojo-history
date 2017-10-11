@@ -3,11 +3,9 @@
 
 * [todo-stack]
 
-*** cover python's builtin classes and their methods
+*** read_sexp
 
-*** cover python's builtin functions
-
-*** cover python's standard libraries
+*** fix setup.py
 
 *** repl
 
@@ -809,32 +807,39 @@
         print(x, end="")
     #+end_src
 
-*** write_sexp
+*** sexp_write
 
     #+begin_src python
-    def write_sexp(s):
+    def sexp_write(s):
         if null_p(s):
             write ("null")
         elif cons_p(s):
             write ("(")
-            write_sexp_cons(s)
+            sexp_list_write(s)
             write (")")
         else:
             write (s)
     #+end_src
 
-*** write_sexp_cons
+*** sexp_list_write
 
     #+begin_src python
-    def write_sexp_cons(s_cons):
+    def sexp_list_write(s_cons):
         if null_p(s_cons):
             pass
         elif null_p(cdr(s_cons)):
-            write_sexp(car(s_cons))
+            sexp_write(car(s_cons))
         else:
-            write_sexp(car(s_cons))
+            sexp_write(car(s_cons))
             write (" ")
-            write_sexp_cons(cdr(s_cons))
+            sexp_list_write(cdr(s_cons))
+    #+end_src
+
+*** >< read_sexp
+
+    #+begin_src python
+    def read_sexp():
+        pass
     #+end_src
 
 * [note] syntax
@@ -1052,7 +1057,7 @@
             print ("- sexp_value fail")
             print ("  sexp must return one value")
             write ("  sexp : ")
-            write_sexp(sexp)
+            sexp_write(sexp)
             newline()
             print ("  number of values : {}".format(len(vm.ds)))
             print ("  returned : {}".format(vm.ds))
@@ -1523,8 +1528,8 @@
   prim('car')(car)
   prim('cdr')(cdr)
 
-  prim('sexp-write')(write_sexp)
-  prim('sexp-list-write')(write_sexp_cons)
+  prim('sexp-write')(sexp_write)
+  prim('sexp-list-write')(sexp_list_write)
   #+end_src
 
 * *string*
@@ -1926,7 +1931,7 @@
                   print ("  module name can not contain '.'")
                   print ("  module name : {}".format(name))
                   write ("  import body : ")
-                  write_sexp_cons(body)
+                  sexp_list_write(body)
                   newline()
                   raise JOJO_ERROR()
 
@@ -1957,7 +1962,7 @@
               print ("  syntax for (import as) should be :")
               print ("  (import <module-name> as <name>)")
               write ("  import body : ")
-              write_sexp_cons(body)
+              sexp_list_write(body)
               newline()
               raise JOJO_ERROR()
           name = name_vect[0]
@@ -2001,7 +2006,7 @@
           print ("  syntax for (from import) should be :")
           print ("  (from <module-name> import <name> ...)")
           write ("  import body : ")
-          write_sexp_cons(body)
+          sexp_list_write(body)
           newline()
           raise JOJO_ERROR()
       #+end_src
@@ -2034,7 +2039,7 @@
           print ("  syntax for (from import as) should be :")
           print ("  (from <module-name> import <name> as <name>)")
           write ("  import body : ")
-          write_sexp_cons(body)
+          sexp_list_write(body)
           newline()
           raise JOJO_ERROR()
       #+end_src
@@ -2204,7 +2209,7 @@
               print ("  can not define gene over nothing")
               print ("  name : {}".format(name))
               write ("  arrow : ")
-              write_sexp(arrow)
+              sexp_write(arrow)
               newline()
               raise JOJO_ERROR()
 
@@ -2264,7 +2269,7 @@
                   print ("  type_tuple : {}".format(type_tuple))
                   print ("  gene name : {}".format(name))
                   write ("  arrow : ")
-                  write_sexp(arrow)
+                  sexp_write(arrow)
                   newline()
                   raise JOJO_ERROR()
               else:
@@ -2409,7 +2414,7 @@
     def report_cond_mismatch(body):
         print ("- cond mismatch")
         write ("  body : ")
-        write_sexp(body)
+        sexp_write(body)
         newline()
         raise JOJO_ERROR()
     #+end_src

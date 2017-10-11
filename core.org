@@ -3,6 +3,8 @@
 
 * [todo-stack]
 
+*** merge old core
+
 *** (case) over class and data
 
 * Int

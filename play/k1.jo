@@ -8,8 +8,8 @@
 1 "a"   ww
 "a" 1   ww
 "a" "a" ww
+nl
 
+"123" w nl
 
-"123" w
-
-(list 1 2 3) w
+(list 1 2 3) w nl
