@@ -3,8 +3,6 @@
 
 * [todo-stack]
 
-*** cover Vect
-
 *** cover List
 
 *** cover Dict
@@ -715,7 +713,7 @@
 
     #+begin_src python
     def cons(car, cdr):
-        if list_p(cdr):
+        if null_p(cdr) or cons_p(cdr):
             return Cons(car, cdr)
         else:
             print ("- cons fail")
@@ -729,13 +727,6 @@
     #+begin_src python
     def cons_p(x):
         return isinstance(x, Cons)
-    #+end_src
-
-*** list_p
-
-    #+begin_src python
-    def list_p(x):
-        return null_p(x) or cons_p(x)
     #+end_src
 
 *** cdr
@@ -1577,8 +1568,6 @@
   prim('cons')(cons)
   prim('cons?')(cons_p)
 
-  prim('list?')(list_p)
-
   prim('car')(car)
   prim('cdr')(cdr)
 
@@ -1592,6 +1581,12 @@
 
     #+begin_src python
     prim('String')(str)
+    #+end_src
+
+*** string_p
+
+    #+begin_src python
+    prim('string?')(string_p)
     #+end_src
 
 *** string_print
@@ -1687,6 +1682,32 @@
                         vect_to_sexp(vect[1:]))
     #+end_src
 
+*** vect_length
+
+    #+begin_src python
+    @prim('vect-length')
+    def vect_length(vect):
+        return len(vect)
+    #+end_src
+
+*** vect_ref
+
+    #+begin_src python
+    @prim('vect-ref')
+    def vect_ref(vect, index):
+        return vect[index]
+    #+end_src
+
+*** vect_append -- no side effect
+
+    #+begin_src python
+    @prim('vect-append')
+    def vect_append(vect1, vect2):
+        vect1_copy = vect_copy(vect1)
+        vect1_copy.extend(vect2)
+        return vect1_copy
+    #+end_src
+
 * *list*
 
 *** List
@@ -1694,6 +1715,14 @@
     #+begin_src python
     prim('<null>')(Null)
     prim('<cons>')(Cons)
+    #+end_src
+
+*** list_p
+
+    #+begin_src python
+    @prim('list?')
+    def list_p(x):
+        return
     #+end_src
 
 *** vect_to_list

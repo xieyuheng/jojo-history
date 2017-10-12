@@ -438,7 +438,7 @@ class Cons:
         self.cdr = cdr
 
 def cons(car, cdr):
-    if list_p(cdr):
+    if null_p(cdr) or cons_p(cdr):
         return Cons(car, cdr)
     else:
         print ("- cons fail")
@@ -448,9 +448,6 @@ def cons(car, cdr):
 
 def cons_p(x):
     return isinstance(x, Cons)
-
-def list_p(x):
-    return null_p(x) or cons_p(x)
 
 def cdr(x):
     return x.cdr
@@ -944,8 +941,6 @@ prim('null?')(null_p)
 prim('cons')(cons)
 prim('cons?')(cons_p)
 
-prim('list?')(list_p)
-
 prim('car')(car)
 prim('cdr')(cdr)
 
@@ -953,6 +948,8 @@ prim('sexp-print')(sexp_print)
 prim('sexp-list-print')(sexp_list_print)
 
 prim('String')(str)
+
+prim('string?')(string_p)
 
 @prim('string-print')
 def string_print(string):
@@ -997,8 +994,26 @@ def vect_to_sexp(vect):
         return cons(vect_to_sexp(vect[0]),
                     vect_to_sexp(vect[1:]))
 
+@prim('vect-length')
+def vect_length(vect):
+    return len(vect)
+
+@prim('vect-ref')
+def vect_ref(vect, index):
+    return vect[index]
+
+@prim('vect-append')
+def vect_append(vect1, vect2):
+    vect1_copy = vect_copy(vect1)
+    vect1_copy.extend(vect2)
+    return vect1_copy
+
 prim('<null>')(Null)
 prim('<cons>')(Cons)
+
+@prim('list?')
+def list_p(x):
+    return
 
 @prim('vect->list')
 def vect_to_list(vect):
