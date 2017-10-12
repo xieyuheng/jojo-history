@@ -13,8 +13,6 @@
 
 *** repl handle exceptions
 
-*** fix non "*.py" file in setup.py
-
 *** vm < thread < process -- concurrency levels
 
 *** debug repl
