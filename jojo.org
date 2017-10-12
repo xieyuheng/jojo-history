@@ -3,13 +3,15 @@
 
 * [todo-stack]
 
-*** cover List
-
-*** cover Dict
-
 *** cover Tuple
 
 *** cover Set
+
+*** cover Dict
+
+*** handle shebang
+
+*** repl handle exceptions
 
 *** fix non "*.py" file in setup.py
 
@@ -17,7 +19,7 @@
 
 *** debug repl
 
-    - the role of vm must be clear before debug repl
+    - after concurrency module
 
 *** docs
 
@@ -1437,6 +1439,14 @@
     prim('Int')(int)
     #+end_src
 
+*** int_p
+
+    #+begin_src python
+    @prim('int?')
+    def int_p(x):
+        return type(x) == int
+    #+end_src
+
 *** primary school
 
     #+begin_src python
@@ -1710,7 +1720,7 @@
 
 * *list*
 
-*** List
+*** Null & Cons
 
     #+begin_src python
     prim('<null>')(Null)
@@ -1722,7 +1732,7 @@
     #+begin_src python
     @prim('list?')
     def list_p(x):
-        return
+        return null_p(x) or cons_p(x)
     #+end_src
 
 *** vect_to_list
@@ -1792,6 +1802,20 @@
 
 * *dict*
 
+*** Dict
+
+    #+begin_src python
+    prim('Dict')(dict)
+    #+end_src
+
+*** dict_p
+
+    #+begin_src python
+    @prim('dict?')
+    def dict_p(x):
+        return type(x) == dict
+    #+end_src
+
 *** vect_to_dict
 
     #+begin_src python
@@ -1818,6 +1842,20 @@
 
 * *tuple*
 
+*** Tuple
+
+    #+begin_src python
+    prim('Tuple')(tuple)
+    #+end_src
+
+*** tuple_p
+
+    #+begin_src python
+    @prim('tuple?')
+    def tuple_p(x):
+        return type(x) == tuple
+    #+end_src
+
 *** vect_to_tuple
 
     #+begin_src python
@@ -1827,6 +1865,20 @@
     #+end_src
 
 * *set*
+
+*** Set
+
+    #+begin_src python
+    prim('Set')(set)
+    #+end_src
+
+*** set_p
+
+    #+begin_src python
+    @prim('set?')
+    def set_p(x):
+        return type(x) == set
+    #+end_src
 
 *** vect_to_set
 
@@ -2778,6 +2830,8 @@
 
           except KeyboardInterrupt:
               pass
+          # except KeyboardInterrupt:
+          #     pass
       #+end_src
 
 * ------

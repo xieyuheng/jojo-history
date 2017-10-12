@@ -3,8 +3,6 @@
 
 * [todo-stack]
 
-*** merge old core
-
 *** (case) over class and data
 
 * Int
@@ -124,5 +122,3 @@
             else [:fun apply
                   :fun :n dec times]))
     #+end_src
-
-* ><

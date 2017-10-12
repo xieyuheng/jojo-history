@@ -853,6 +853,10 @@ def error():
 
 prim('Int')(int)
 
+@prim('int?')
+def int_p(x):
+    return type(x) == int
+
 @prim('inc')
 def inc(a):
     return a + 1
@@ -1013,7 +1017,7 @@ prim('<cons>')(Cons)
 
 @prim('list?')
 def list_p(x):
-    return
+    return null_p(x) or cons_p(x)
 
 @prim('vect->list')
 def vect_to_list(vect):
@@ -1056,6 +1060,12 @@ def list_append(ante, succ):
 def tail_cons(ante, value):
     return list_append(ante, cons(value, null))
 
+prim('Dict')(dict)
+
+@prim('dict?')
+def dict_p(x):
+    return type(x) == dict
+
 @prim('vect->dict')
 def vect_to_dict(vect):
     length = len(vect)
@@ -1076,9 +1086,21 @@ def vect_to_dict(vect):
 
     return d
 
+prim('Tuple')(tuple)
+
+@prim('tuple?')
+def tuple_p(x):
+    return type(x) == tuple
+
 @prim('vect->tuple')
 def vect_to_tuple(vect):
     return tuple(vect)
+
+prim('Set')(set)
+
+@prim('set?')
+def set_p(x):
+    return type(x) == set
 
 @prim('vect->set')
 def vect_to_set(vect):
@@ -1742,3 +1764,5 @@ def repl():
 
     except KeyboardInterrupt:
         pass
+    # except KeyboardInterrupt:
+    #     pass
