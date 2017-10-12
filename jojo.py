@@ -958,6 +958,30 @@ prim('String')(str)
 def string_print(string):
     p_print(string)
 
+@prim('string_length')
+def string_length(string):
+    return len(string)
+
+@prim('string-ref')
+def string_ref(string, index):
+    return string[index]
+
+@prim('string-append')
+def string_append(string1, string2):
+    return "".join([string1, string2])
+
+@prim('string-slice')
+def string_slice(string, begin, end):
+    return string[begin:end]
+
+@prim('string-empty?')
+def string_empty_p(string):
+    return len(string) == 0
+
+@prim('string-eq?')
+def string_eq_p(string1, string2):
+    return string1 == string2
+
 prim('vect?')(vect_p)
 
 def vect_copy(vect):

@@ -3,10 +3,6 @@
 
 * [todo-stack]
 
-*** fix non "*.py" file in setup.py
-
-*** cover String
-
 *** cover Vect
 
 *** cover List
@@ -16,6 +12,8 @@
 *** cover Tuple
 
 *** cover Set
+
+*** fix non "*.py" file in setup.py
 
 *** vm < thread < process -- concurrency levels
 
@@ -1486,7 +1484,7 @@
 
 *** compare
 
-***** lt? -- less then
+***** lt_p -- less then
 
       #+begin_src python
       @prim('lt?')
@@ -1494,7 +1492,7 @@
           return a < b
       #+end_src
 
-***** gt? -- greater then
+***** gt_p -- greater then
 
       #+begin_src python
       @prim('gt?')
@@ -1502,7 +1500,7 @@
           return a > b
       #+end_src
 
-***** lteq? -- less then or equal to
+***** lteq_p -- less then or equal to
 
       #+begin_src python
       @prim('lteq?')
@@ -1510,7 +1508,7 @@
           return a <= b
       #+end_src
 
-***** gteq? -- greater then or equal to
+***** gteq_p -- greater then or equal to
 
       #+begin_src python
       @prim('gteq?')
@@ -1602,6 +1600,54 @@
     @prim('string-print')
     def string_print(string):
         p_print(string)
+    #+end_src
+
+*** string_length
+
+    #+begin_src python
+    @prim('string_length')
+    def string_length(string):
+        return len(string)
+    #+end_src
+
+*** string_ref
+
+    #+begin_src python
+    @prim('string-ref')
+    def string_ref(string, index):
+        return string[index]
+    #+end_src
+
+*** string_append
+
+    #+begin_src python
+    @prim('string-append')
+    def string_append(string1, string2):
+        return "".join([string1, string2])
+    #+end_src
+
+*** string_slice
+
+    #+begin_src python
+    @prim('string-slice')
+    def string_slice(string, begin, end):
+        return string[begin:end]
+    #+end_src
+
+*** string_empty_p
+
+    #+begin_src python
+    @prim('string-empty?')
+    def string_empty_p(string):
+        return len(string) == 0
+    #+end_src
+
+*** string_eq_p
+
+    #+begin_src python
+    @prim('string-eq?')
+    def string_eq_p(string1, string2):
+        return string1 == string2
     #+end_src
 
 * *vect*
