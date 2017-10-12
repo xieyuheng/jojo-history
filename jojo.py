@@ -1618,13 +1618,14 @@ def read_string(char_stack):
 
 def read_doublequoted_string(char_stack):
     char_vect = []
+    char_vect.append('"')
     while True:
         char = read_char(char_stack)
         if char == '"':
             break
         else:
             char_vect.append(char)
-
+    char_vect.append('"')
     return "".join(char_vect)
 
 def read_sexp(char_stack):
@@ -1661,15 +1662,29 @@ def read_sexp_list_until_ket(char_stack, ket):
         recur = read_sexp_list_until_ket(char_stack, ket)
         return cons(sexp, recur)
 
+def print_data_stack(ds):
+    write ("  * {} *  ".format(len(ds)))
+    print (ds)
+
 def repl():
     module = new_module('repl')
     merge_prim_dict(module)
     merge_module(module, core_module)
     module.repl_char_stack = []
-    while True:
-        sexp = read_sexp(module.repl_char_stack)
-        if sexp == 'exit':
-            return
-        else:
-            merge_sexp_vect(module, [sexp])
-            print (module.vm.ds)
+
+    print_data_stack(module.vm.ds)
+
+    try:
+        while True:
+            sexp = read_sexp(module.repl_char_stack)
+            if sexp == 'exit':
+                return
+            else:
+                try:
+                    merge_sexp_vect(module, [sexp])
+                    print_data_stack(module.vm.ds)
+                except JOJO_ERROR:
+                    pass
+
+    except KeyboardInterrupt:
+        pass
