@@ -1,15 +1,15 @@
-(+gene ww (-> :x :y --) :x print space :y print)
+(+gene 2print (-> :x :y --) :x print space :y print)
 
-(+disp ww (-> Int Int --) drop drop "Int Int" print nl)
-(+disp ww (-> Str Int --) drop drop "Str Int" print nl)
-(+disp ww (-> Int Str --) drop drop "Int Str" print nl)
+(+disp 2print (-> Int Int --) drop drop "Int Int" print nl)
+(+disp 2print (-> String Int --) drop drop "String Int" print nl)
+(+disp 2print (-> Int String --) drop drop "Int String" print nl)
 
-1 1     ww
-1 "a"   ww
-"a" 1   ww
-"a" "a" ww
+1 1     2print
+1 "a"   2print
+"a" 1   2print
+"a" "a" 2print
 nl
 
-"123" w nl
+"123" p nl
 
-(list 1 2 3) w nl
+(list 1 2 3) p nl

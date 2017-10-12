@@ -1,4 +1,4 @@
-from jojo import scan_string_vect, parse_sexp_vect, sexp_write
+from jojo import scan_string_vect, parse_sexp_vect, sexp_print
 
 string = '''\
 (1 (1 2 3) 2 (1 2 3) 3 "123")
@@ -15,7 +15,7 @@ def test_0():
     symbol_vect = scan_string_vect(string)
     sexp_vect = parse_sexp_vect(symbol_vect)
     for sexp in sexp_vect:
-        sexp_write(sexp)
+        sexp_print(sexp)
         newline()
 
 test_0()

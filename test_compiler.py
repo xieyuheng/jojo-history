@@ -6,7 +6,7 @@ from jojo import (
     NEW,
     CALL,
     scan_string_vect,
-    parse_sexp_vect, sexp_write,
+    parse_sexp_vect, sexp_print,
     compile_module,
 )
 

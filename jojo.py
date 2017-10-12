@@ -496,28 +496,28 @@ def parse_sexp_cons_until_ket(string_vect, i, ket):
             parse_sexp_cons_until_ket(string_vect, i1, ket)
         return (cons(s, s_cons), i2)
 
-def write(x):
+def p_print(x):
     print(x, end="")
 
-def sexp_write(s):
+def sexp_print(s):
     if null_p(s):
-        write ("null")
+        p_print ("null")
     elif cons_p(s):
-        write ("(")
-        sexp_list_write(s)
-        write (")")
+        p_print ("(")
+        sexp_list_print(s)
+        p_print (")")
     else:
-        write (s)
+        p_print (s)
 
-def sexp_list_write(s_cons):
+def sexp_list_print(s_cons):
     if null_p(s_cons):
         pass
     elif null_p(cdr(s_cons)):
-        sexp_write(car(s_cons))
+        sexp_print(car(s_cons))
     else:
-        sexp_write(car(s_cons))
-        write (" ")
-        sexp_list_write(cdr(s_cons))
+        sexp_print(car(s_cons))
+        p_print (" ")
+        sexp_list_print(cdr(s_cons))
 
 def new_module(name):
     module = types.ModuleType(name)
@@ -639,8 +639,8 @@ def sexp_value(module, sexp):
     if len(vm.ds) != 1:
         print ("- sexp_value fail")
         print ("  sexp must return one value")
-        write ("  sexp : ")
-        sexp_write(sexp)
+        p_print ("  sexp : ")
+        sexp_print(sexp)
         newline()
         print ("  number of values : {}".format(len(vm.ds)))
         print ("  returned : {}".format(vm.ds))
@@ -888,9 +888,25 @@ def mod(a, b):
 def p_divmod(a, b):
     return VALUES(*divmod(a, b))
 
-@prim('int-write')
-def int_write(i):
-    write(i)
+@prim('lt?')
+def lt_p(a, b):
+    return a < b
+
+@prim('gt?')
+def gt_p(a, b):
+    return a > b
+
+@prim('lteq?')
+def lteq_p(a, b):
+    return a <= b
+
+@prim('gteq?')
+def gteq_p(a, b):
+    return a >= b
+
+@prim('int-print')
+def int_print(i):
+    p_print(i)
 
 prim('Bool')(bool)
 
@@ -933,15 +949,14 @@ prim('list?')(list_p)
 prim('car')(car)
 prim('cdr')(cdr)
 
-prim('sexp-write')(sexp_write)
-prim('sexp-list-write')(sexp_list_write)
+prim('sexp-print')(sexp_print)
+prim('sexp-list-print')(sexp_list_print)
 
 prim('String')(str)
-prim('Str')(str)
 
-@prim('string-write')
-def string_write(string):
-    write(string)
+@prim('string-print')
+def string_print(string):
+    p_print(string)
 
 prim('vect?')(vect_p)
 
@@ -1030,7 +1045,7 @@ def vect_to_tuple(vect):
 def vect_to_set(vect):
     return set(vect)
 
-prim('print')(write)
+prim('print')(p_print)
 
 @prim('newline')
 def newline():
@@ -1040,7 +1055,7 @@ prim('nl')(newline)
 
 @prim('space')
 def space():
-    write(" ")
+    p_print(" ")
 
 keyword_dict = {}
 
@@ -1170,8 +1185,8 @@ def k_import(module, body):
             print ("- (import) syntax error")
             print ("  module name can not contain '.'")
             print ("  module name : {}".format(name))
-            write ("  import body : ")
-            sexp_list_write(body)
+            p_print ("  import body : ")
+            sexp_list_print(body)
             newline()
             raise JOJO_ERROR()
 
@@ -1193,8 +1208,8 @@ def k_import_as(module, body):
         print ("- (import) syntax error")
         print ("  syntax for (import as) should be :")
         print ("  (import <module-name> as <name>)")
-        write ("  import body : ")
-        sexp_list_write(body)
+        p_print ("  import body : ")
+        sexp_list_print(body)
         newline()
         raise JOJO_ERROR()
     name = name_vect[0]
@@ -1227,8 +1242,8 @@ def k_from_syntax_check(body):
     print ("- (from) syntax error")
     print ("  syntax for (from import) should be :")
     print ("  (from <module-name> import <name> ...)")
-    write ("  import body : ")
-    sexp_list_write(body)
+    p_print ("  import body : ")
+    sexp_list_print(body)
     newline()
     raise JOJO_ERROR()
 
@@ -1252,8 +1267,8 @@ def k_from_as_syntax_check(body):
     print ("- (from) syntax error")
     print ("  syntax for (from import as) should be :")
     print ("  (from <module-name> import <name> as <name>)")
-    write ("  import body : ")
-    sexp_list_write(body)
+    p_print ("  import body : ")
+    sexp_list_print(body)
     newline()
     raise JOJO_ERROR()
 
@@ -1366,8 +1381,8 @@ def plus_gene(module, body):
         print ("  gene dispatches on types of arguments")
         print ("  can not define gene over nothing")
         print ("  name : {}".format(name))
-        write ("  arrow : ")
-        sexp_write(arrow)
+        p_print ("  arrow : ")
+        sexp_print(arrow)
         newline()
         raise JOJO_ERROR()
 
@@ -1416,8 +1431,8 @@ def plus_disp(module, body):
             print ("  type_tuple for gene is already defined")
             print ("  type_tuple : {}".format(type_tuple))
             print ("  gene name : {}".format(name))
-            write ("  arrow : ")
-            sexp_write(arrow)
+            p_print ("  arrow : ")
+            sexp_print(arrow)
             newline()
             raise JOJO_ERROR()
         else:
@@ -1512,8 +1527,8 @@ def k_cond(body):
 @prim('report-cond-mismatch')
 def report_cond_mismatch(body):
     print ("- cond mismatch")
-    write ("  body : ")
-    sexp_write(body)
+    p_print ("  body : ")
+    sexp_print(body)
     newline()
     raise JOJO_ERROR()
 
@@ -1663,7 +1678,7 @@ def read_sexp_list_until_ket(char_stack, ket):
         return cons(sexp, recur)
 
 def print_data_stack(ds):
-    write ("  * {} *  ".format(len(ds)))
+    p_print ("  * {} *  ".format(len(ds)))
     print (ds)
 
 def repl():

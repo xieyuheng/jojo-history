@@ -5,6 +5,18 @@
 
 *** fix non "*.py" file in setup.py
 
+*** cover String
+
+*** cover Vect
+
+*** cover List
+
+*** cover Dict
+
+*** cover Tuple
+
+*** cover Set
+
 *** vm < thread < process -- concurrency levels
 
 *** debug repl
@@ -803,39 +815,39 @@
             return (cons(s, s_cons), i2)
     #+end_src
 
-*** write
+*** p_print
 
     #+begin_src python
-    def write(x):
+    def p_print(x):
         print(x, end="")
     #+end_src
 
-*** sexp_write
+*** sexp_print
 
     #+begin_src python
-    def sexp_write(s):
+    def sexp_print(s):
         if null_p(s):
-            write ("null")
+            p_print ("null")
         elif cons_p(s):
-            write ("(")
-            sexp_list_write(s)
-            write (")")
+            p_print ("(")
+            sexp_list_print(s)
+            p_print (")")
         else:
-            write (s)
+            p_print (s)
     #+end_src
 
-*** sexp_list_write
+*** sexp_list_print
 
     #+begin_src python
-    def sexp_list_write(s_cons):
+    def sexp_list_print(s_cons):
         if null_p(s_cons):
             pass
         elif null_p(cdr(s_cons)):
-            sexp_write(car(s_cons))
+            sexp_print(car(s_cons))
         else:
-            sexp_write(car(s_cons))
-            write (" ")
-            sexp_list_write(cdr(s_cons))
+            sexp_print(car(s_cons))
+            p_print (" ")
+            sexp_list_print(cdr(s_cons))
     #+end_src
 
 * [note] syntax
@@ -1066,8 +1078,8 @@
         if len(vm.ds) != 1:
             print ("- sexp_value fail")
             print ("  sexp must return one value")
-            write ("  sexp : ")
-            sexp_write(sexp)
+            p_print ("  sexp : ")
+            sexp_print(sexp)
             newline()
             print ("  number of values : {}".format(len(vm.ds)))
             print ("  returned : {}".format(vm.ds))
@@ -1472,12 +1484,46 @@
         return VALUES(*divmod(a, b))
     #+end_src
 
-*** int_write
+*** compare
+
+***** lt? -- less then
+
+      #+begin_src python
+      @prim('lt?')
+      def lt_p(a, b):
+          return a < b
+      #+end_src
+
+***** gt? -- greater then
+
+      #+begin_src python
+      @prim('gt?')
+      def gt_p(a, b):
+          return a > b
+      #+end_src
+
+***** lteq? -- less then or equal to
+
+      #+begin_src python
+      @prim('lteq?')
+      def lteq_p(a, b):
+          return a <= b
+      #+end_src
+
+***** gteq? -- greater then or equal to
+
+      #+begin_src python
+      @prim('gteq?')
+      def gteq_p(a, b):
+          return a >= b
+      #+end_src
+
+*** int_print
 
     #+begin_src python
-    @prim('int-write')
-    def int_write(i):
-        write(i)
+    @prim('int-print')
+    def int_print(i):
+        p_print(i)
     #+end_src
 
 * *bool*
@@ -1538,25 +1584,24 @@
   prim('car')(car)
   prim('cdr')(cdr)
 
-  prim('sexp-write')(sexp_write)
-  prim('sexp-list-write')(sexp_list_write)
+  prim('sexp-print')(sexp_print)
+  prim('sexp-list-print')(sexp_list_print)
   #+end_src
 
 * *string*
 
-*** String & Str
+*** String
 
     #+begin_src python
     prim('String')(str)
-    prim('Str')(str)
     #+end_src
 
-*** string_write
+*** string_print
 
     #+begin_src python
-    @prim('string-write')
-    def string_write(string):
-        write(string)
+    @prim('string-print')
+    def string_print(string):
+        p_print(string)
     #+end_src
 
 * *vect*
@@ -1721,7 +1766,7 @@
 *** print
 
     #+begin_src python
-    prim('print')(write)
+    prim('print')(p_print)
     #+end_src
 
 *** nl -- newline
@@ -1739,7 +1784,7 @@
     #+begin_src python
     @prim('space')
     def space():
-        write(" ")
+        p_print(" ")
     #+end_src
 
 * ------
@@ -1940,8 +1985,8 @@
                   print ("- (import) syntax error")
                   print ("  module name can not contain '.'")
                   print ("  module name : {}".format(name))
-                  write ("  import body : ")
-                  sexp_list_write(body)
+                  p_print ("  import body : ")
+                  sexp_list_print(body)
                   newline()
                   raise JOJO_ERROR()
 
@@ -1971,8 +2016,8 @@
               print ("- (import) syntax error")
               print ("  syntax for (import as) should be :")
               print ("  (import <module-name> as <name>)")
-              write ("  import body : ")
-              sexp_list_write(body)
+              p_print ("  import body : ")
+              sexp_list_print(body)
               newline()
               raise JOJO_ERROR()
           name = name_vect[0]
@@ -2015,8 +2060,8 @@
           print ("- (from) syntax error")
           print ("  syntax for (from import) should be :")
           print ("  (from <module-name> import <name> ...)")
-          write ("  import body : ")
-          sexp_list_write(body)
+          p_print ("  import body : ")
+          sexp_list_print(body)
           newline()
           raise JOJO_ERROR()
       #+end_src
@@ -2048,8 +2093,8 @@
           print ("- (from) syntax error")
           print ("  syntax for (from import as) should be :")
           print ("  (from <module-name> import <name> as <name>)")
-          write ("  import body : ")
-          sexp_list_write(body)
+          p_print ("  import body : ")
+          sexp_list_print(body)
           newline()
           raise JOJO_ERROR()
       #+end_src
@@ -2218,8 +2263,8 @@
               print ("  gene dispatches on types of arguments")
               print ("  can not define gene over nothing")
               print ("  name : {}".format(name))
-              write ("  arrow : ")
-              sexp_write(arrow)
+              p_print ("  arrow : ")
+              sexp_print(arrow)
               newline()
               raise JOJO_ERROR()
 
@@ -2278,8 +2323,8 @@
                   print ("  type_tuple for gene is already defined")
                   print ("  type_tuple : {}".format(type_tuple))
                   print ("  gene name : {}".format(name))
-                  write ("  arrow : ")
-                  sexp_write(arrow)
+                  p_print ("  arrow : ")
+                  sexp_print(arrow)
                   newline()
                   raise JOJO_ERROR()
               else:
@@ -2423,8 +2468,8 @@
     @prim('report-cond-mismatch')
     def report_cond_mismatch(body):
         print ("- cond mismatch")
-        write ("  body : ")
-        sexp_write(body)
+        p_print ("  body : ")
+        sexp_print(body)
         newline()
         raise JOJO_ERROR()
     #+end_src
@@ -2626,7 +2671,7 @@
 
       #+begin_src python
       def print_data_stack(ds):
-          write ("  * {} *  ".format(len(ds)))
+          p_print ("  * {} *  ".format(len(ds)))
           print (ds)
       #+end_src
 

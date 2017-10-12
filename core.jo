@@ -12,9 +12,9 @@
 (+jojo list-ref (-> :list :index -- Value)
   (cond [:list null?]
         ["- list-ref fail"
-         string-write newline
+         string-print newline
          "  index greater then length of list"
-         string-write newline
+         string-print newline
          error]
         [:index 0 eq?] [:list .car]
         else [:list .cdr :index dec list-ref]))
@@ -30,29 +30,34 @@
 (+jojo assert (-> :body -- sexp)
   `(if (@ :body list-spread)
      {}
-     {"- (assert) fail" string-write newline
-      "  assertion : " string-write
-      (quote (@ :body)) sexp-list-write newline}))
+     {"- (assert) fail" string-print newline
+      "  assertion : " string-print
+      (quote (@ :body)) sexp-list-print newline}))
 
 (+jojo assert! (-> :body -- sexp)
   `(if (@ :body list-spread)
      {}
-     {"- (assert!) fail" string-write newline
-      "  assertion : " string-write
-      (quote (@ :body)) sexp-list-write newline
+     {"- (assert!) fail" string-print newline
+      "  assertion : " string-print
+      (quote (@ :body)) sexp-list-print newline
       error}))
 
-(+gene w (-> :x --) :x print)
+(+gene p (-> :x --) :x print)
 
-(+disp w (-> :list List --)
-  (cond [:list null?] ["()" w]
-        [:list cons?] ["(" w :list list-write/loop ")" w]))
+(+disp p (-> :list List --)
+  (cond [:list null?] ["()" p]
+        [:list cons?] ["(" p :list list-print/loop ")" p]))
 
-(+jojo list-write/loop (-> :list --)
+(+jojo list-print/loop (-> :list --)
   (cond
     [:list null?] []
-    [:list .cdr null?] [:list .car w]
-    else [:list .car w space
-          :list .cdr list-write/loop]))
+    [:list .cdr null?] [:list .car p]
+    else [:list .car p space
+          :list .cdr list-print/loop]))
 
 (+gene equal? (-> :x :y -- Bool) false)
+
+(+jojo times (-> :fun :n --)
+  (cond [:n 0 lteq?] []
+        else [:fun apply
+              :fun :n dec times]))

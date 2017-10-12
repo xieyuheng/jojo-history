@@ -38,9 +38,9 @@
     (+jojo list-ref (-> :list :index -- Value)
       (cond [:list null?]
             ["- list-ref fail"
-             string-write newline
+             string-print newline
              "  index greater then length of list"
-             string-write newline
+             string-print newline
              error]
             [:index 0 eq?] [:list .car]
             else [:list .cdr :index dec list-ref]))
@@ -70,38 +70,59 @@
     (+jojo assert (-> :body -- sexp)
       `(if (@ :body list-spread)
          {}
-         {"- (assert) fail" string-write newline
-          "  assertion : " string-write
-          (quote (@ :body)) sexp-list-write newline}))
+         {"- (assert) fail" string-print newline
+          "  assertion : " string-print
+          (quote (@ :body)) sexp-list-print newline}))
 
     (+jojo assert! (-> :body -- sexp)
       `(if (@ :body list-spread)
          {}
-         {"- (assert!) fail" string-write newline
-          "  assertion : " string-write
-          (quote (@ :body)) sexp-list-write newline
+         {"- (assert!) fail" string-print newline
+          "  assertion : " string-print
+          (quote (@ :body)) sexp-list-print newline
           error}))
     #+end_src
 
-* w -- gene
+* p -- gene
 
-  #+begin_src jojo
-  (+gene w (-> :x --) :x print)
+*** gene
 
-  (+disp w (-> :list List --)
-    (cond [:list null?] ["()" w]
-          [:list cons?] ["(" w :list list-write/loop ")" w]))
+    #+begin_src jojo
+    (+gene p (-> :x --) :x print)
+    #+end_src
 
-  (+jojo list-write/loop (-> :list --)
-    (cond
-      [:list null?] []
-      [:list .cdr null?] [:list .car w]
-      else [:list .car w space
-            :list .cdr list-write/loop]))
-  #+end_src
+*** List
+
+    #+begin_src jojo
+    (+disp p (-> :list List --)
+      (cond [:list null?] ["()" p]
+            [:list cons?] ["(" p :list list-print/loop ")" p]))
+
+    (+jojo list-print/loop (-> :list --)
+      (cond
+        [:list null?] []
+        [:list .cdr null?] [:list .car p]
+        else [:list .car p space
+              :list .cdr list-print/loop]))
+    #+end_src
 
 * equal? -- gene
 
-  #+begin_src jojo
-  (+gene equal? (-> :x :y -- Bool) false)
-  #+end_src
+*** gene
+
+    #+begin_src jojo
+    (+gene equal? (-> :x :y -- Bool) false)
+    #+end_src
+
+* combinator
+
+*** times
+
+    #+begin_src jojo
+    (+jojo times (-> :fun :n --)
+      (cond [:n 0 lteq?] []
+            else [:fun apply
+                  :fun :n dec times]))
+    #+end_src
+
+* ><

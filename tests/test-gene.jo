@@ -37,7 +37,7 @@
 (+gene w (-> :x --) :x print)
 
 (+disp w (-> :x <zull> --)
-  "zullzullzull" string-write)
+  "zullzullzull" string-print)
 
 (+jojo t4
   zull w)
