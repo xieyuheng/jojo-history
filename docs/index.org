@@ -12,7 +12,7 @@
        which compile jojo code directly to python module
 
     3. the core.jo written in jojo
-       which will be merged into every compiled module
+       which will be merged into each compiled module
 
   - features :
 
