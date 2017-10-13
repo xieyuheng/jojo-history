@@ -3,11 +3,11 @@
 
 * [todo-stack]
 
-*** repl handle exceptions
+*** fix output buffer
 
-    - print_return_stack
+*** fix print_return_stack
 
-    - debug repl
+*** fix debug_repl
 
 *** cover Tuple
 
@@ -1910,6 +1910,17 @@
         p_print(" ")
     #+end_src
 
+* *sys*
+
+*** bye
+
+    #+begin_src python
+    @prim('bye')
+    def bye():
+        print ("bye bye ^-^/")
+        sys.exit()
+    #+end_src
+
 * ------
 * keyword_dict
 
@@ -2816,6 +2827,13 @@
           print (ds)
       #+end_src
 
+***** print_return_stack
+
+      #+begin_src python
+      def print_return_stack(rs):
+          print (rs)
+      #+end_src
+
 ***** repl
 
       - each instance of repl has its own module,
@@ -2840,13 +2858,59 @@
                           print_data_stack(module.vm.ds)
                       except JOJO_ERROR:
                           pass
+                      except SystemExit:
+                          sys.exit()
                       except:
-                          print ("- error : {}".format(sys.exc_info()[0]))
-                          print ("  info : {}".format(sys.exc_info()[1]))
-                          # debug repl
+                          error_type = sys.exc_info()[0]
+                          error_name = error_type.__name__
+                          error_info = sys.exc_info()[1]
+                          print ("- error : {}".format(error_name))
+                          print ("  info : {}".format(error_info))
+                          debug_repl()
+                          pass
+
+          except KeyboardInterrupt:
+              return
+      #+end_src
+
+***** debug_repl
+
+      #+begin_src python
+      def debug_repl():
+          module = new_module('debug_repl')
+          merge_prim_dict(module)
+          merge_module(module, core_module)
+          module.repl_char_stack = []
+
+          print_data_stack(module.vm.ds)
+          print_return_stack(module.vm.rs)
+          try:
+              while True:
+                  p_print("debug> ")
+                  sexp = read_sexp(module.repl_char_stack)
+                  if sexp == 'abort':
+                      module.vm.ds = []
+                      module.vm.rs = []
+                      # clear pytron stack
+                      return
+                  else:
+                      try:
+                          merge_sexp_vect(module, [sexp])
+                          print_data_stack(module.vm.ds)
+                      except JOJO_ERROR:
+                          pass
+                      except SystemExit:
+                          sys.exit()
+                      except:
+                          error_type = sys.exc_info()[0]
+                          error_name = error_type.__name__
+                          error_info = sys.exc_info()[1]
+                          print ("- error : {}".format(error_name))
+                          print ("  info : {}".format(error_info))
+                          debug_repl()
                           pass
           except KeyboardInterrupt:
-              pass
+              return
       #+end_src
 
 * ------

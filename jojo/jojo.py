@@ -1118,6 +1118,11 @@ prim('nl')(newline)
 def space():
     p_print(" ")
 
+@prim('bye')
+def bye():
+    print ("bye bye ^-^/")
+    sys.exit()
+
 keyword_dict = {}
 
 def keyword(name):
@@ -1756,6 +1761,9 @@ def print_data_stack(ds):
     p_print ("  * {} *  ".format(len(ds)))
     print (ds)
 
+def print_return_stack(rs):
+    print (rs)
+
 def repl():
     module = new_module('repl')
     merge_prim_dict(module)
@@ -1774,10 +1782,53 @@ def repl():
                     print_data_stack(module.vm.ds)
                 except JOJO_ERROR:
                     pass
+                except SystemExit:
+                    sys.exit()
                 except:
-                    print ("- error : {}".format(sys.exc_info()[0]))
-                    print ("  info : {}".format(sys.exc_info()[1]))
-                    # debug repl
+                    error_type = sys.exc_info()[0]
+                    error_name = error_type.__name__
+                    error_info = sys.exc_info()[1]
+                    print ("- error : {}".format(error_name))
+                    print ("  info : {}".format(error_info))
+                    debug_repl()
+                    pass
+
+    except KeyboardInterrupt:
+        return
+
+def debug_repl():
+    module = new_module('debug_repl')
+    merge_prim_dict(module)
+    merge_module(module, core_module)
+    module.repl_char_stack = []
+
+    print ("- enter debug repl")
+    print_data_stack(module.vm.ds)
+    print_return_stack(module.vm.rs)
+    try:
+        while True:
+            print ("- debugging")
+            sexp = read_sexp(module.repl_char_stack)
+            if sexp == 'abort':
+                module.vm.ds = []
+                module.vm.rs = []
+                # clear pytron stack
+                return
+            else:
+                try:
+                    merge_sexp_vect(module, [sexp])
+                    print_data_stack(module.vm.ds)
+                except JOJO_ERROR:
+                    pass
+                except SystemExit:
+                    sys.exit()
+                except:
+                    error_type = sys.exc_info()[0]
+                    error_name = error_type.__name__
+                    error_info = sys.exc_info()[1]
+                    print ("- error : {}".format(error_name))
+                    print ("  info : {}".format(error_info))
+                    debug_repl()
                     pass
     except KeyboardInterrupt:
-        pass
+        return
