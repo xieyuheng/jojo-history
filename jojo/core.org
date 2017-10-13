@@ -1,9 +1,6 @@
+#+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+property: tangle core.jo
 #+title: core
-
-* [todo-stack]
-
-*** (case) over class and data
 
 * Int
 

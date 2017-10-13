@@ -1,27 +1,6 @@
+#+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-
-* [todo-stack]
-
-*** fix print_return_stack
-
-*** fix debug_repl
-
-*** vm < thread < process -- concurrency levels
-
-*** docs
-
-***** specify jojo vm
-
-      - the design of jo in jojo vm
-
-      - which semantic subset of python is captured by jojo vm
-
-***** specify jojo syntax
-
-***** specify compiler
-
-      - the generated python module
 
 * ------
 * prolog

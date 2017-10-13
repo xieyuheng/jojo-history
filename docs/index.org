@@ -1,0 +1,56 @@
+#+html_head: <link rel="stylesheet" href="css/org-page.css"/>
+#+title: J💛J💛 in python
+
+* imp-tech
+
+  - this simple implementation of jojo consist of :
+
+    1. a vm written in python
+       which captures a subset of python's semantic
+
+    2. a compiler written in python
+       which compile jojo code directly to python module
+
+    3. the core.jo written in jojo
+       which will be merged into every compiled module
+
+  - features :
+
+    1. proper tail call
+
+    2. [todo] concurrency modules :
+       CCP, CSP, actor
+
+* getting start
+
+*** install
+
+    - jojo-in-python is dist as a python package
+      to install it :
+
+    #+begin_src sh
+    # for a user
+    $ pip install --user jojo
+    # to find python package in :
+    #   $HOME/.local/lib/python3.6/site-packages/jojo/
+    # and jojo interpreter at :
+    #   $HOME/.local/bin/jojo
+
+    # or do a system wide installation
+    $ sudo pip install jojo
+    #+end_src
+
+*** [todo]
+
+* source code
+
+  - repo at :
+    - https://github.com/xieyuheng/jojo-in-python
+
+  - to view the code :
+    - [[./jojo.org][jojo in python]]
+    - [[./core.org][jojo core]]
+
+* license
+
+  - I dedicate all my works here to all human beings

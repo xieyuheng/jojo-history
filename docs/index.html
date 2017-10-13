@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-10-14 Sat 01:49 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>J💛J💛 in python</title>
+<meta name="generator" content="Org-mode" />
+<meta name="author" content="xieyuheng" />
+<link rel="stylesheet" href="css/org-page.css"/>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">J💛J💛 in python</h1>
+<div id="table-of-contents">
+<h2>overview</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org54910eb">imp-tech</a></li>
+<li><a href="#orgafa6481">getting start</a>
+<ul>
+<li><a href="#org98a6dd9">install</a></li>
+<li><a href="#orgce689b7">[todo]</a></li>
+</ul>
+</li>
+<li><a href="#orged57ebe">source code</a></li>
+<li><a href="#orgda2b8a8">license</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org54910eb" class="outline-2">
+<h2 id="org54910eb">imp-tech</h2>
+<div class="outline-text-2" id="text-org54910eb">
+<ul class="org-ul">
+<li><p>this simple implementation of jojo consist of :</p><p></p><p><ol class="org-ol"></p><p><li>a vm written in python</p><p>which captures a subset of python's semantic</li></p><p></p><p><li>a compiler written in python</p><p>which compile jojo code directly to python module</li></p><p></p><p><li>the core.jo written in jojo</p><p>which will be merged into every compiled module</li></ol></p></li>
+
+<li><p>features :</p><p></p><p><ol class="org-ol"></p><p><li>proper tail call</li></p><p></p><p><li>[todo] concurrency modules :</p><p>CCP, CSP, actor</li></ol></p></li></ul>
+</div>
+</div>
+
+<div id="outline-container-orgafa6481" class="outline-2">
+<h2 id="orgafa6481">getting start</h2>
+<div class="outline-text-2" id="text-orgafa6481">
+</div><div id="outline-container-org98a6dd9" class="outline-3">
+<h3 id="org98a6dd9">install</h3>
+<div class="outline-text-3" id="text-org98a6dd9">
+<ul class="org-ul">
+<li><p>jojo-in-python is dist as a python package</p><p>to install it :</p></li></ul>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #FF8888;"># </span><span style="color: #FF8888;">for a user</span>
+$ pip install --user jojo
+<span style="color: #FF8888;"># </span><span style="color: #FF8888;">to find python package in :</span>
+<span style="color: #FF8888;">#   </span><span style="color: #FF8888;">$HOME/.local/lib/python3.6/site-packages/jojo/</span>
+<span style="color: #FF8888;"># </span><span style="color: #FF8888;">and jojo interpreter at :</span>
+<span style="color: #FF8888;">#   </span><span style="color: #FF8888;">$HOME/.local/bin/jojo</span>
+
+<span style="color: #FF8888;"># </span><span style="color: #FF8888;">or do a system wide installation</span>
+$ sudo pip install jojo
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgce689b7" class="outline-3">
+<h3 id="orgce689b7">[todo]</h3>
+</div>
+</div>
+
+<div id="outline-container-orged57ebe" class="outline-2">
+<h2 id="orged57ebe">source code</h2>
+<div class="outline-text-2" id="text-orged57ebe">
+<ul class="org-ul">
+<li><p>repo at :</p><p><ul class="org-ul"></p><p><li><p><a href="https://github.com/xieyuheng/jojo-in-python">https://github.com/xieyuheng/jojo-in-python</a></p></li></ul></p></li>
+
+<li><p>to view the code :</p><p><ul class="org-ul"></p><p><li><p><a href="./jojo.html">jojo in python</a></p></li></p><p><li><p><a href="./core.html">jojo core</a></p></li></ul></p></li></ul>
+</div>
+</div>
+
+<div id="outline-container-orgda2b8a8" class="outline-2">
+<h2 id="orgda2b8a8">license</h2>
+<div class="outline-text-2" id="text-orgda2b8a8">
+<ul class="org-ul">
+<li><p>I dedicate all my works here to all human beings</p></li></ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: xieyuheng</p>
+<p class="date">Created: 2017-10-14 Sat 01:49</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
