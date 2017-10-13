@@ -985,8 +985,13 @@ def string_eq_p(string1, string2):
 
 prim('vect?')(vect_p)
 
+@prim('vect-copy')
 def vect_copy(vect):
     return vect[:]
+
+@prim('vect-member?')
+def vect_member_p(x, vect):
+    return x in vect
 
 @prim('vect->sexp')
 def vect_to_sexp(vect):
@@ -1066,6 +1071,10 @@ prim('Dict')(dict)
 def dict_p(x):
     return type(x) == dict
 
+@prim('dict-copy')
+def dict_copy(d):
+    return d.copy()
+
 @prim('vect->dict')
 def vect_to_dict(vect):
     length = len(vect)
@@ -1084,6 +1093,28 @@ def vect_to_dict(vect):
         d[k] = v
         i = i + 2
 
+    return d
+
+@prim('dict-length')
+def dict_length(d):
+    return len(d)
+
+@prim('dict-find')
+def dict_find(d, k):
+    try:
+        return VALUES(d[k], True)
+    except KeyError:
+        return False
+
+@prim('dict-update')
+def dict_update(d1, d2):
+    d1 = dict_copy(d1)
+    return d1.update(d2)
+
+@prim('dict-delete')
+def dict_delete(d, k):
+    d = dict_copy(d)
+    del d[k]
     return d
 
 prim('Tuple')(tuple)

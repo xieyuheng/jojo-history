@@ -7,8 +7,6 @@
 
 *** fix debug_repl
 
-*** cover Dict
-
 *** vm < thread < process -- concurrency levels
 
 *** docs
@@ -1664,8 +1662,17 @@
 *** vect_copy
 
     #+begin_src python
+    @prim('vect-copy')
     def vect_copy(vect):
         return vect[:]
+    #+end_src
+
+*** vect_member_p
+
+    #+begin_src python
+    @prim('vect-member?')
+    def vect_member_p(x, vect):
+        return x in vect
     #+end_src
 
 *** vect_to_sexp
@@ -1806,6 +1813,14 @@
         return type(x) == dict
     #+end_src
 
+*** dict_copy
+
+    #+begin_src python
+    @prim('dict-copy')
+    def dict_copy(d):
+        return d.copy()
+    #+end_src
+
 *** vect_to_dict
 
     #+begin_src python
@@ -1827,6 +1842,44 @@
             d[k] = v
             i = i + 2
 
+        return d
+    #+end_src
+
+*** dict_length
+
+    #+begin_src python
+    @prim('dict-length')
+    def dict_length(d):
+        return len(d)
+    #+end_src
+
+*** dict_find
+
+    #+begin_src python
+    @prim('dict-find')
+    def dict_find(d, k):
+        try:
+            return VALUES(d[k], True)
+        except KeyError:
+            return False
+    #+end_src
+
+*** dict_update -- no-side-effect
+
+    #+begin_src python
+    @prim('dict-update')
+    def dict_update(d1, d2):
+        d1 = dict_copy(d1)
+        return d1.update(d2)
+    #+end_src
+
+*** dict_delete -- no-side-effect
+
+    #+begin_src python
+    @prim('dict-delete')
+    def dict_delete(d, k):
+        d = dict_copy(d)
+        del d[k]
         return d
     #+end_src
 
