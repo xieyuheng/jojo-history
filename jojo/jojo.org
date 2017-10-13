@@ -7,8 +7,6 @@
 
 *** fix debug_repl
 
-*** cover Tuple
-
 *** cover Set
 
 *** cover Dict
@@ -1856,6 +1854,32 @@
     @prim('vect->tuple')
     def vect_to_tuple(vect):
         return tuple(vect)
+    #+end_src
+
+*** tuple_length
+
+    #+begin_src python
+    @prim('tuple-length')
+    def tuple_length(tu):
+        return len(tu)
+    #+end_src
+
+*** tuple_ref
+
+    #+begin_src python
+    @prim('tuple-ref')
+    def tuple_ref(tu, index):
+        return tu[index]
+    #+end_src
+
+*** tuple_append
+
+    #+begin_src python
+    @prim('tuple-append')
+    def tuple_append(tu1, tu2):
+        vect1 = Vect(tu1)
+        vect1.extend(tu2)
+        return tuple(vect1)
     #+end_src
 
 * *set*

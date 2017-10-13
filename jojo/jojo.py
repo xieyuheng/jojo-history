@@ -1096,6 +1096,20 @@ def tuple_p(x):
 def vect_to_tuple(vect):
     return tuple(vect)
 
+@prim('tuple-length')
+def tuple_length(tu):
+    return len(tu)
+
+@prim('tuple-ref')
+def tuple_ref(tu, index):
+    return tu[index]
+
+@prim('tuple-append')
+def tuple_append(tu1, tu2):
+    vect1 = Vect(tu1)
+    vect1.extend(tu2)
+    return tuple(vect1)
+
 prim('Set')(set)
 
 @prim('set?')
