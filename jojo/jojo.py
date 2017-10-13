@@ -1096,6 +1096,10 @@ def tuple_p(x):
 def vect_to_tuple(vect):
     return tuple(vect)
 
+@prim('tuple->vect')
+def tuple_to_vect(tu):
+    return Vect(tu)
+
 @prim('tuple-length')
 def tuple_length(tu):
     return len(tu)
@@ -1119,6 +1123,46 @@ def set_p(x):
 @prim('vect->set')
 def vect_to_set(vect):
     return set(vect)
+
+@prim('set->vect')
+def set_to_vect(s):
+    return Vect(s)
+
+@prim('set-length')
+def set_length(s):
+    return len(s)
+
+@prim('set-member?')
+def set_member_p(x, s):
+    return x in s
+
+@prim('set-disjoint?')
+def set_disjoint_p(s1, s2):
+    return s1.isdisjoint(s2)
+
+@prim('set-subset?')
+def set_subset_p(s1, s2):
+    return s1.issubset(s2)
+
+@prim('set-superset?')
+def set_superset_p(s1, s2):
+    return s1.issuperset(s2)
+
+@prim('set-union')
+def set_union(s1, s2):
+    return s1.union(s2)
+
+@prim('set-intersection')
+def set_intersection(s1, s2):
+    return s1.intersection(s2)
+
+@prim('set-difference')
+def set_difference(s1, s2):
+    return s1.difference(s2)
+
+@prim('set-symmetric-difference')
+def set_symmetric_difference(s1, s2):
+    return s1.symmetric_difference(s2)
 
 prim('print')(p_print)
 
