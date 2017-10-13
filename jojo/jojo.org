@@ -3,8 +3,6 @@
 
 * [todo-stack]
 
-*** fix output buffer
-
 *** fix print_return_stack
 
 *** fix debug_repl
@@ -2887,6 +2885,7 @@
           try:
               while True:
                   p_print("debug> ")
+                  sys.stdout.flush()
                   sexp = read_sexp(module.repl_char_stack)
                   if sexp == 'abort':
                       module.vm.ds = []

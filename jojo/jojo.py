@@ -1802,12 +1802,12 @@ def debug_repl():
     merge_module(module, core_module)
     module.repl_char_stack = []
 
-    print ("- enter debug repl")
     print_data_stack(module.vm.ds)
     print_return_stack(module.vm.rs)
     try:
         while True:
-            print ("- debugging")
+            p_print("debug> ")
+            sys.stdout.flush()
             sexp = read_sexp(module.repl_char_stack)
             if sexp == 'abort':
                 module.vm.ds = []
