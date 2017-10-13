@@ -23,21 +23,42 @@
 
 * getting start
 
-*** install
+  - jojo-in-python is distributed as a python package
 
-    - jojo-in-python is dist as a python package
-      to install it :
+*** install for a user
 
     #+begin_src sh
-    # for a user
-    $ pip install --user jojo
-    # to find python package in :
-    #   $HOME/.local/lib/python3.6/site-packages/jojo/
-    # and jojo interpreter at :
-    #   $HOME/.local/bin/jojo
+    pip install --user jojo
+    #+end_src
 
-    # or do a system wide installation
-    $ sudo pip install jojo
+    - to find python package in :
+
+    #+begin_src sh
+    $HOME/.local/lib/python3.6/site-packages/jojo/
+    #+end_src
+
+    - and jojo interpreter at :
+
+    #+begin_src sh
+    $HOME/.local/bin/jojo
+    #+end_src
+
+    - uninstall by :
+
+    #+begin_src sh
+    pip uninstall jojo
+    #+end_src
+
+*** system wide installation
+
+    #+begin_src sh
+    sudo pip install jojo
+    #+end_src
+
+    - uninstall by :
+
+    #+begin_src sh
+    sudo pip uninstall jojo
     #+end_src
 
 *** [todo]

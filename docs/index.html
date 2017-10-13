@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-10-14 Sat 01:52 -->
+<!-- 2017-10-14 Sat 02:01 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>J💛J💛 in python</title>
@@ -64,22 +64,23 @@ for the JavaScript code in this tag.
 <h2>overview</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org9a90bcb">imp-tech</a></li>
-<li><a href="#org7aad5b1">getting start</a>
+<li><a href="#org1a9a564">imp-tech</a></li>
+<li><a href="#org7f2a981">getting start</a>
 <ul>
-<li><a href="#org70580d0">install</a></li>
-<li><a href="#org6713102">[todo]</a></li>
+<li><a href="#orgf4f9625">install for a user</a></li>
+<li><a href="#orgde66925">system wide installation</a></li>
+<li><a href="#org8845630">[todo]</a></li>
 </ul>
 </li>
-<li><a href="#org279788b">source code</a></li>
-<li><a href="#org6dc816e">license</a></li>
+<li><a href="#org9b51331">source code</a></li>
+<li><a href="#org421f4b7">license</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org9a90bcb" class="outline-2">
-<h2 id="org9a90bcb">imp-tech</h2>
-<div class="outline-text-2" id="text-org9a90bcb">
+<div id="outline-container-org1a9a564" class="outline-2">
+<h2 id="org1a9a564">imp-tech</h2>
+<div class="outline-text-2" id="text-org1a9a564">
 <ul class="org-ul">
 <li><p>this simple implementation of jojo consist of :</p><p></p><p><ol class="org-ol"></p><p><li>a vm written in python</p><p>which captures a subset of python's semantic</li></p><p></p><p><li>a compiler written in python</p><p>which compile jojo code directly to python module</li></p><p></p><p><li>the core.jo written in jojo</p><p>which will be merged into each compiled module</li></ol></p></li>
 
@@ -87,39 +88,79 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org7aad5b1" class="outline-2">
-<h2 id="org7aad5b1">getting start</h2>
-<div class="outline-text-2" id="text-org7aad5b1">
-</div><div id="outline-container-org70580d0" class="outline-3">
-<h3 id="org70580d0">install</h3>
-<div class="outline-text-3" id="text-org70580d0">
+<div id="outline-container-org7f2a981" class="outline-2">
+<h2 id="org7f2a981">getting start</h2>
+<div class="outline-text-2" id="text-org7f2a981">
 <ul class="org-ul">
-<li><p>jojo-in-python is dist as a python package</p><p>to install it :</p></li></ul>
+<li><p>jojo-in-python is distributed as a python package</p></li></ul>
+</div>
+
+<div id="outline-container-orgf4f9625" class="outline-3">
+<h3 id="orgf4f9625">install for a user</h3>
+<div class="outline-text-3" id="text-orgf4f9625">
+<div class="org-src-container">
+
+<pre class="src src-sh">pip install --user jojo
+</pre>
+</div>
+
+<ul class="org-ul">
+<li><p>to find python package in :</p></li></ul>
 
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #FF8888;"># </span><span style="color: #FF8888;">for a user</span>
-$ pip install --user jojo
-<span style="color: #FF8888;"># </span><span style="color: #FF8888;">to find python package in :</span>
-<span style="color: #FF8888;">#   </span><span style="color: #FF8888;">$HOME/.local/lib/python3.6/site-packages/jojo/</span>
-<span style="color: #FF8888;"># </span><span style="color: #FF8888;">and jojo interpreter at :</span>
-<span style="color: #FF8888;">#   </span><span style="color: #FF8888;">$HOME/.local/bin/jojo</span>
+<pre class="src src-sh">$<span style="color: #fd971f;">HOME</span>/.local/lib/python3.6/site-packages/jojo/
+</pre>
+</div>
 
-<span style="color: #FF8888;"># </span><span style="color: #FF8888;">or do a system wide installation</span>
-$ sudo pip install jojo
+<ul class="org-ul">
+<li><p>and jojo interpreter at :</p></li></ul>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">$<span style="color: #fd971f;">HOME</span>/.local/bin/jojo
+</pre>
+</div>
+
+<ul class="org-ul">
+<li><p>uninstall by :</p></li></ul>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">pip uninstall jojo
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org6713102" class="outline-3">
-<h3 id="org6713102">[todo]</h3>
+<div id="outline-container-orgde66925" class="outline-3">
+<h3 id="orgde66925">system wide installation</h3>
+<div class="outline-text-3" id="text-orgde66925">
+<div class="org-src-container">
+
+<pre class="src src-sh">sudo pip install jojo
+</pre>
+</div>
+
+<ul class="org-ul">
+<li><p>uninstall by :</p></li></ul>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">sudo pip uninstall jojo
+</pre>
+</div>
 </div>
 </div>
 
-<div id="outline-container-org279788b" class="outline-2">
-<h2 id="org279788b">source code</h2>
-<div class="outline-text-2" id="text-org279788b">
+<div id="outline-container-org8845630" class="outline-3">
+<h3 id="org8845630">[todo]</h3>
+</div>
+</div>
+
+<div id="outline-container-org9b51331" class="outline-2">
+<h2 id="org9b51331">source code</h2>
+<div class="outline-text-2" id="text-org9b51331">
 <ul class="org-ul">
 <li><p>repo at :</p><p><ul class="org-ul"></p><p><li><p><a href="https://github.com/xieyuheng/jojo-in-python">https://github.com/xieyuheng/jojo-in-python</a></p></li></ul></p></li>
 
@@ -127,9 +168,9 @@ $ sudo pip install jojo
 </div>
 </div>
 
-<div id="outline-container-org6dc816e" class="outline-2">
-<h2 id="org6dc816e">license</h2>
-<div class="outline-text-2" id="text-org6dc816e">
+<div id="outline-container-org421f4b7" class="outline-2">
+<h2 id="org421f4b7">license</h2>
+<div class="outline-text-2" id="text-org421f4b7">
 <ul class="org-ul">
 <li><p>I dedicate all my works here to all human beings</p></li></ul>
 </div>
@@ -137,7 +178,7 @@ $ sudo pip install jojo
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: xieyuheng</p>
-<p class="date">Created: 2017-10-14 Sat 01:52</p>
+<p class="date">Created: 2017-10-14 Sat 02:01</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
