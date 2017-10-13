@@ -5,6 +5,7 @@ from jojo.jojo import (
     APPLY, IFTE,
     NEW,
     CALL,
+    VALUES,
 
     scan_string_vect,
     parse_sexp_vect,

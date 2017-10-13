@@ -1593,6 +1593,19 @@ def report_cond_mismatch(body):
     newline()
     raise JOJO_ERROR()
 
+def maybe_drop_shebang(code):
+    length = len(code)
+    if length < 3:
+        return code
+    elif code[0:2] != '#!':
+        return code
+    else:
+        end_of_first_line = code.find('\n')
+        if end_of_first_line == -1:
+            return ""
+        else:
+            return code[end_of_first_line:]
+
 def load(path):
     path = os.path.abspath(path)
 
@@ -1610,6 +1623,7 @@ def load(path):
 
     with open(path, "r") as f:
         code = f.read()
+        code = maybe_drop_shebang(code)
         sexp_vect = parse_sexp_vect(scan_string_vect(code))
         module = compile_module(path, sexp_vect)
 
@@ -1749,7 +1763,6 @@ def repl():
     module.repl_char_stack = []
 
     print_data_stack(module.vm.ds)
-
     try:
         while True:
             sexp = read_sexp(module.repl_char_stack)
@@ -1761,8 +1774,10 @@ def repl():
                     print_data_stack(module.vm.ds)
                 except JOJO_ERROR:
                     pass
-
+                except:
+                    print ("- error : {}".format(sys.exc_info()[0]))
+                    print ("  info : {}".format(sys.exc_info()[1]))
+                    # debug repl
+                    pass
     except KeyboardInterrupt:
         pass
-    # except KeyboardInterrupt:
-    #     pass
