@@ -214,7 +214,7 @@
 
     #+begin_src css
     ul, ol, dl {
-        margin-left: 3em;
+        margin-left: 1em;
         margin: 0em 0em 1em 0em;
         padding: 0;
     }
@@ -224,8 +224,8 @@
 
     #+begin_src css
     li {
-        margin-left: 3em;
-        /* margin-left: 1em; */
+        /* margin-left: 3em; */
+        margin-left: 1em;
     }
     #+end_src
 
@@ -236,7 +236,7 @@
     #+begin_src css
     pre.src {
         font-family: Hack, "Noto Mono", Input, Monaco, monofur, Consolas, "Lucida Console", "Andale Mono WT","Andale Mono","Lucida Console","Lucida Sans Typewriter","DejaVu Sans Mono","Bitstream Vera Sans Mono","Liberation Mono","Nimbus Mono L",Monaco,"Courier New",Courier, monospace;
-        margin-left: 3em;
+        margin-left: 2em;
         margin-right: 1em;
         font-size: 0.8em;
         white-space: pre;

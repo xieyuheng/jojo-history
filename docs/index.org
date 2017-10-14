@@ -3,7 +3,7 @@
 
 * imp-tech
 
-  - this simple implementation of jojo consist of :
+  - this simple implementation consists of :
 
     1. a vm written in python
        which captures a subset of python's semantic
