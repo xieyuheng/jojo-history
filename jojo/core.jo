@@ -76,6 +76,7 @@
     else ad))
 
 (+jojo case (-> :sexp-list -- Sexp)
+  :sexp-list case-syntax-check
   :sexp-list.car :sexp-list.cdr (-> :value :body)
   `(cond (@ :value :body case-spread)))
 
@@ -89,6 +90,23 @@
   (-> :value :case -- question)
   (cond [:value 'else eq?] 'else
         else `[(list (@ :value)) (list (@ :case)) case-match?]))
+
+(+jojo case-syntax-check (-> :sexp-list --)
+  (cond [:sexp-list list-length 1 lteq?]
+        ["- (case) syntax error" p nl
+         "  length of body of (case) must be greater then 1" p nl
+         "  length of body : " p :sexp-list list-length p nl
+         "  body : " p :sexp-list sexp-list-print nl
+         error]
+
+        [:sexp-list list-length even?]
+        ["- (case) syntax error" p nl
+         "  length of body of (case) must be odd" p nl
+         "  length of body : " p :sexp-list list-length p nl
+         "  body : " p :sexp-list sexp-list-print nl
+         error]
+
+        else []))
 
 (+jojo case-match? (-> :vl :tl -- Bool)
   (cond [:vl list-length :tl list-length eq? not] false

@@ -76,7 +76,8 @@ class VM:
         self.rs = rs
 
     def exe(self):
-        while self.rs != []:
+        length = len(self.rs)
+        while len(self.rs) >= length:
             exe_one_step(self)
         return self
 
@@ -1211,11 +1212,180 @@ def bye():
     print("bye bye ^-^/")
     sys.exit()
 
+def read_char(char_stack):
+    if len(char_stack) == 0:
+        return sys.stdin.read(1)
+    else:
+        return char_stack.pop()
+
+def read_string(char_stack):
+    char_vect = []
+    collecting_bytes_p = False
+
+    while True:
+        char = read_char(char_stack)
+        if not collecting_bytes_p:
+            if space_p(char):
+                pass
+            elif doublequote_p(char):
+                return read_doublequoted_string(char_stack)
+            elif delimiter_p(char):
+                char_vect.append(char)
+                break
+            else:
+                char_vect.append(char)
+                collecting_bytes_p = True
+
+        else:
+            if (doublequote_p(char) or
+                delimiter_p(char) or
+                space_p(char)):
+                char_stack.append(char)
+                break
+            else:
+                char_vect.append(char)
+
+    return "".join(char_vect)
+
+def read_doublequoted_string(char_stack):
+    char_vect = []
+    char_vect.append('"')
+    while True:
+        char = read_char(char_stack)
+        if char == '"':
+            break
+        else:
+            char_vect.append(char)
+    char_vect.append('"')
+    return "".join(char_vect)
+
+def read_sexp(char_stack):
+    string = read_string(char_stack)
+    if string == '(':
+        sexp_list = read_sexp_list_until_ket(char_stack, ')')
+        return sexp_list
+    elif string == '[':
+        sexp_list = read_sexp_list_until_ket(char_stack, ']')
+        return cons('begin', sexp_list)
+    elif string == '{':
+        sexp_list = read_sexp_list_until_ket(char_stack, '}')
+        return cons('clo', sexp_list)
+    elif string == '"':
+        return read_doublequoted_string(char_stack)
+    elif string == "'":
+        sexp = read_sexp(char_stack)
+        return cons('quote', cons(sexp, null))
+    elif string == "`":
+        sexp = read_sexp(char_stack)
+        return cons('partquote', cons(sexp, null))
+    else:
+        return string
+
+def read_sexp_list_until_ket(char_stack, ket):
+    string = read_string(char_stack)
+    if string == ket:
+        return null
+    else:
+        char_vect = Vect(string)
+        char_vect.reverse()
+        char_stack.extend(char_vect)
+        sexp = read_sexp(char_stack)
+        recur = read_sexp_list_until_ket(char_stack, ket)
+        return cons(sexp, recur)
+
+def print_data_stack(ds):
+    p_print("  * {} *  ".format(len(ds)))
+    print(ds)
+
+def print_return_stack(rs):
+    print(rs)
+
+def module_repl(module):
+    module.repl_char_stack = []
+    print_data_stack(module.vm.ds)
+    try:
+        while True:
+            module_repl_one_step(module)
+    except KeyboardInterrupt:
+        return
+    except EXIT_MODULE_REPL:
+        return
+
+class EXIT_MODULE_REPL(Exception):
+    pass
+
+def module_repl_one_step(module):
+    sexp = read_sexp(module.repl_char_stack)
+    if sexp == 'exit':
+        raise EXIT_MODULE_REPL()
+    else:
+        try:
+            merge_sexp_vect(module, [sexp])
+            print_data_stack(module.vm.ds)
+        except SystemExit:
+            sys.exit()
+        except:
+            error_type = sys.exc_info()[0]
+            error_name = error_type.__name__
+            error_info = sys.exc_info()[1]
+            print("- error : {}".format(error_name))
+            print("  info : {}".format(error_info))
+            call_module_debug(module, 1)
+
 prim('error')(error)
 
 @prim('module-debug')
-def module_debug(module):
-    debug_repl()
+def module_debug(module, level):
+    print("- enter debug-repl [level : {}]".format(level))
+    module.debug_repl_char_stack = []
+    print_data_stack(module.vm.ds)
+    print_return_stack(module.vm.rs)
+    try:
+        while True:
+            module_debug_one_step(module, level)
+    except KeyboardInterrupt:
+        module.vm.ds = []
+        module.vm.rs = []
+        newline()
+        print("- exit debug-repl [level : {}]".format(level))
+        print("  data-stack and return-stack is cleared")
+        print("  for module : {}".format(module.__name__))
+        return
+    except EXIT_MODULE_DEBUG_REPL:
+        module.vm.ds = []
+        module.vm.rs = []
+        print("- exit debug-repl [level : {}]".format(level))
+        print("  data-stack and return-stack is cleared")
+        print("  for module : {}".format(module.__name__))
+        return
+
+class EXIT_MODULE_DEBUG_REPL(Exception):
+    pass
+
+def module_debug_one_step(module, level):
+    p_print("debug[{}]> ".format(level))
+    sys.stdout.flush()
+    sexp = read_sexp(module.debug_repl_char_stack)
+    if sexp == 'exit':
+        raise EXIT_MODULE_DEBUG_REPL()
+    else:
+        try:
+            merge_sexp_vect(module, [sexp])
+            print_data_stack(module.vm.ds)
+        except SystemExit:
+            sys.exit()
+        except:
+            error_type = sys.exc_info()[0]
+            error_name = error_type.__name__
+            error_info = sys.exc_info()[1]
+            print("- error : {}".format(error_name))
+            print("  info : {}".format(error_info))
+            call_module_debug(module, level + 1)
+
+def call_module_debug(module, level):
+    jojo = JOJO([module, level, module_debug, nop])
+    module.vm.rs.append(RP(jojo))
+    module.vm.exe()
 
 prim('Object')(object)
 
@@ -1229,6 +1399,10 @@ def subclass_p(c1, c2):
        return c1 in c2.get_type_vect()
     else:
        return issubclass(c1, c2)
+
+@prim('nop')
+def nop():
+    return
 
 keyword_dict = {}
 
@@ -1814,160 +1988,3 @@ current_module = sys.modules[__name__]
 current_module_dir = os.path.dirname(current_module.__file__)
 core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
-
-def read_char(char_stack):
-    if len(char_stack) == 0:
-        return sys.stdin.read(1)
-    else:
-        return char_stack.pop()
-
-def read_string(char_stack):
-    char_vect = []
-    collecting_bytes_p = False
-
-    while True:
-        char = read_char(char_stack)
-        if not collecting_bytes_p:
-            if space_p(char):
-                pass
-            elif doublequote_p(char):
-                return read_doublequoted_string(char_stack)
-            elif delimiter_p(char):
-                char_vect.append(char)
-                break
-            else:
-                char_vect.append(char)
-                collecting_bytes_p = True
-
-        else:
-            if (doublequote_p(char) or
-                delimiter_p(char) or
-                space_p(char)):
-                char_stack.append(char)
-                break
-            else:
-                char_vect.append(char)
-
-    return "".join(char_vect)
-
-def read_doublequoted_string(char_stack):
-    char_vect = []
-    char_vect.append('"')
-    while True:
-        char = read_char(char_stack)
-        if char == '"':
-            break
-        else:
-            char_vect.append(char)
-    char_vect.append('"')
-    return "".join(char_vect)
-
-def read_sexp(char_stack):
-    string = read_string(char_stack)
-    if string == '(':
-        sexp_list = read_sexp_list_until_ket(char_stack, ')')
-        return sexp_list
-    elif string == '[':
-        sexp_list = read_sexp_list_until_ket(char_stack, ']')
-        return cons('begin', sexp_list)
-    elif string == '{':
-        sexp_list = read_sexp_list_until_ket(char_stack, '}')
-        return cons('clo', sexp_list)
-    elif string == '"':
-        return read_doublequoted_string(char_stack)
-    elif string == "'":
-        sexp = read_sexp(char_stack)
-        return cons('quote', cons(sexp, null))
-    elif string == "`":
-        sexp = read_sexp(char_stack)
-        return cons('partquote', cons(sexp, null))
-    else:
-        return string
-
-def read_sexp_list_until_ket(char_stack, ket):
-    string = read_string(char_stack)
-    if string == ket:
-        return null
-    else:
-        char_vect = Vect(string)
-        char_vect.reverse()
-        char_stack.extend(char_vect)
-        sexp = read_sexp(char_stack)
-        recur = read_sexp_list_until_ket(char_stack, ket)
-        return cons(sexp, recur)
-
-def print_data_stack(ds):
-    p_print("  * {} *  ".format(len(ds)))
-    print(ds)
-
-def print_return_stack(rs):
-    print(rs)
-
-def repl():
-    module = new_module('repl')
-    merge_prim_dict(module)
-    merge_module(module, core_module)
-    module.repl_char_stack = []
-
-    print_data_stack(module.vm.ds)
-    try:
-        while True:
-            sexp = read_sexp(module.repl_char_stack)
-            if sexp == 'exit':
-                return
-            else:
-                try:
-                    merge_sexp_vect(module, [sexp])
-                    print_data_stack(module.vm.ds)
-                except JOJO_ERROR:
-                    pass
-                except SystemExit:
-                    sys.exit()
-                except:
-                    error_type = sys.exc_info()[0]
-                    error_name = error_type.__name__
-                    error_info = sys.exc_info()[1]
-                    print("- error : {}".format(error_name))
-                    print("  info : {}".format(error_info))
-                    debug_repl()
-                    pass
-
-    except KeyboardInterrupt:
-        return
-
-def debug_repl():
-    module = new_module('debug_repl')
-    merge_prim_dict(module)
-    merge_module(module, core_module)
-    module.repl_char_stack = []
-
-    print_data_stack(module.vm.ds)
-    print_return_stack(module.vm.rs)
-    try:
-        while True:
-            p_print("debug> ")
-            sys.stdout.flush()
-            sexp = read_sexp(module.repl_char_stack)
-            if sexp == 'abort':
-                module.vm.ds = []
-                module.vm.rs = []
-                # clear pytron stack
-                return
-            else:
-                try:
-                    merge_sexp_vect(module, [sexp])
-                    print_data_stack(module.vm.ds)
-                except JOJO_ERROR:
-                    pass
-                except SystemExit:
-                    sys.exit()
-                except:
-                    error_type = sys.exc_info()[0]
-                    error_name = error_type.__name__
-                    error_info = sys.exc_info()[1]
-                    print("- error : {}".format(error_name))
-                    print("  info : {}".format(error_info))
-                    debug_repl()
-                    pass
-    except KeyboardInterrupt:
-        return

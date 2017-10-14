@@ -13,5 +13,7 @@ from jojo.jojo import (
 
     compile_module,
 
-    load, run, repl,
+    module_repl,
+
+    load, run,
 )
