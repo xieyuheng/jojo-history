@@ -2,6 +2,14 @@
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
 
+* [todo-stack]
+
+*** fix print_return_stack
+
+*** fix debug_repl
+
+*** vm < thread < process -- concurrency levels
+
 * ------
 * prolog
 
@@ -115,6 +123,13 @@
           pass
       #+end_src
 
+***** error
+
+      #+begin_src python
+      def error():
+          raise JOJO_ERROR()
+      #+end_src
+
 * ------
 * vm
 
@@ -223,9 +238,9 @@
           signature = get_signature(fun)
 
           if not signature:
-              print ("- exe_fun fail to get signature")
-              print ("  fun : {}".format(fun))
-              raise JOJO_ERROR()
+              print("- exe_fun fail to get signature")
+              print("  fun : {}".format(fun))
+              error()
 
           parameters = signature.parameters
 
@@ -233,12 +248,12 @@
               arg_dict = get_default_arg_dict(parameters)
               top_of_ds = vm.ds.pop()
               if not isinstance(top_of_ds, dict):
-                  print ("- exe_fun fail")
-                  print ("  when fun require a arg_dict")
-                  print ("  the top of data stack is not a dict")
-                  print ("  fun : {}".format(fun))
-                  print ("  top of data stack : {}".format(top_of_ds))
-                  raise JOJO_ERROR()
+                  print("- exe_fun fail")
+                  print("  when fun require a arg_dict")
+                  print("  the top of data stack is not a dict")
+                  print("  fun : {}".format(fun))
+                  print("  top of data stack : {}".format(top_of_ds))
+                  error()
               arg_dict.update(top_of_ds)
           else:
               arg_dict = None
@@ -246,12 +261,12 @@
           if has_para_vect(parameters):
               top_of_ds = vm.ds.pop()
               if not vect_p(top_of_ds):
-                  print ("- exe_fun fail")
-                  print ("  when fun require a arg_vect")
-                  print ("  the top of data stack is not a vect")
-                  print ("  fun : {}".format(fun))
-                  print ("  top of data stack : {}".format(top_of_ds))
-                  raise JOJO_ERROR()
+                  print("- exe_fun fail")
+                  print("  when fun require a arg_vect")
+                  print("  the top of data stack is not a vect")
+                  print("  fun : {}".format(fun))
+                  print("  top of data stack : {}".format(top_of_ds))
+                  error()
               arg_vect = top_of_ds
           else:
               arg_vect = []
@@ -507,9 +522,9 @@
         def jo_exe(self, rp, vm):
             x = vm.ds.pop()
             if not class_p(x):
-                print ("- NEW.jo_exe fail")
-                print ("  argument is not a class : {}".format(x))
-                raise JOJO_ERROR()
+                print("- NEW.jo_exe fail")
+                print("  argument is not a class : {}".format(x))
+                error()
             if JOJO_DATA in x.__bases__:
                 data_dict = {}
                 for field_name in x.reversed_field_name_vect:
@@ -585,10 +600,10 @@
             elif doublequote_p(char):
                 doublequote_end_index = string.find('"', i+1)
                 if doublequote_end_index == -1:
-                    print ("- scan_string_vect fail")
-                    print ("  doublequote mismatch")
-                    print ("  string : {}".format(string))
-                    raise JOJO_ERROR()
+                    print("- scan_string_vect fail")
+                    print("  doublequote mismatch")
+                    print("  string : {}".format(string))
+                    error()
                 end = doublequote_end_index + 1
                 string_vect.append(string[i:end])
                 i = end
@@ -685,10 +700,10 @@
         if null_p(cdr) or cons_p(cdr):
             return Cons(car, cdr)
         else:
-            print ("- cons fail")
-            print ("  cdr of cons must be a cons or null")
-            print ("  cdr : {}".format(cdr))
-            raise JOJO_ERROR()
+            print("- cons fail")
+            print("  cdr of cons must be a cons or null")
+            print("  cdr : {}".format(cdr))
+            error()
     #+end_src
 
 *** cons_p
@@ -785,13 +800,13 @@
     #+begin_src python
     def sexp_print(s):
         if null_p(s):
-            p_print ("null")
+            p_print("null")
         elif cons_p(s):
-            p_print ("(")
+            p_print("(")
             sexp_list_print(s)
-            p_print (")")
+            p_print(")")
         else:
-            p_print (s)
+            p_print(s)
     #+end_src
 
 *** sexp_list_print
@@ -804,7 +819,7 @@
             sexp_print(car(s_cons))
         else:
             sexp_print(car(s_cons))
-            p_print (" ")
+            p_print(" ")
             sexp_list_print(cdr(s_cons))
     #+end_src
 
@@ -827,8 +842,9 @@
 
     - (begin)
     - (clo)
-    - (if)
     - (cond)
+
+    - (if)
     - (case)
 
 *** sexp quote
@@ -1019,10 +1035,10 @@
         if string in defined_name_set:
             return [CALL(module, string)]
 
-        print ("- string_emit fail")
-        print ("  meet undefined string : {}".format(string))
+        print("- string_emit fail")
+        print("  meet undefined string : {}".format(string))
         newline()
-        raise JOJO_ERROR()
+        error()
     #+end_src
 
 *** sexp_value
@@ -1034,14 +1050,14 @@
         vm = VM([], [RP(jojo)])
         vm.exe()
         if len(vm.ds) != 1:
-            print ("- sexp_value fail")
-            print ("  sexp must return one value")
-            p_print ("  sexp : ")
+            print("- sexp_value fail")
+            print("  sexp must return one value")
+            p_print("  sexp : ")
             sexp_print(sexp)
             newline()
-            print ("  number of values : {}".format(len(vm.ds)))
-            print ("  returned : {}".format(vm.ds))
-            raise JOJO_ERROR()
+            print("  number of values : {}".format(len(vm.ds)))
+            print("  returned : {}".format(vm.ds))
+            error()
 
         value = vm.ds[0]
         return value
@@ -1388,14 +1404,6 @@
   @prim('swap')
   def swap(a, b):
       return VALUES(b, a)
-  #+end_src
-
-* *error*
-
-  #+begin_src python
-  @prim('error')
-  def error():
-      raise JOJO_ERROR()
   #+end_src
 
 * *int*
@@ -1749,9 +1757,9 @@
     #+begin_src python
     def list_ref(l, i):
         if null_p(l):
-            print ("- list_ref fail")
-            print ("  index greater then length of list")
-            raise JOJO_ERROR()
+            print("- list_ref fail")
+            print("  index greater then length of list")
+            error()
         elif i == 0:
             return car(l)
         else:
@@ -1807,11 +1815,11 @@
     def vect_to_dict(vect):
         length = len(vect)
         if length % 2 != 0:
-            print ("- vect->dict fail")
-            print ("  length of vect must be even")
-            print ("  length : {}".format(length))
-            print ("  vect : {}".format(vect))
-            raise JOJO_ERROR()
+            print("- vect->dict fail")
+            print("  length of vect must be even")
+            print("  length : {}".format(length))
+            print("  vect : {}".format(vect))
+            error()
 
         d = {}
         i = 0
@@ -2013,7 +2021,7 @@
     #+begin_src python
     @prim('newline')
     def newline():
-        print ("")
+        print("")
 
     prim('nl')(newline)
     #+end_src
@@ -2033,8 +2041,47 @@
     #+begin_src python
     @prim('bye')
     def bye():
-        print ("bye bye ^-^/")
+        print("bye bye ^-^/")
         sys.exit()
+    #+end_src
+
+* *error*
+
+*** error
+
+    #+begin_src python
+    prim('error')(error)
+    #+end_src
+
+*** >< module_debug
+
+    #+begin_src python
+    @prim('module-debug')
+    def module_debug(module):
+        debug_repl()
+    #+end_src
+
+* *class*
+
+*** value_to_class
+
+    #+begin_src python
+    @prim('value->class')
+    def value_to_class(value):
+        return type(value)
+    #+end_src
+
+*** subclass_p
+
+    - treat UNION specially
+
+    #+begin_src python
+    @prim('subclass?')
+    def subclass_p(c1, c2):
+        if type(c2) == UNION:
+           return c1 in c2.get_type_vect()
+        else:
+           return issubclass(c1, c2)
     #+end_src
 
 * ------
@@ -2082,16 +2129,6 @@
     @keyword('clo')
     def k_clo(module, body):
         return [CLO(sexp_list_emit(module, body))]
-    #+end_src
-
-*** (if)
-
-    #+begin_src python
-    @keyword('if')
-    def k_if(module, body):
-        jo_vect = sexp_list_emit(module, body)
-        jo_vect.append(IFTE)
-        return jo_vect
     #+end_src
 
 *** (quote)
@@ -2232,13 +2269,13 @@
 
           for name in name_vect:
               if '.' in name:
-                  print ("- (import) syntax error")
-                  print ("  module name can not contain '.'")
-                  print ("  module name : {}".format(name))
-                  p_print ("  import body : ")
+                  print("- (import) syntax error")
+                  print("  module name can not contain '.'")
+                  print("  module name : {}".format(name))
+                  p_print("  import body : ")
                   sexp_list_print(body)
                   newline()
-                  raise JOJO_ERROR()
+                  error()
 
           for name in name_vect:
               k_import_one(module, name)
@@ -2263,13 +2300,13 @@
               name_vect[0] == 'as' or
               name_vect[1] != 'as' or
               name_vect[2] == 'as'):
-              print ("- (import) syntax error")
-              print ("  syntax for (import as) should be :")
-              print ("  (import <module-name> as <name>)")
-              p_print ("  import body : ")
+              print("- (import) syntax error")
+              print("  syntax for (import as) should be :")
+              print("  (import <module-name> as <name>)")
+              p_print("  import body : ")
               sexp_list_print(body)
               newline()
-              raise JOJO_ERROR()
+              error()
           name = name_vect[0]
           as_name = name_vect[2]
           imported_module = importlib.import_module(name)
@@ -2307,13 +2344,13 @@
               pass
           if vect_body[1] == 'import':
               return
-          print ("- (from) syntax error")
-          print ("  syntax for (from import) should be :")
-          print ("  (from <module-name> import <name> ...)")
-          p_print ("  import body : ")
+          print("- (from) syntax error")
+          print("  syntax for (from import) should be :")
+          print("  (from <module-name> import <name> ...)")
+          p_print("  import body : ")
           sexp_list_print(body)
           newline()
-          raise JOJO_ERROR()
+          error()
       #+end_src
 
 ***** k_from_as
@@ -2340,13 +2377,13 @@
               pass
           if vect_body[3] == 'as':
               return
-          print ("- (from) syntax error")
-          print ("  syntax for (from import as) should be :")
-          print ("  (from <module-name> import <name> as <name>)")
-          p_print ("  import body : ")
+          print("- (from) syntax error")
+          print("  syntax for (from import as) should be :")
+          print("  (from <module-name> import <name> as <name>)")
+          p_print("  import body : ")
           sexp_list_print(body)
           newline()
-          raise JOJO_ERROR()
+          error()
       #+end_src
 
 *** (+jojo)
@@ -2355,9 +2392,9 @@
     @keyword("+jojo")
     def plus_jojo(module, body):
         if list_length(body) == 0:
-            print ("- (+jojo) syntax error")
-            print ("  body of (+jojo) can not be empty")
-            raise JOJO_ERROR()
+            print("- (+jojo) syntax error")
+            print("  body of (+jojo) can not be empty")
+            error()
 
         jojo_name = car(body)
         setattr(module, jojo_name,
@@ -2375,10 +2412,10 @@
       def plus_data(module, body):
           data_name = car(body)
           if not data_name_string_p(data_name):
-              print ("- (+data) syntax error")
-              print ("  data_name must be of form <...>")
-              print ("  data_name : {}".format(data_name))
-              raise JOJO_ERROR()
+              print("- (+data) syntax error")
+              print("  data_name must be of form <...>")
+              print("  data_name : {}".format(data_name))
+              error()
 
           field_name_vect = []
           for string in list_to_vect(cdr(body)):
@@ -2508,15 +2545,15 @@
           arrow = car(rest)
           arity = arrow_get_arity(arrow)
           if arity == 0:
-              print ("- (+gene) syntax error")
-              print ("  arity of arrow is zero")
-              print ("  gene dispatches on types of arguments")
-              print ("  can not define gene over nothing")
-              print ("  name : {}".format(name))
-              p_print ("  arrow : ")
+              print("- (+gene) syntax error")
+              print("  arity of arrow is zero")
+              print("  gene dispatches on types of arguments")
+              print("  can not define gene over nothing")
+              print("  name : {}".format(name))
+              p_print("  arrow : ")
               sexp_print(arrow)
               newline()
-              raise JOJO_ERROR()
+              error()
 
           default_jojo = JOJO(sexp_list_emit(module, rest))
           jojo_define(module, name, GENE(arity, default_jojo))
@@ -2553,30 +2590,30 @@
           type_tuple_vect = arrow_get_type_tuple_vect(module, arrow)
 
           if not hasattr(module, name):
-              print ("- (+disp) syntax error")
-              print ("  name is undefined")
-              print ("  name : {}".format(name))
-              raise JOJO_ERROR()
+              print("- (+disp) syntax error")
+              print("  name is undefined")
+              print("  name : {}".format(name))
+              error()
 
           gene = getattr(module, name)
           if type(gene) != GENE:
-              print ("- (+disp) syntax error")
-              print ("  type of name must be a gene")
-              print ("  name : {}".format(name))
-              print ("  type of name : {}".format(type(name)))
-              raise JOJO_ERROR()
+              print("- (+disp) syntax error")
+              print("  type of name must be a gene")
+              print("  name : {}".format(name))
+              print("  type of name : {}".format(type(name)))
+              error()
 
           jojo = JOJO(sexp_list_emit(module, rest))
           for type_tuple in type_tuple_vect:
               if type_tuple in gene.disp_dict:
-                  print ("- (+disp) fail")
-                  print ("  type_tuple for gene is already defined")
-                  print ("  type_tuple : {}".format(type_tuple))
-                  print ("  gene name : {}".format(name))
-                  p_print ("  arrow : ")
+                  print("- (+disp) fail")
+                  print("  type_tuple for gene is already defined")
+                  print("  type_tuple : {}".format(type_tuple))
+                  print("  gene name : {}".format(name))
+                  p_print("  arrow : ")
                   sexp_print(arrow)
                   newline()
-                  raise JOJO_ERROR()
+                  error()
               else:
                   gene.disp_dict[type_tuple] = jojo
 
@@ -2717,11 +2754,57 @@
 
     @prim('report-cond-mismatch')
     def report_cond_mismatch(body):
-        print ("- cond mismatch")
-        p_print ("  body : ")
+        print("- cond mismatch")
+        p_print("  body : ")
         sexp_print(body)
         newline()
-        raise JOJO_ERROR()
+        error()
+    #+end_src
+
+*** (if)
+
+    #+begin_src python
+    @macro('if')
+    def k_if(body):
+        length = list_length(body)
+        if length != 3:
+            print("- (if) syntax fail")
+            print("  body of (if) must has 3 sexps")
+            print("  body length : {}".format(length))
+            p_print("  body : ")
+            sexp_list_print(body)
+            newline()
+            error()
+
+        return vect_to_sexp(
+            ['begin',
+             car(body),
+             ['clo', car(cdr(body))],
+             ['clo', car(cdr(cdr(body)))],
+             'ifte'])
+    #+end_src
+
+*** (when)
+
+    #+begin_src python
+    @macro('when')
+    def k_when(body):
+        length = list_length(body)
+        if length != 2:
+            print("- (when) syntax fail")
+            print("  body of (when) must has 2 sexps")
+            print("  body length : {}".format(length))
+            p_print("  body : ")
+            sexp_list_print(body)
+            newline()
+            error()
+
+        return vect_to_sexp(
+            ['begin',
+             car(body),
+             ['clo', car(cdr(body))],
+             ['clo'],
+             'ifte'])
     #+end_src
 
 * ------
@@ -2753,16 +2836,16 @@
         path = os.path.abspath(path)
 
         if not os.path.exists(path):
-            print ("- load fail")
-            print ("  path does not exist")
-            print ("  path : {}".format(path))
-            raise JOJO_ERROR()
+            print("- load fail")
+            print("  path does not exist")
+            print("  path : {}".format(path))
+            error()
 
         if not os.path.isfile(path):
-            print ("- load fail")
-            print ("  path is not file")
-            print ("  path : {}".format(path))
-            raise JOJO_ERROR()
+            print("- load fail")
+            print("  path is not file")
+            print("  path : {}".format(path))
+            error()
 
         with open(path, "r") as f:
             code = f.read()
@@ -2799,16 +2882,16 @@
           path = os.path.abspath(path)
 
           if not os.path.exists(path):
-              print ("- load_core fail")
-              print ("  path does not exist")
-              print ("  path : {}".format(path))
-              raise JOJO_ERROR()
+              print("- load_core fail")
+              print("  path does not exist")
+              print("  path : {}".format(path))
+              error()
 
           if not os.path.isfile(path):
-              print ("- load_core fail")
-              print ("  path is not file")
-              print ("  path : {}".format(path))
-              raise JOJO_ERROR()
+              print("- load_core fail")
+              print("  path is not file")
+              print("  path : {}".format(path))
+              error()
 
           with open(path, "r") as f:
               code = f.read()
@@ -2939,15 +3022,15 @@
 
       #+begin_src python
       def print_data_stack(ds):
-          p_print ("  * {} *  ".format(len(ds)))
-          print (ds)
+          p_print("  * {} *  ".format(len(ds)))
+          print(ds)
       #+end_src
 
 ***** print_return_stack
 
       #+begin_src python
       def print_return_stack(rs):
-          print (rs)
+          print(rs)
       #+end_src
 
 ***** repl
@@ -2980,8 +3063,8 @@
                           error_type = sys.exc_info()[0]
                           error_name = error_type.__name__
                           error_info = sys.exc_info()[1]
-                          print ("- error : {}".format(error_name))
-                          print ("  info : {}".format(error_info))
+                          print("- error : {}".format(error_name))
+                          print("  info : {}".format(error_info))
                           debug_repl()
                           pass
 
@@ -3022,8 +3105,8 @@
                           error_type = sys.exc_info()[0]
                           error_name = error_type.__name__
                           error_info = sys.exc_info()[1]
-                          print ("- error : {}".format(error_name))
-                          print ("  info : {}".format(error_info))
+                          print("- error : {}".format(error_name))
+                          print("  info : {}".format(error_info))
                           debug_repl()
                           pass
           except KeyboardInterrupt:

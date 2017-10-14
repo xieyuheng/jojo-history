@@ -2,6 +2,14 @@
 #+property: tangle core.jo
 #+title: core
 
+* [todo-stack]
+
+*** (case) over class
+
+    - include class defined by (+data)
+
+*** (case) call debug
+
 * Int
 
   #+begin_src jojo
@@ -64,18 +72,18 @@
     #+begin_src jojo
     (+jojo assert (-> :body -- sexp)
       `(if (@ :body list-spread)
-         {}
-         {"- (assert) fail" string-print newline
+         []
+         ["- (assert) fail" string-print newline
           "  assertion : " string-print
-          (quote (@ :body)) sexp-list-print newline}))
+          (quote (@ :body)) sexp-list-print newline]))
 
     (+jojo assert! (-> :body -- sexp)
       `(if (@ :body list-spread)
-         {}
-         {"- (assert!) fail" string-print newline
+         []
+         ["- (assert!) fail" string-print newline
           "  assertion : " string-print
           (quote (@ :body)) sexp-list-print newline
-          error}))
+          error]))
     #+end_src
 
 * p -- gene
@@ -118,4 +126,62 @@
       (cond [:n 0 lteq?] []
             else [:fun apply
                   :fun :n dec times]))
+    #+end_src
+
+* class
+
+*** class-member?
+
+    #+begin_src jojo
+    (+jojo class-member? swap value->class swap subclass?)
+    #+end_src
+
+* >< (when)
+
+* (case)
+
+*** [note]
+
+    #+begin_src jojo
+    (note
+      (case v
+        c1 a1
+        c2 a2
+        else ad)
+      ==>
+      (cond
+        [(list v) (list c1) case-match?] a1
+        [(list v) (list c2) case-match?] a2
+        else ad))
+    #+end_src
+
+*** (case)
+
+    #+begin_src jojo
+    (+jojo case (-> :sexp-list -- Sexp)
+      :sexp-list.car :sexp-list.cdr (-> :value :body)
+      `(cond (@ :value :body case-spread)))
+
+    (+jojo case-spread (-> :value :body -- spreading to stack)
+      (cond
+        [:body null?] []
+        else [:value :body.car case-spread-one-question :body.cdr.car
+              :value :body.cdr.cdr case-spread]))
+
+    (+jojo case-spread-one-question
+      (-> :value :case -- question)
+      (cond [:value 'else eq?] 'else
+            else `[(list (@ :value)) (list (@ :case)) case-match?]))
+    #+end_src
+
+*** case-match?
+
+    #+begin_src jojo
+    (+jojo case-match? (-> :vl :tl -- Bool)
+      (note
+        (when [:vl list-length :tl list-length eq? not]
+          false))
+      (cond [:vl null?] true
+            [:vl.car :tl.car class-member? not] false
+            else [:vl.cdr :tl.cdr case-match?]))
     #+end_src

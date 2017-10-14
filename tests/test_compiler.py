@@ -51,7 +51,7 @@ def test_3():
 
 def test_4():
     code = '''\
-    (+jojo t (if 1 2 eq? {"true"} {"false"}))
+    (+jojo t (if [1 2 eq?] ["true"] ["false"]))
     '''
     sexp_vect = parse_sexp_vect(scan_string_vect(code))
     module = compile_module('module', sexp_vect)
