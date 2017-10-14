@@ -1217,7 +1217,7 @@ prim('error')(error)
 def module_debug(module):
     debug_repl()
 
-prim('object')(object)
+prim('Object')(object)
 
 @prim('value->class')
 def value_to_class(value):

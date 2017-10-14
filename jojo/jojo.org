@@ -2066,7 +2066,7 @@
 *** Object
 
     #+begin_src python
-    prim('object')(object)
+    prim('Object')(object)
     #+end_src
 
 * *class*
