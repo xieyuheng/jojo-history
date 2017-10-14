@@ -1217,6 +1217,8 @@ prim('error')(error)
 def module_debug(module):
     debug_repl()
 
+prim('object')(object)
+
 @prim('value->class')
 def value_to_class(value):
     return type(value)
@@ -1714,6 +1716,25 @@ def k_if(body):
          car(body),
          ['clo', car(cdr(body))],
          ['clo', car(cdr(cdr(body)))],
+         'ifte'])
+
+@macro('when')
+def k_when(body):
+    length = list_length(body)
+    if length != 2:
+        print("- (when) syntax fail")
+        print("  body of (when) must has 2 sexps")
+        print("  body length : {}".format(length))
+        p_print("  body : ")
+        sexp_list_print(body)
+        newline()
+        error()
+
+    return vect_to_sexp(
+        ['begin',
+         car(body),
+         ['clo', car(cdr(body))],
+         ['clo'],
          'ifte'])
 
 def maybe_drop_shebang(code):

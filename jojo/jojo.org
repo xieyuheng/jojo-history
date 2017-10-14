@@ -2061,6 +2061,14 @@
         debug_repl()
     #+end_src
 
+* *object*
+
+*** Object
+
+    #+begin_src python
+    prim('object')(object)
+    #+end_src
+
 * *class*
 
 *** value_to_class

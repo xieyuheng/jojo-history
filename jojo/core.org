@@ -4,10 +4,6 @@
 
 * [todo-stack]
 
-*** (case) over class
-
-    - include class defined by (+data)
-
 *** (case) call debug
 
 * Int
@@ -136,8 +132,6 @@
     (+jojo class-member? swap value->class swap subclass?)
     #+end_src
 
-* >< (when)
-
 * (case)
 
 *** [note]
@@ -178,10 +172,11 @@
 
     #+begin_src jojo
     (+jojo case-match? (-> :vl :tl -- Bool)
-      (note
-        (when [:vl list-length :tl list-length eq? not]
-          false))
+      (cond [:vl list-length :tl list-length eq? not] false
+            else [:vl :tl case-match?/loop]))
+
+    (+jojo case-match?/loop (-> :vl :tl -- Bool)
       (cond [:vl null?] true
             [:vl.car :tl.car class-member? not] false
-            else [:vl.cdr :tl.cdr case-match?]))
+            else [:vl.cdr :tl.cdr case-match?/loop]))
     #+end_src
