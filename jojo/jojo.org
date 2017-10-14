@@ -6,6 +6,10 @@
 
 *** fix print_return_stack
 
+    - return_point_print
+
+    - jo_print
+
 *** vm < thread < process -- concurrency levels
 
 * ------
@@ -2166,7 +2170,8 @@
 
       #+begin_src python
       def print_return_stack(rs):
-          print(rs)
+          for rp in rs:
+              print(rp)
       #+end_src
 
 *** module_repl
@@ -2247,7 +2252,7 @@
               module.vm.rs = []
               newline()
               print("- exit debug-repl [level : {}]".format(level))
-              print("  data-stack and return-stack is cleared")
+              print("  data-stack and return-stack are cleared")
               print("  for module : {}".format(module.__name__))
               return
           except EXIT_MODULE_DEBUG_REPL:

@@ -1298,7 +1298,8 @@ def print_data_stack(ds):
     print(ds)
 
 def print_return_stack(rs):
-    print(rs)
+    for rp in rs:
+        print(rp)
 
 def module_repl(module):
     module.repl_char_stack = []
