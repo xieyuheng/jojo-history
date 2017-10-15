@@ -1,0 +1,74 @@
+#!/usr/bin/env jojo
+
+(assert
+  mark 0 1 2 3 4 collect-list
+  (list 0 1 2 3 4)
+  {eq?} list-eqv?)
+
+(assert
+  (list 0 1 2 3 4)
+  (list 5 6 7 8 9)
+  list-append
+  (list 0 1 2 3 4 5 6 7 8 9)
+  {eq?} list-eqv?)
+
+(assert
+  (list 0 1 2 3 4 5 6 7 8 9)
+  {5 gteq?} list-ante
+  (list 0 1 2 3 4)
+  {eq?} list-eqv?)
+
+(assert
+  (list 0 1 2 3 4 5 6 7 8 9)
+  {5 gteq?} list-split
+  swap (list 0 1 2 3 4) {eq?} list-eqv?
+  swap (list 5 6 7 8 9) {eq?} list-eqv?
+  and)
+
+(assert
+  (list 0 1 2 3 4 5 6 7 8 9)
+  {inc} list-map
+  (list 1 2 3 4 5 6 7 8 9 10)
+  {eq?} list-eqv?)
+
+(assert
+  (list 0 1 2 3 4 5 6 7 8 9)
+  {2 mod 0 eq?} list-filter
+  (list 0 2 4 6 8)
+  {eq?} list-eqv?)
+
+(assert
+  (list 0 1 2 3 4 5 6 7 8 9)
+  list-reverse
+  (list 9 8 7 6 5 4 3 2 1 0)
+  {eq?} list-eqv?)
+
+
+(assert
+  (list 0 1 2 3 4 5) 100 {add} list-foldr
+  0 1 2 3 4 5 100 add add add add add add
+  equal?)
+
+(assert
+  (list 0 1 2 3 4 5) 100 {add} list-foldl
+  100 5 add 4 add 3 add 2 add 1 add 0 add
+  equal?)
+
+(assert
+  (list
+    (list 1 2 3)
+    (list 4 5 6)
+    (list 7 8 9))
+  () {list-append} list-foldr
+
+  (list 1 2 3, 4 5 6, 7 8 9)
+  equal?)
+
+(assert
+  (list
+    (list 1 2 3)
+    (list 4 5 6)
+    (list 7 8 9))
+  () {list-append} list-foldl
+  (list 7 8 9, 4 5 6, 1 2 3)
+  equal?)

@@ -1538,13 +1538,12 @@
 * *equivalence*
 
   #+begin_src python
-  @prim('equal?')
-  def equal_p(a, b):
-      return a == b
-
   @prim('eq?')
   def eq_p(a, b):
-      return a is b
+      if string_p(a):
+          return a == b
+      else:
+          return a is b
   #+end_src
 
 * *sexp*
@@ -1631,6 +1630,21 @@
     @prim('string-eq?')
     def string_eq_p(string1, string2):
         return string1 == string2
+    #+end_src
+
+*** string_to_int
+
+    #+begin_src python
+    @prim('string->int')
+    def string_to_int(string):
+        return int(string)
+    #+end_src
+
+*** string predicates
+
+    #+begin_src python
+    prim('int-string?')(int_string_p)
+    prim('local-string?')(local_string_p)
     #+end_src
 
 * *vect*

@@ -65,14 +65,14 @@
 
     #+begin_src jojo
     (+jojo assert (-> :body -- sexp)
-      `(if (@ :body list-spread)
+      `(if [(@ :body list-spread)]
          []
          ["- (assert) fail" string-print newline
           "  assertion : " string-print
           (quote (@ :body)) sexp-list-print newline]))
 
     (+jojo assert! (-> :body -- sexp)
-      `(if (@ :body list-spread)
+      `(if [(@ :body list-spread)]
          []
          ["- (assert!) fail" string-print newline
           "  assertion : " string-print
@@ -101,14 +101,6 @@
         [:list .cdr null?] [:list .car p]
         else [:list .car p space
               :list .cdr list-print/loop]))
-    #+end_src
-
-* equal? -- gene
-
-*** gene
-
-    #+begin_src jojo
-    (+gene equal? (-> :x :y -- Bool) false)
     #+end_src
 
 * combinator
@@ -199,4 +191,153 @@
       (cond [:vl null?] true
             [:vl.car :tl.car class-member? not] false
             else [:vl.cdr :tl.cdr case-match?/loop]))
+    #+end_src
+
+* equal? -- gene
+
+*** gene
+
+    #+begin_src jojo
+    (+gene equal? (-> :x :y -- Bool) :x :y eq?)
+
+    (+disp equal? (-> :x List :y List -- Bool)
+      (case [:x :y]
+        [<null> <null>] true
+        [<cons> <cons>]
+        (if [:x .car :y .car equal? not]
+          false
+          [:x .cdr :y .cdr equal?])
+        [Object Object] false))
+    #+end_src
+
+* more about List
+
+*** list-any?
+
+    #+begin_src jojo
+    (+jojo list-any? (-> :list :pred -> Bool)
+      (cond [:list null?] false
+            [:list .car :pred apply] true
+            else [:list .cdr :pred list-any?]))
+    #+end_src
+
+*** list-every?
+
+    #+begin_src jojo
+    (+jojo list-every? (-> :list :pred -> Bool)
+      (cond [:list null?] true
+            [:list .car :pred apply not] false
+            else [:list .cdr :pred list-every?]))
+    #+end_src
+
+*** list-ante -- antecedent
+
+    #+begin_src jojo
+    (+jojo list-ante (-> :list :pred -- ante)
+      (cond [:list null?] null
+            [:list .car :pred apply] null
+            else [:list .car
+                  :list .cdr :pred list-ante
+                  cons]))
+    #+end_src
+
+*** list-succ -- succedent
+
+    #+begin_src jojo
+    (+jojo list-succ (-> :list :pred -- succ)
+      (cond [:list null?] null
+            [:list .car :pred apply] :list
+            else [:list .cdr :pred list-succ]))
+    #+end_src
+
+*** list-split
+
+    #+begin_src jojo
+    (+jojo list-split (-> :list :pred -- ante succ)
+      (cond [:list null?] [null null]
+            [:list .car :pred apply] [null :list]
+            else [:list .car
+                  :list .cdr :pred list-split
+                  :succ! cons :succ]))
+    #+end_src
+
+*** list-map
+
+    #+begin_src jojo
+    (+jojo list-map (-> :list :fun -- List)
+      (case :list
+        <null> null
+        <cons> [:list .car :fun apply :list .cdr :fun list-map cons]))
+    #+end_src
+
+*** list-for-each
+
+    #+begin_src jojo
+    (+jojo list-for-each (-> :list :fun --)
+      (case :list
+        <null> []
+        <cons> [:list .car :fun apply :list .cdr :fun list-for-each]))
+    #+end_src
+
+*** list-filter
+
+    #+begin_src jojo
+    (+jojo list-filter (-> :list :pred -- List)
+      (cond [:list null?] null
+            [:list .car :pred apply]
+            [:list .car :list .cdr :pred list-filter cons]
+            else [:list .cdr :pred list-filter]))
+    #+end_src
+
+*** list-reverse
+
+    #+begin_src jojo
+    (+jojo list-reverse null swap list-reverse-swap-append)
+
+    (+jojo list-reverse-swap-append (-> ante :list -- List)
+      (case :list
+        <null> []
+        <cons> [:list .car swap cons
+                :list .cdr
+                list-reverse-swap-append]))
+    #+end_src
+
+*** list-eqv?
+
+    #+begin_src jojo
+    (+jojo list-eqv? (-> :l1 :l2 :eqv -- Bool)
+      (cond [:l1 null? :l2 null? and] true
+            [:l1 null?] false
+            [:l2 null?] false
+            [:l1 .car :l2 .car :eqv apply not] false
+            else [:l1 .cdr :l2 .cdr :eqv list-eqv?]))
+    #+end_src
+
+*** list-foldr
+
+    #+begin_src jojo
+    (+jojo list-foldr (-> a :list, :b, :a-b->b -- b)
+      (case :list
+        <null> :b
+        <cons> [:list .car
+                :list .cdr :b :a-b->b list-foldr
+                :a-b->b apply]))
+    #+end_src
+
+*** list-foldl
+
+    #+begin_src jojo
+    (+jojo list-foldl (-> a :list, :b, :b-a->b -- b)
+      (case :list
+        <null> :b
+        <cons> [:list .cdr :b :b-a->b list-foldl
+                :list .car
+                :b-a->b apply]))
+    #+end_src
+
+*** list-member?
+
+    #+begin_src jojo
+    (+jojo list-member? (-> :list :x -- Bool)
+      :list {:x equal?} list-any?)
     #+end_src

@@ -931,13 +931,12 @@ def p_and(a, b):
 def p_or(a, b):
     return (a or b)
 
-@prim('equal?')
-def equal_p(a, b):
-    return a == b
-
 @prim('eq?')
 def eq_p(a, b):
-    return a is b
+    if string_p(a):
+        return a == b
+    else:
+        return a is b
 
 prim('null')(null)
 prim('null?')(null_p)
@@ -982,6 +981,13 @@ def string_empty_p(string):
 @prim('string-eq?')
 def string_eq_p(string1, string2):
     return string1 == string2
+
+@prim('string->int')
+def string_to_int(string):
+    return int(string)
+
+prim('int-string?')(int_string_p)
+prim('local-string?')(local_string_p)
 
 prim('vect?')(vect_p)
 
@@ -1349,7 +1355,7 @@ def module_debug(module, level):
         module.vm.rs = []
         newline()
         print("- exit debug-repl [level : {}]".format(level))
-        print("  data-stack and return-stack is cleared")
+        print("  data-stack and return-stack are cleared")
         print("  for module : {}".format(module.__name__))
         return
     except EXIT_MODULE_DEBUG_REPL:
