@@ -949,6 +949,32 @@
         return name_vect
     #+end_src
 
+*** get_jojo_name_vect
+
+    #+begin_src python
+    def get_jojo_name_vect(sexp_vect):
+        name_vect = filter_name_vect('+jojo', sexp_vect)
+        return name_vect
+    #+end_src
+
+*** get_data_name_vect
+
+    #+begin_src python
+    def get_data_name_vect(sexp_vect):
+        name_vect = filter_name_vect('+data', sexp_vect)
+        cons_name_vect = []
+        pred_name_vect = []
+        for name in name_vect:
+            cons_name = name[1:-1]
+            pred_name = "".join([cons_name, '?'])
+            cons_name_vect.append(cons_name)
+            pred_name_vect.append(pred_name)
+
+        name_vect.extend(cons_name_vect)
+        name_vect.extend(pred_name_vect)
+        return name_vect
+    #+end_src
+
 *** jojo_define
 
     #+begin_src python
@@ -979,8 +1005,8 @@
 
     #+begin_src python
     def merge_sexp_vect(module, sexp_vect):
-        module.defined_name_set.update(filter_name_vect('+jojo', sexp_vect))
-        module.defined_name_set.update(filter_name_vect('+data', sexp_vect))
+        module.defined_name_set.update(get_jojo_name_vect(sexp_vect))
+        module.defined_name_set.update(get_data_name_vect(sexp_vect))
         for sexp in sexp_vect:
             jo_vect = sexp_emit(module, sexp)
             module.vm.rs.append(RP(JOJO(jo_vect)))
