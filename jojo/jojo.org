@@ -4,12 +4,6 @@
 
 * [todo-stack]
 
-*** fix print_return_stack
-
-    - return_point_print
-
-    - jo_print
-
 *** vm < thread < process -- concurrency levels
 
 * ------
@@ -366,6 +360,14 @@
               new_jojo = JOJO(self.body)
               new_jojo.lr = rp.lr
               vm.ds.append(new_jojo)
+
+          def jo_print(self):
+              p_print("(clo ")
+              for jo in self.body[:-1]:
+                  jo_print(jo)
+                  space()
+              jo_print(self.body[-1])
+              p_print(")")
       #+end_src
 
 ***** APPLY
@@ -376,6 +378,9 @@
           def jo_exe(self, rp, vm):
               clo = vm.ds.pop()
               clo.jo_exe(rp, vm)
+
+          def jo_print(self):
+              p_print("apply")
       #+end_src
 
 *** branching
@@ -393,6 +398,9 @@
                   vm.rs.append(RP(clo1))
               else:
                   vm.rs.append(RP(clo2))
+
+          def jo_print(self):
+              p_print("ifte")
       #+end_src
 
 *** CALL -- call a name from a module
@@ -406,6 +414,10 @@
         def jo_exe(self, rp, vm):
             jo = getattr(self.module, self.name)
             exe_jo(jo, rp, vm)
+
+        def jo_print(self):
+            # p_print("(call {} from {})".format(self.name, self.module.__name__))
+            p_print(self.name)
     #+end_src
 
 *** local variable
@@ -420,6 +432,9 @@
           def jo_exe(self, rp, vm):
               value = rp.lr[self.name]
               vm.ds.append(value)
+
+          def jo_print(self):
+              p_print(self.name)
       #+end_src
 
 ***** SET
@@ -432,6 +447,10 @@
           def jo_exe(self, rp, vm):
               value = vm.ds.pop()
               rp.lr[self.name] = value
+
+          def jo_print(self):
+              p_print(self.name)
+              p_print('!')
       #+end_src
 
 *** mark and collect
@@ -443,6 +462,9 @@
           @classmethod
           def jo_exe(self, rp, vm):
               vm.ds.append(self)
+
+          def jo_print(self):
+              p_print("mark")
       #+end_src
 
 ***** COLLECT_VECT -- collect values before mark to vect
@@ -460,6 +482,9 @@
                       vect.append(value)
               vect.reverse()
               vm.ds.append(vect)
+
+          def jo_print(self):
+              p_print("collect-vect")
       #+end_src
 
 ***** VECT_SPREAD -- spread values to data stack
@@ -471,6 +496,9 @@
               vect = vm.ds.pop()
               for value in vect:
                   vm.ds.append(value)
+
+          def jo_print(self):
+              p_print("vect-spread")
       #+end_src
 
 ***** COLLECT_LIST -- collect values before mark to list
@@ -486,6 +514,9 @@
                   else:
                       return recur(cons(value, rest))
               vm.ds.append(recur(null))
+
+          def jo_print(self):
+              p_print("collect-list")
       #+end_src
 
 ***** LIST_SPREAD -- spread values to data stack
@@ -501,6 +532,9 @@
                       vm.ds.append(car(l))
                       recur(cdr(l))
               recur(vm.ds.pop())
+
+          def jo_print(self):
+              p_print("list-spread")
       #+end_src
 
 *** data
@@ -515,6 +549,10 @@
           def jo_exe(self, rp, vm):
               x = vm.ds.pop()
               vm.ds.append(type(x) == self.data_class)
+
+          def jo_print(self):
+              p_print(data_class.__name__)
+              p_print('?')
       #+end_src
 
 *** NEW -- create object from data and class
@@ -536,6 +574,9 @@
                 vm.ds.append(data_instance)
             else:
                 exe_fun(x, vm)
+
+        def jo_print(self):
+            p_print("new")
     #+end_src
 
 *** MSG -- message to object
@@ -555,6 +596,10 @@
                 exe_jo(v, rp, vm)
             else:
                 exe_jo(v, rp, vm)
+
+        def jo_print(self):
+            p_print(".")
+            p_print(message)
     #+end_src
 
 *** GENE
@@ -2170,22 +2215,80 @@
               return cons(sexp, recur)
       #+end_src
 
-*** print stack
+*** print_data_stack
 
-***** print_data_stack
+    #+begin_src python
+    def print_data_stack(ds):
+        p_print("  * {} *  ".format(len(ds)))
+        print(ds)
+    #+end_src
 
-      #+begin_src python
-      def print_data_stack(ds):
-          p_print("  * {} *  ".format(len(ds)))
-          print(ds)
-      #+end_src
+*** print_return_stack
 
 ***** print_return_stack
 
       #+begin_src python
       def print_return_stack(rs):
+          print("- return-stack * {} *".format(len(rs)))
           for rp in rs:
-              print(rp)
+              return_point_print(rp)
+      #+end_src
+
+***** return_point_print
+
+      #+begin_src python
+      def return_point_print(rp):
+          p_print("  - progress : {} / {}".format(rp.cursor, rp.length))
+          newline()
+
+          next_cursor = rp.cursor
+          last_cursor = rp.cursor - 1
+
+          if last_cursor == 0:
+              pass
+          else:
+              p_print("    pass : ")
+              i = 0
+              while i < last_cursor:
+                  jo_print(rp.body[i])
+                  space()
+                  i = i + 1
+              newline()
+
+          p_print("    last : ")
+          jo_print(rp.body[last_cursor])
+          newline()
+
+          if next_cursor == rp.length:
+              pass
+          else:
+              p_print("    next : ")
+              i = next_cursor
+              while i < rp.length:
+                  jo_print(rp.body[i])
+                  space()
+                  i = i + 1
+              newline()
+
+          if len(rp.lr) == 0:
+             pass
+          else:
+             p_print("    where : {}".format(rp.lr))
+             newline()
+      #+end_src
+
+***** jo_print
+
+      #+begin_src python
+      def jo_print(jo):
+          if fun_p(jo):
+              p_print(jo.__module__)
+              p_print(".")
+              p_print(jo.__name__)
+          elif hasattr(jo, "jo_print"):
+              jo.jo_print()
+          else:
+              p_print(jo)
       #+end_src
 
 *** module_repl
@@ -2256,8 +2359,8 @@
       def module_debug(module, level):
           print("- enter debug-repl [level : {}]".format(level))
           module.debug_repl_char_stack = []
-          print_data_stack(module.vm.ds)
           print_return_stack(module.vm.rs)
+          print_data_stack(module.vm.ds)
           try:
               while True:
                   module_debug_one_step(module, level)
