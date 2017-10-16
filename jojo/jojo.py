@@ -579,38 +579,8 @@ def new_module(name):
     module.defined_name_set = set()
     return module
 
-def filter_name_vect(keyword, sexp_vect):
-    name_vect = []
-    for sexp in sexp_vect:
-        if not cons_p(sexp):
-            pass
-        elif car(sexp) == keyword:
-            body = cdr(sexp)
-            name = car(body)
-            name_vect.append(name)
-    return name_vect
-
-def get_jojo_name_vect(sexp_vect):
-    name_vect = filter_name_vect('+jojo', sexp_vect)
-    return name_vect
-
-def get_data_name_vect(sexp_vect):
-    name_vect = filter_name_vect('+data', sexp_vect)
-    cons_name_vect = []
-    pred_name_vect = []
-    for name in name_vect:
-        cons_name = name[1:-1]
-        pred_name = "".join([cons_name, '?'])
-        cons_name_vect.append(cons_name)
-        pred_name_vect.append(pred_name)
-
-    name_vect.extend(cons_name_vect)
-    name_vect.extend(pred_name_vect)
-    return name_vect
-
 def jojo_define(module, name, value):
-    defined_name_set = getattr(module, 'defined_name_set')
-    defined_name_set.add(name)
+    module.defined_name_set.add(name)
     setattr(module, name, value)
 
 def merge_prim_dict(module):
@@ -623,8 +593,6 @@ def merge_module(module, src_module):
         jojo_define(module, name, jojo)
 
 def merge_sexp_vect(module, sexp_vect):
-    module.defined_name_set.update(get_jojo_name_vect(sexp_vect))
-    module.defined_name_set.update(get_data_name_vect(sexp_vect))
     for sexp in sexp_vect:
         jo_vect = sexp_emit(module, sexp)
         module.vm.rs.append(RP(JOJO(jo_vect)))
@@ -691,15 +659,17 @@ def string_emit(module, string):
 
     if string in key_jo_dict.keys():
         return key_jo_dict[string]
-
-    defined_name_set = getattr(module, 'defined_name_set')
-    if string in defined_name_set:
+    else:
         return [CALL(module, string)]
 
-    print("- string_emit fail")
-    print("  meet undefined string : {}".format(string))
-    newline()
-    error()
+    # defined_name_set = getattr(module, 'defined_name_set')
+    # if string in defined_name_set:
+    #     return [CALL(module, string)]
+
+    # print("- string_emit fail")
+    # print("  meet undefined string : {}".format(string))
+    # newline()
+    # error()
 
 def sexp_value(module, sexp):
     jo_vect = sexp_emit(module, sexp)
@@ -1747,8 +1717,8 @@ def plus_jojo(module, body):
         error()
 
     jojo_name = car(body)
-    setattr(module, jojo_name,
-            JOJO(sexp_list_emit(module, cdr(body))))
+    jojo_define(module, jojo_name,
+                JOJO(sexp_list_emit(module, cdr(body))))
 
     return []
 
