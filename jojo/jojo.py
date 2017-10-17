@@ -417,7 +417,7 @@ class GENE:
         else:
             self.default_jojo.jo_exe(rp, vm)
 
-def scan_string_vect(string):
+def code_scan(string):
     string_vect = []
     i = 0
     length = len(string)
@@ -434,7 +434,7 @@ def scan_string_vect(string):
         elif doublequote_p(char):
             doublequote_end_index = string.find('"', i+1)
             if doublequote_end_index == -1:
-                print("- scan_string_vect fail")
+                print("- code_scan fail")
                 print("  doublequote mismatch")
                 print("  string : {}".format(string))
                 error()
@@ -988,6 +988,8 @@ prim('cdr')(cdr)
 
 prim('sexp-print')(sexp_print)
 prim('sexp-list-print')(sexp_list_print)
+
+prim('code-scan')(code_scan)
 
 prim('String')(str)
 
@@ -1991,19 +1993,23 @@ def k_if(body):
 @macro('when')
 def k_when(body):
     length = list_length(body)
-    if length != 2:
+    if length <= 1:
         print("- (when) syntax fail")
-        print("  body of (when) must has 2 sexps")
+        print("  length of body of (when) must be greater then 1")
         print("  body length : {}".format(length))
         p_print("  body : ")
         sexp_list_print(body)
         newline()
         error()
 
+    rest_list = cdr(body)
+    rest_vect = ['begin']
+    rest_vect.extend(list_to_vect(rest_list))
+
     return vect_to_sexp(
         ['begin',
          car(body),
-         ['clo', car(cdr(body))],
+         ['clo', rest_vect],
          ['clo'],
          'ifte'])
 
@@ -2038,7 +2044,7 @@ def load(path):
     with open(path, "r") as f:
         code = f.read()
         code = maybe_drop_shebang(code)
-        sexp_vect = parse_sexp_vect(scan_string_vect(code))
+        sexp_vect = parse_sexp_vect(code_scan(code))
         module = compile_module(path, sexp_vect)
 
     module.__file__ = path
@@ -2073,7 +2079,7 @@ def load_core(path):
 
     with open(path, "r") as f:
         code = f.read()
-        sexp_vect = parse_sexp_vect(scan_string_vect(code))
+        sexp_vect = parse_sexp_vect(code_scan(code))
         module = compile_core_module(path, sexp_vect)
 
     module.__file__ = path

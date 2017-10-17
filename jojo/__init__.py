@@ -7,7 +7,7 @@ from jojo.jojo import (
     CALL,
     VALUES,
 
-    scan_string_vect,
+    code_scan,
     parse_sexp_vect,
     sexp_print,
 

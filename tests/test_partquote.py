@@ -6,7 +6,7 @@ def test_1():
       `(a (@ :x :x mul) b (@ :x :x mul) c))
     (+jojo t 4 c list->vect vect-spread)
     '''
-    sexp_vect = jojo.parse_sexp_vect(jojo.scan_string_vect(code))
+    sexp_vect = jojo.parse_sexp_vect(jojo.code_scan(code))
     module = jojo.compile_module('module', sexp_vect)
     vm = jojo.VM([],
                  [jojo.RP(module.t)])
@@ -20,7 +20,7 @@ def test_2():
       `(a (@ :x :x mul) b (@ :x :x mul) c))
     (+jojo t 4 c list-spread)
     '''
-    sexp_vect = jojo.parse_sexp_vect(jojo.scan_string_vect(code))
+    sexp_vect = jojo.parse_sexp_vect(jojo.code_scan(code))
     module = jojo.compile_module('module', sexp_vect)
     vm = jojo.VM([],
                  [jojo.RP(module.t)])
