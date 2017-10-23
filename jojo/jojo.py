@@ -210,20 +210,20 @@ class JOJO:
         vm.rs.append(RP(self))
 
 class CLO:
-    def __init__(self, body):
-        self.body = body
+    def __init__(self, jojo):
+        self.jojo = jojo
 
     def jo_exe(self, rp, vm):
-        new_jojo = JOJO(self.body)
+        new_jojo = JOJO(self.jojo)
         new_jojo.lr = rp.lr
         vm.ds.append(new_jojo)
 
     def jo_print(self):
         p_print("(clo ")
-        for jo in self.body[:-1]:
+        for jo in self.jojo[:-1]:
             jo_print(jo)
             space()
-        jo_print(self.body[-1])
+        jo_print(self.jojo[-1])
         p_print(")")
 
 class APPLY:
@@ -267,8 +267,8 @@ class GET:
         self.name = name
 
     def jo_exe(self, rp, vm):
-        value = rp.lr[self.name]
-        vm.ds.append(value)
+        jo = rp.lr[self.name]
+        exe_jo(jo, rp, vm)
 
     def jo_print(self):
         p_print(self.name)
@@ -1426,19 +1426,19 @@ def module_repl_one_step(module):
     sexp = read_sexp(module.repl_char_stack)
     if sexp == 'exit':
         raise EXIT_MODULE_REPL()
-    else:
-        try:
-            merge_sexp_vect(module, [sexp])
-            print_data_stack(module.vm.ds)
-        except SystemExit:
-            sys.exit()
-        except:
-            error_type = sys.exc_info()[0]
-            error_name = error_type.__name__
-            error_info = sys.exc_info()[1]
-            print("- error : {}".format(error_name))
-            print("  info : {}".format(error_info))
-            call_module_debug(module, 1)
+
+    try:
+        merge_sexp_vect(module, [sexp])
+        print_data_stack(module.vm.ds)
+    except SystemExit:
+        sys.exit()
+    except:
+        error_type = sys.exc_info()[0]
+        error_name = error_type.__name__
+        error_info = sys.exc_info()[1]
+        print("- error : {}".format(error_name))
+        print("  info : {}".format(error_info))
+        call_module_debug(module, 1)
 
 prim('error')(error)
 
@@ -1490,19 +1490,19 @@ def module_debug_one_step(module, level):
         raise EXIT_MODULE_DEBUG_REPL()
     if sexp == 'leave':
         raise LEAVE_MODULE_DEBUG_REPL()
-    else:
-        try:
-            merge_sexp_vect(module, [sexp])
-            print_data_stack(module.vm.ds)
-        except SystemExit:
-            sys.exit()
-        except:
-            error_type = sys.exc_info()[0]
-            error_name = error_type.__name__
-            error_info = sys.exc_info()[1]
-            print("- error : {}".format(error_name))
-            print("  info : {}".format(error_info))
-            call_module_debug(module, level + 1)
+
+    try:
+        merge_sexp_vect(module, [sexp])
+        print_data_stack(module.vm.ds)
+    except SystemExit:
+        sys.exit()
+    except:
+        error_type = sys.exc_info()[0]
+        error_name = error_type.__name__
+        error_info = sys.exc_info()[1]
+        print("- error : {}".format(error_name))
+        print("  info : {}".format(error_info))
+        call_module_debug(module, level + 1)
 
 def call_module_debug(module, level):
     jojo = JOJO([module, level, module_debug, nop])

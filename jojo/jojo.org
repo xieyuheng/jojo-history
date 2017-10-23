@@ -4,15 +4,13 @@
 
 * [todo-stack]
 
-*** inline module_debug_one_step and module_repl_one_step
-
-    - to avoid the use of 'try & except'
-
 *** parse_sexp_vect -- error handling
 
     - to be able to use it in jojo
 
-*** vm < thread < process -- concurrency levels
+*** inline module_debug_one_step and module_repl_one_step
+
+    - to avoid the use of 'try & except'
 
 * ------
 * prolog
@@ -361,20 +359,20 @@
 
       #+begin_src python
       class CLO:
-          def __init__(self, body):
-              self.body = body
+          def __init__(self, jojo):
+              self.jojo = jojo
 
           def jo_exe(self, rp, vm):
-              new_jojo = JOJO(self.body)
+              new_jojo = JOJO(self.jojo)
               new_jojo.lr = rp.lr
               vm.ds.append(new_jojo)
 
           def jo_print(self):
               p_print("(clo ")
-              for jo in self.body[:-1]:
+              for jo in self.jojo[:-1]:
                   jo_print(jo)
                   space()
-              jo_print(self.body[-1])
+              jo_print(self.jojo[-1])
               p_print(")")
       #+end_src
 
@@ -438,8 +436,8 @@
               self.name = name
 
           def jo_exe(self, rp, vm):
-              value = rp.lr[self.name]
-              vm.ds.append(value)
+              jo = rp.lr[self.name]
+              exe_jo(jo, rp, vm)
 
           def jo_print(self):
               p_print(self.name)
