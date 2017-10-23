@@ -1066,8 +1066,6 @@
 *** string_emit
 
     #+begin_src python
-    undefined_warning_flag = False
-
     def string_emit(module, string):
         # special strings
         i = 0
@@ -1084,12 +1082,6 @@
             return key_jo_dict[string]
 
         # normal function call
-        if undefined_warning_flag:
-            # defined_name_set = getattr(module, 'defined_name_set')
-            if not string in module.defined_name_set:
-                print("- string_emit warning")
-                print("  meet undefined string : {}".format(string))
-                newline()
         return [CALL(module, string)]
     #+end_src
 
