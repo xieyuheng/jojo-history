@@ -4,10 +4,9 @@
 
 * [todo-stack]
 
-*** operationally clear data-stack, when exit debug-repl
+*** 'leave' as a command in repl debug-repl
 
-    - 'leave' as a command in repl debug-repl
-    - 'clear' as a jojo instruction
+    - operationally clear data-stack, when exit debug-repl
 
 *** parse_sexp_vect -- error handling
 
@@ -632,6 +631,18 @@
                 jojo.jo_exe(rp, vm)
             else:
                 self.default_jojo.jo_exe(rp, vm)
+    #+end_src
+
+*** CLEAR
+
+    #+begin_src python
+    class CLEAR:
+        @classmethod
+        def jo_exe(self, rp, vm):
+            vm.ds = []
+
+        def jo_print(self):
+            p_print("clear")
     #+end_src
 
 * ------
@@ -3073,6 +3084,8 @@
     key_jo('vect-spread', [VECT_SPREAD])
     key_jo('collect-list', [COLLECT_LIST])
     key_jo('list-spread', [LIST_SPREAD])
+
+    key_jo('clear', [CLEAR])
     #+end_src
 
 * macro_dict

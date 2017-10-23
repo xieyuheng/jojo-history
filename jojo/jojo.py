@@ -417,6 +417,14 @@ class GENE:
         else:
             self.default_jojo.jo_exe(rp, vm)
 
+class CLEAR:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        vm.ds = []
+
+    def jo_print(self):
+        p_print("clear")
+
 def code_scan(string):
     string_vect = []
     i = 0
@@ -1930,6 +1938,8 @@ key_jo('collect-vect', [COLLECT_VECT])
 key_jo('vect-spread', [VECT_SPREAD])
 key_jo('collect-list', [COLLECT_LIST])
 key_jo('list-spread', [LIST_SPREAD])
+
+key_jo('clear', [CLEAR])
 
 macro_dict = {}
 
