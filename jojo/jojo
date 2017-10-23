@@ -10,7 +10,9 @@ if __name__ == '__main__':
         jojo.merge_prim_dict(module)
         jojo.merge_module(module, jojo.core_module)
         print ("welcome to jojo's programming adventure in python ^-^/")
+        jojo.undefined_warning_flag = False
         jojo.module_repl(module)
     else:
         path = sys.argv[1]
+        jojo.undefined_warning_flag = True
         module = jojo.load(path)

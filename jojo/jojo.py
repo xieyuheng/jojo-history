@@ -647,7 +647,10 @@ def cons_emit(module, cons):
         new_sexp = vm.ds[0]
         return sexp_emit(module, new_sexp)
 
+undefined_warning_flag = False
+
 def string_emit(module, string):
+    # special strings
     i = 0
     while i < len(string_emitter_vect):
         p = string_emitter_vect[i][0]
@@ -657,19 +660,18 @@ def string_emit(module, string):
         else:
             i = i + 1
 
+    # built-in keyword
     if string in key_jo_dict.keys():
         return key_jo_dict[string]
-    else:
-        return [CALL(module, string)]
 
-    # defined_name_set = getattr(module, 'defined_name_set')
-    # if string in defined_name_set:
-    #     return [CALL(module, string)]
-
-    # print("- string_emit fail")
-    # print("  meet undefined string : {}".format(string))
-    # newline()
-    # error()
+    # normal function call
+    if undefined_warning_flag:
+        # defined_name_set = getattr(module, 'defined_name_set')
+        if not string in module.defined_name_set:
+            print("- string_emit warning")
+            print("  meet undefined string : {}".format(string))
+            newline()
+    return [CALL(module, string)]
 
 def sexp_value(module, sexp):
     jo_vect = sexp_emit(module, sexp)
