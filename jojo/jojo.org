@@ -4,9 +4,9 @@
 
 * [todo-stack]
 
-*** 'leave' as a command in repl debug-repl
+*** inline module_debug_one_step and module_repl_one_step
 
-    - operationally clear data-stack, when exit debug-repl
+    - to avoid the use of 'try & except'
 
 *** parse_sexp_vect -- error handling
 
@@ -2335,19 +2335,19 @@
           sexp = read_sexp(module.repl_char_stack)
           if sexp == 'exit':
               raise EXIT_MODULE_REPL()
-          else:
-              try:
-                  merge_sexp_vect(module, [sexp])
-                  print_data_stack(module.vm.ds)
-              except SystemExit:
-                  sys.exit()
-              except:
-                  error_type = sys.exc_info()[0]
-                  error_name = error_type.__name__
-                  error_info = sys.exc_info()[1]
-                  print("- error : {}".format(error_name))
-                  print("  info : {}".format(error_info))
-                  call_module_debug(module, 1)
+
+          try:
+              merge_sexp_vect(module, [sexp])
+              print_data_stack(module.vm.ds)
+          except SystemExit:
+              sys.exit()
+          except:
+              error_type = sys.exc_info()[0]
+              error_name = error_type.__name__
+              error_info = sys.exc_info()[1]
+              print("- error : {}".format(error_name))
+              print("  info : {}".format(error_info))
+              call_module_debug(module, 1)
       #+end_src
 
 * *error*
@@ -2373,19 +2373,28 @@
               while True:
                   module_debug_one_step(module, level)
           except KeyboardInterrupt:
-              module.vm.ds = []
               module.vm.rs = []
               newline()
-              print("- exit debug-repl [level : {}]".format(level))
-              print("  data-stack and return-stack are cleared")
+              print("- leave debug-repl [level : {}]".format(level))
+              print("  return-stack is cleared")
               print("  for module : {}".format(module.__name__))
+              print_data_stack(module.vm.ds)
               return
           except EXIT_MODULE_DEBUG_REPL:
               module.vm.ds = []
               module.vm.rs = []
               print("- exit debug-repl [level : {}]".format(level))
-              print("  data-stack and return-stack is cleared")
+              print("  return-stack is cleared")
+              print("  data-stack is cleared")
               print("  for module : {}".format(module.__name__))
+              print_data_stack(module.vm.ds)
+              return
+          except LEAVE_MODULE_DEBUG_REPL:
+              module.vm.rs = []
+              print("- leave debug-repl [level : {}]".format(level))
+              print("  return-stack is cleared")
+              print("  for module : {}".format(module.__name__))
+              print_data_stack(module.vm.ds)
               return
       #+end_src
 
@@ -2393,6 +2402,13 @@
 
       #+begin_src python
       class EXIT_MODULE_DEBUG_REPL(Exception):
+          pass
+      #+end_src
+
+***** LEAVE_MODULE_DEBUG_REPL
+
+      #+begin_src python
+      class LEAVE_MODULE_DEBUG_REPL(Exception):
           pass
       #+end_src
 
@@ -2405,19 +2421,21 @@
           sexp = read_sexp(module.debug_repl_char_stack)
           if sexp == 'exit':
               raise EXIT_MODULE_DEBUG_REPL()
-          else:
-              try:
-                  merge_sexp_vect(module, [sexp])
-                  print_data_stack(module.vm.ds)
-              except SystemExit:
-                  sys.exit()
-              except:
-                  error_type = sys.exc_info()[0]
-                  error_name = error_type.__name__
-                  error_info = sys.exc_info()[1]
-                  print("- error : {}".format(error_name))
-                  print("  info : {}".format(error_info))
-                  call_module_debug(module, level + 1)
+          if sexp == 'leave':
+              raise LEAVE_MODULE_DEBUG_REPL()
+
+          try:
+              merge_sexp_vect(module, [sexp])
+              print_data_stack(module.vm.ds)
+          except SystemExit:
+              sys.exit()
+          except:
+              error_type = sys.exc_info()[0]
+              error_name = error_type.__name__
+              error_info = sys.exc_info()[1]
+              print("- error : {}".format(error_name))
+              print("  info : {}".format(error_info))
+              call_module_debug(module, level + 1)
       #+end_src
 
 *** call_module_debug

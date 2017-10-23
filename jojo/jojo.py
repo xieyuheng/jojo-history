@@ -1452,22 +1452,34 @@ def module_debug(module, level):
         while True:
             module_debug_one_step(module, level)
     except KeyboardInterrupt:
-        module.vm.ds = []
         module.vm.rs = []
         newline()
-        print("- exit debug-repl [level : {}]".format(level))
-        print("  data-stack and return-stack are cleared")
+        print("- leave debug-repl [level : {}]".format(level))
+        print("  return-stack is cleared")
         print("  for module : {}".format(module.__name__))
+        print_data_stack(module.vm.ds)
         return
     except EXIT_MODULE_DEBUG_REPL:
         module.vm.ds = []
         module.vm.rs = []
         print("- exit debug-repl [level : {}]".format(level))
-        print("  data-stack and return-stack is cleared")
+        print("  return-stack is cleared")
+        print("  data-stack is cleared")
         print("  for module : {}".format(module.__name__))
+        print_data_stack(module.vm.ds)
+        return
+    except LEAVE_MODULE_DEBUG_REPL:
+        module.vm.rs = []
+        print("- leave debug-repl [level : {}]".format(level))
+        print("  return-stack is cleared")
+        print("  for module : {}".format(module.__name__))
+        print_data_stack(module.vm.ds)
         return
 
 class EXIT_MODULE_DEBUG_REPL(Exception):
+    pass
+
+class LEAVE_MODULE_DEBUG_REPL(Exception):
     pass
 
 def module_debug_one_step(module, level):
@@ -1476,6 +1488,8 @@ def module_debug_one_step(module, level):
     sexp = read_sexp(module.debug_repl_char_stack)
     if sexp == 'exit':
         raise EXIT_MODULE_DEBUG_REPL()
+    if sexp == 'leave':
+        raise LEAVE_MODULE_DEBUG_REPL()
     else:
         try:
             merge_sexp_vect(module, [sexp])
