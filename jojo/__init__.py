@@ -11,9 +11,13 @@ from jojo.jojo import (
     parse_sexp_vect,
     sexp_print,
 
+    new_module,
+    merge_prim_dict,
+    merge_module,
     compile_module,
-
     module_repl,
+
+    core_module,
 
     load, run,
 )

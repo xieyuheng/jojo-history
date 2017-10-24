@@ -5,7 +5,7 @@ with open('README') as f:
 
 setup(
     name='jojo',
-    version='0.0.11',
+    version='0.0.15',
     description="jojo's programming adventure in python",
     url='http://github.com/xieyuheng/jojo-on-python',
 
@@ -15,7 +15,7 @@ setup(
 
     packages=['jojo'],
     package_data={'jojo': ['*.jo']},
-    scripts=['jojo/jojo'],
+    scripts=['bin/jojo'],
 
     long_description=readme,
     license="I dedicate all my works here to all human beings.",
