@@ -76,28 +76,20 @@ class VM:
         self.rs = rs
 
     def exe(self):
-        length = len(self.rs)
-        while len(self.rs) >= length:
-            exe_one_step(self)
-        return self
+        exe(self)
 
-class VALUES:
-    def __init__(self, *values):
-        self.values = values
-
-def push_result_to_vm(result, vm):
-    if type(result) == VALUES:
-        vm.ds.extend(result.values)
-    elif result == None:
-        return
-    else:
-        vm.ds.append(result)
+def exe(vm):
+    length = len(vm.rs)
+    while len(vm.rs) >= length:
+        exe_one_step(vm)
+    return vm
 
 def exe_one_step(vm):
     rp = vm.rs.pop()
     if rp.length == 0:
         return
 
+    # get current jo
     jo = rp.body[rp.cursor]
 
     # handle tail call
@@ -109,6 +101,10 @@ def exe_one_step(vm):
 
     # dispatching
     exe_jo(jo, rp, vm)
+
+class VALUES:
+    def __init__(self, *values):
+        self.values = values
 
 def exe_jo(jo, rp, vm):
     if fun_p(jo):
@@ -170,6 +166,14 @@ def exe_fun(fun, vm):
         result = fun(*args, **arg_dict)
 
     push_result_to_vm(result, vm)
+
+def push_result_to_vm(result, vm):
+    if type(result) == VALUES:
+        vm.ds.extend(result.values)
+    elif result == None:
+        return
+    else:
+        vm.ds.append(result)
 
 def get_positional_para_length(parameters):
     n = 0
@@ -655,8 +659,6 @@ def cons_emit(module, cons):
         new_sexp = vm.ds[0]
         return sexp_emit(module, new_sexp)
 
-undefined_warning_flag = False
-
 def string_emit(module, string):
     # special strings
     i = 0
@@ -673,12 +675,6 @@ def string_emit(module, string):
         return key_jo_dict[string]
 
     # normal function call
-    if undefined_warning_flag:
-        # defined_name_set = getattr(module, 'defined_name_set')
-        if not string in module.defined_name_set:
-            print("- string_emit warning")
-            print("  meet undefined string : {}".format(string))
-            newline()
     return [CALL(module, string)]
 
 def sexp_value(module, sexp):
