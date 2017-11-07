@@ -1522,6 +1522,10 @@ def subclass_p(c1, c2):
 def nop():
     return
 
+@prim('none')
+def none():
+    return VALUES(None)
+
 keyword_dict = {}
 
 def keyword(name):

@@ -4,27 +4,15 @@
 
 * [todo-stack]
 
-*** [note]
-
-    - x -
-      if we do so much for python
-      will it makes jojo so bound to python
-      so it is only use-able in python ?
-
-    - k -
-      maybe we should do datatype and function call,
-      but we should not mimic python's syntax.
-
-    - x -
-      how about do a jojo-in-javascript now ?
-      or jojo-in-rust ?
-      or just fix the jojo-in-c ?
-
 *** we need a way to deal with python function's default arguments
 
 *** we need a way to use python decorator in jojo
 
 *** some documentation about the implementation
+
+    - how the documentation of such a project should be ?
+
+      - learn from pooco
 
 *** (create)
 
@@ -2515,6 +2503,14 @@
     @prim('nop')
     def nop():
         return
+    #+end_src
+
+*** none
+
+    #+begin_src python
+    @prim('none')
+    def none():
+        return VALUES(None)
     #+end_src
 
 * ------
