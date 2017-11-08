@@ -4,7 +4,21 @@
 
 * [todo-stack]
 
+*** start jojo-in-javascript
+
+*** use python to normalize features
+
 *** we need a way to deal with python function's default arguments
+
+    - (call <fun> .arg1 .arg2)
+
+*** (create)
+
+    - example :
+      (create <trunk-obj> .field1 ... .field2 ...)
+
+    - or
+      (call <trunk-obj> .field1 ... .field2 ...)
 
 *** we need a way to use python decorator in jojo
 
@@ -13,10 +27,6 @@
     - how the documentation of such a project should be ?
 
       - learn from pooco
-
-*** (create)
-
-    - example : (create <trunk-obj> .field1 ... .field2 ...)
 
 *** python like generator and yield
 
