@@ -4,8 +4,13 @@
 
 * [todo-stack]
 
+*** start jojo-in-javascript
+
+*** use python to normalize features
+
 *** we need a way to deal with python function's default arguments
 
+<<<<<<< HEAD
 ***** (call)
 
       - example : (call <trunk-obj> .field1 ... .field2 ...)
@@ -23,6 +28,17 @@
 
     - (+data) need to be able define classes as 'Thread'
       maybe use (+class) for such thing
+=======
+    - (call <fun> .arg1 .arg2)
+
+*** (create)
+
+    - example :
+      (create <trunk-obj> .field1 ... .field2 ...)
+
+    - or
+      (call <trunk-obj> .field1 ... .field2 ...)
+>>>>>>> 7afe28f6786c4d6d4206c92f2d5bf21614310573
 
 *** we need a way to use python decorator in jojo
 
