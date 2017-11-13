@@ -6,6 +6,24 @@
 
 *** we need a way to deal with python function's default arguments
 
+***** (call)
+
+      - example : (call <trunk-obj> .field1 ... .field2 ...)
+
+      - see <trunk-obj>,
+        we need a syntax in jojo
+        to create data in a new way,
+        which do not need the order of arguments.
+
+        - (call <trunk-obj> .field1 ... .field2 ...)
+
+*** sequent2's requirements on jojo side
+
+    - jojo need to handle (. .field .field <type>) in (-> ...)
+
+    - (+data) need to be able define classes as 'Thread'
+      maybe use (+class) for such thing
+
 *** we need a way to use python decorator in jojo
 
 *** some documentation about the implementation
@@ -13,10 +31,6 @@
     - how the documentation of such a project should be ?
 
       - learn from pooco
-
-*** (create)
-
-    - example : (create <trunk-obj> .field1 ... .field2 ...)
 
 *** python like generator and yield
 
