@@ -10,7 +10,7 @@ def get_signature(fun):
     try:
         return inspect.signature(fun)
     except ValueError:
-        return False
+        return None
 
 def fun_p(x):
     if (isinstance(x, types.LambdaType) or
@@ -18,7 +18,10 @@ def fun_p(x):
         return True
     elif (isinstance(x, types.BuiltinFunctionType) or
           isinstance(x, types.BuiltinMethodType)):
-        return get_signature(x)
+        if get_signature(x) == None:
+            return False
+        else:
+            return True
     else:
         return False
 
@@ -26,7 +29,10 @@ def method_p(x):
     if isinstance(x, types.MethodType):
         return True
     elif isinstance(x, types.BuiltinMethodType):
-        return get_signature(x)
+        if get_signature(x) == None:
+            return False
+        else:
+            return True
     else:
         return False
 
@@ -76,7 +82,7 @@ class VM:
         self.rs = rs
 
     def exe(self):
-        exe(self)
+        return exe(self)
 
 def exe(vm):
     length = len(vm.rs)
@@ -117,7 +123,7 @@ def exe_jo(jo, rp, vm):
 def exe_fun(fun, vm):
     signature = get_signature(fun)
 
-    if not signature:
+    if signature == None:
         print("- exe_fun fail to get signature")
         print("  fun : {}".format(fun))
         error()
@@ -204,6 +210,15 @@ def get_default_arg_dict(parameters):
             default_dict[v.name] = v.default
     return default_dict
 
+def get_positional_default_arg_dict(parameters):
+    default_dict = {}
+    for v in parameters.values():
+        if ((v.kind == inspect.Parameter.POSITIONAL_ONLY or
+             v.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD)
+            and v.default != inspect.Parameter.empty):
+            default_dict[v.name] = v.default
+    return default_dict
+
 class JOJO:
     def __init__(self, body):
         self.length = len(body)
@@ -253,7 +268,7 @@ class IFTE:
     def jo_print(self):
         p_print("ifte")
 
-class CALL:
+class CALL_FROM_MODULE:
     def __init__(self, module, name):
         self.module = module
         self.name = name
@@ -675,7 +690,7 @@ def string_emit(module, string):
         return key_jo_dict[string]
 
     # normal function call
-    return [CALL(module, string)]
+    return [CALL_FROM_MODULE(module, string)]
 
 def sexp_value(module, sexp):
     jo_vect = sexp_emit(module, sexp)
@@ -1526,6 +1541,32 @@ def nop():
 def none():
     return VALUES(None)
 
+def fun_to_positional_default_arg_dict(fun):
+    signature = get_signature(fun)
+    if signature == None:
+        print("- fun_to_positional_default_arg_dict")
+        print("  fail to get signature")
+        print("  fun : {}".format(fun))
+        error()
+    parameters = signature.parameters
+    return get_positional_default_arg_dict(parameters)
+
+@prim('prepare-default-arguments')
+def prepare_default_arguments(fun, update_dict):
+    default_arg_dict = fun_to_positional_default_arg_dict(fun)
+    for k, v in update_dict.items():
+        if k in default_arg_dict:
+            default_arg_dict[k] = v
+        else:
+            print("- prepare_default_arguments")
+            print("  a key in update_dict is not in default_arg_dict")
+            print("  key : {}".format(k))
+            print("  fun : {}".format(fun))
+            print("  default_arg_dict : {}".format(default_arg_dict))
+            print("  update_dict : {}".format(update_dict))
+            error()
+    return VALUES(*default_arg_dict.values())
+
 keyword_dict = {}
 
 def keyword(name):
@@ -2038,6 +2079,18 @@ def k_when(body):
          ['clo', rest_vect],
          ['clo'],
          'ifte'])
+
+# @macro('call')
+# def k_call(body):
+#     update_dict = {}
+
+#     return vect_to_sexp(
+#         ['begin',
+
+#          car(body),
+#          update_dict,
+#          'prepare-default-arguments',
+#          car(body)])
 
 def maybe_drop_shebang(code):
     length = len(code)

@@ -4,7 +4,7 @@ from jojo.jojo import (
     JOJO, MSG, CLO,
     APPLY, IFTE,
     NEW,
-    CALL,
+    CALL_FROM_MODULE,
     VALUES,
 
     code_scan,

@@ -7,7 +7,7 @@ from jojo import (
     JOJO, MSG, CLO,
     APPLY, IFTE,
     NEW,
-    CALL,
+    CALL_FROM_MODULE,
     VALUES,
 )
 
@@ -123,15 +123,15 @@ import sys
 
 k_5 = 5
 j_5 = JOJO([
-    CALL(sys.modules[__name__], 'add'),
+    CALL_FROM_MODULE(sys.modules[__name__], 'add'),
 ])
 
 jojo_5 = JOJO([
-    CALL(sys.modules[__name__], 'k_5'),
-    CALL(sys.modules[__name__], 'k_5'),
-    CALL(sys.modules[__name__], 'add'),
-    CALL(sys.modules[__name__], 'dup'),
-    CALL(sys.modules[__name__], 'j_5'),
+    CALL_FROM_MODULE(sys.modules[__name__], 'k_5'),
+    CALL_FROM_MODULE(sys.modules[__name__], 'k_5'),
+    CALL_FROM_MODULE(sys.modules[__name__], 'add'),
+    CALL_FROM_MODULE(sys.modules[__name__], 'dup'),
+    CALL_FROM_MODULE(sys.modules[__name__], 'j_5'),
 ])
 
 def test_5():

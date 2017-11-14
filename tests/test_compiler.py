@@ -4,7 +4,6 @@ from jojo import (
     JOJO, MSG, CLO,
     APPLY, IFTE,
     NEW,
-    CALL,
     code_scan,
     parse_sexp_vect, sexp_print,
     compile_module,

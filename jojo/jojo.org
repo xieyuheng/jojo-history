@@ -4,41 +4,32 @@
 
 * [todo-stack]
 
+*** (call)
+
+    - (call <fun> .arg1 .arg2)
+
+    - this provide us a way to use
+      python function which has default arguments
+
 *** start jojo-in-javascript
 
 *** use python to normalize features
 
-*** we need a way to deal with python function's default arguments
-
-<<<<<<< HEAD
-***** (call)
-
-      - example : (call <trunk-obj> .field1 ... .field2 ...)
-
-      - see <trunk-obj>,
-        we need a syntax in jojo
-        to create data in a new way,
-        which do not need the order of arguments.
-
-        - (call <trunk-obj> .field1 ... .field2 ...)
-
-*** sequent2's requirements on jojo side
-
-    - jojo need to handle (. .field .field <type>) in (-> ...)
-
-    - (+data) need to be able define classes as 'Thread'
-      maybe use (+class) for such thing
-=======
-    - (call <fun> .arg1 .arg2)
+*** to handle (. .field .field <type>) in (-> ...)
 
 *** (create)
 
-    - example :
-      (create <trunk-obj> .field1 ... .field2 ...)
+    - example : (create <trunk-obj> .field1 ... .field2 ...)
 
-    - or
-      (call <trunk-obj> .field1 ... .field2 ...)
->>>>>>> 7afe28f6786c4d6d4206c92f2d5bf21614310573
+    - see <trunk-obj>,
+      we need a syntax in jojo
+      to create data in a new way,
+      which do not need the order of arguments.
+
+*** maybe (+class)
+
+    - (+data) need to be able define classes as 'Thread'
+      maybe use (+class) for such thing
 
 *** we need a way to use python decorator in jojo
 
@@ -85,7 +76,7 @@
           try:
               return inspect.signature(fun)
           except ValueError:
-              return False
+              return None
       #+end_src
 
 ***** fun_p
@@ -97,7 +88,10 @@
               return True
           elif (isinstance(x, types.BuiltinFunctionType) or
                 isinstance(x, types.BuiltinMethodType)):
-              return get_signature(x)
+              if get_signature(x) == None:
+                  return False
+              else:
+                  return True
           else:
               return False
       #+end_src
@@ -109,7 +103,10 @@
           if isinstance(x, types.MethodType):
               return True
           elif isinstance(x, types.BuiltinMethodType):
-              return get_signature(x)
+              if get_signature(x) == None:
+                  return False
+              else:
+                  return True
           else:
               return False
       #+end_src
@@ -204,7 +201,7 @@
             self.rs = rs
 
         def exe(self):
-            exe(self)
+            return exe(self)
     #+end_src
 
 *** exe
@@ -273,6 +270,9 @@
         each positional arguments took one position
         do not respect default arguments
 
+        - to respect default arguments
+          one has to use (call)
+
       - if *args is used in a function signature
         pass it as a vect
 
@@ -285,7 +285,7 @@
       def exe_fun(fun, vm):
           signature = get_signature(fun)
 
-          if not signature:
+          if signature == None:
               print("- exe_fun fail to get signature")
               print("  fun : {}".format(fun))
               error()
@@ -393,6 +393,19 @@
           return default_dict
       #+end_src
 
+***** get_positional_default_arg_dict
+
+      #+begin_src python
+      def get_positional_default_arg_dict(parameters):
+          default_dict = {}
+          for v in parameters.values():
+              if ((v.kind == inspect.Parameter.POSITIONAL_ONLY or
+                   v.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD)
+                  and v.default != inspect.Parameter.empty):
+                  default_dict[v.name] = v.default
+          return default_dict
+      #+end_src
+
 * jo
 
 *** top level
@@ -466,10 +479,10 @@
               p_print("ifte")
       #+end_src
 
-*** CALL -- call a name from a module
+*** CALL_FROM_MODULE
 
     #+begin_src python
-    class CALL:
+    class CALL_FROM_MODULE:
         def __init__(self, module, name):
             self.module = module
             self.name = name
@@ -1139,7 +1152,7 @@
             return key_jo_dict[string]
 
         # normal function call
-        return [CALL(module, string)]
+        return [CALL_FROM_MODULE(module, string)]
     #+end_src
 
 *** sexp_value
@@ -2543,6 +2556,40 @@
         return VALUES(None)
     #+end_src
 
+*** fun_to_positional_default_arg_dict
+
+    #+begin_src python
+    def fun_to_positional_default_arg_dict(fun):
+        signature = get_signature(fun)
+        if signature == None:
+            print("- fun_to_positional_default_arg_dict")
+            print("  fail to get signature")
+            print("  fun : {}".format(fun))
+            error()
+        parameters = signature.parameters
+        return get_positional_default_arg_dict(parameters)
+    #+end_src
+
+*** prepare_default_arguments
+
+    #+begin_src python
+    @prim('prepare-default-arguments')
+    def prepare_default_arguments(fun, update_dict):
+        default_arg_dict = fun_to_positional_default_arg_dict(fun)
+        for k, v in update_dict.items():
+            if k in default_arg_dict:
+                default_arg_dict[k] = v
+            else:
+                print("- prepare_default_arguments")
+                print("  a key in update_dict is not in default_arg_dict")
+                print("  key : {}".format(k))
+                print("  fun : {}".format(fun))
+                print("  default_arg_dict : {}".format(default_arg_dict))
+                print("  update_dict : {}".format(update_dict))
+                error()
+        return VALUES(*default_arg_dict.values())
+    #+end_src
+
 * ------
 * keyword_dict
 
@@ -3270,6 +3317,25 @@
              ['clo', rest_vect],
              ['clo'],
              'ifte'])
+    #+end_src
+
+*** >< (call)
+
+    - push default arguments to stack
+      and call the function
+
+    #+begin_src python
+    # @macro('call')
+    # def k_call(body):
+    #     update_dict = {}
+
+    #     return vect_to_sexp(
+    #         ['begin',
+
+    #          car(body),
+    #          update_dict,
+    #          'prepare-default-arguments',
+    #          car(body)])
     #+end_src
 
 * ------
