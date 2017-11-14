@@ -1099,6 +1099,22 @@ def vect_append(vect1, vect2):
     vect1_copy.extend(vect2)
     return vect1_copy
 
+@prim('vect-zip-dict')
+def vect_zip_dict(v1, v2):
+    if len(v1) != len(v2):
+        print("- vect_zip_dict fail")
+        print("  length of vect1")
+        print("    is not equal to length of vect2")
+        print("  length of vect1 : {}".format(len(v1)))
+        print("  length of vect2 : {}".format(len(v2)))
+        print("  vect1 : {}".format(v1))
+        print("  vect2 : {}".format(v2))
+        error()
+    d = {}
+    for k, v in zip(v1, v2):
+       d[k] = v
+    return d
+
 prim('<null>')(Null)
 prim('<cons>')(Cons)
 
@@ -1146,6 +1162,12 @@ def list_append(ante, succ):
 
 def tail_cons(ante, value):
     return list_append(ante, cons(value, null))
+
+@prim('list-zip-dict')
+def list_zip_dict(l1, l2):
+    v1 = list_to_vect(l1)
+    v2 = list_to_vect(l2)
+    return vect_zip_dict(v1, v2)
 
 prim('Dict')(dict)
 
@@ -1566,20 +1588,39 @@ def fun_to_positional_default_arg_dict(fun):
     return get_positional_default_arg_dict(parameters)
 
 @prim('prepare-default-arguments')
-def prepare_default_arguments(fun, update_dict):
+def prepare_default_arguments(field_vect, value_vect, fun):
     default_arg_dict = fun_to_positional_default_arg_dict(fun)
-    for k, v in update_dict.items():
+    if len(field_vect) == 0:
+        normal_value_vect = value_vect
+        default_value_vect = []
+    elif len(field_vect) <= len(value_vect):
+        normal_value_vect = value_vect[:-len(field_vect)]
+        default_value_vect = value_vect[len(value_vect)-len(field_vect):]
+    else:
+        print("- prepare_default_arguments")
+        print("  length of field_vect")
+        print("    must be shorter then length of value_vect")
+        print("  length of field_vect : {}".format(len(field_vect)))
+        print("  length of value_vect : {}".format(len(value_vect)))
+        print("  fun : {}".format(fun))
+        print("  field_vect : {}".format(field_vect))
+        error()
+
+    for k, v in zip(field_vect, default_value_vect):
         if k in default_arg_dict:
             default_arg_dict[k] = v
         else:
             print("- prepare_default_arguments")
-            print("  a key in update_dict is not in default_arg_dict")
+            print("  a key used in field_vect")
+            print("    is not in default_arg_dict")
             print("  key : {}".format(k))
             print("  fun : {}".format(fun))
+            print("  field_vect : {}".format(field_vect))
             print("  default_arg_dict : {}".format(default_arg_dict))
-            print("  update_dict : {}".format(update_dict))
             error()
-    return VALUES(*default_arg_dict.values())
+
+    result_vect = normal_value_vect + Vect(default_arg_dict.values())
+    return VALUES(*result_vect)
 
 keyword_dict = {}
 
@@ -2109,17 +2150,44 @@ def k_when(body):
          ['clo'],
          'ifte'])
 
-# @macro('call')
-# def k_call(body):
-#     update_dict = {}
+@macro('call')
+def k_call(body):
+    rest_vect = list_to_vect(cdr(body))
+    name = car(body)
+    fields = []
+    new_body = ['begin']
+    for sexp in rest_vect:
+       if message_string_p(sexp):
+           fields.append(sexp[1:])
+       else:
+           new_body.append(sexp)
+    return vect_to_sexp(
+        ['begin',
+         ['quote', fields], 'list->vect',
+         'mark', new_body, 'collect-vect',
+         ['primitive', name],
+         'prepare-default-arguments',
+         name])
 
-#     return vect_to_sexp(
-#         ['begin',
-
-#          car(body),
-#          update_dict,
-#          'prepare-default-arguments',
-#          car(body)])
+@macro('create')
+def k_create(body):
+    rest_vect = list_to_vect(cdr(body))
+    name = car(body)
+    fields = []
+    new_body = ['begin']
+    for sexp in rest_vect:
+       if message_string_p(sexp):
+           fields.append(sexp[1:])
+       else:
+           new_body.append(sexp)
+    return vect_to_sexp(
+        ['begin',
+         ['quote', fields], 'list->vect',
+         'mark', new_body, 'collect-vect',
+         ['primitive', name],
+         'prepare-default-arguments',
+         name,
+         'new'])
 
 def maybe_drop_shebang(code):
     length = len(code)
