@@ -5,6 +5,7 @@ import sys
 import os
 import itertools
 import collections
+import operator
 
 def get_signature(fun):
     try:
@@ -444,6 +445,16 @@ class CLEAR:
     def jo_print(self):
         p_print("clear")
 
+class PRIMITIVE:
+    def __init__(self, fun):
+        self.fun = fun
+
+    def jo_exe(self, rp, vm):
+        vm.ds.append(self.fun)
+
+    def jo_print(self):
+        p_print(self.fun)
+
 def code_scan(string):
     string_vect = []
     i = 0
@@ -660,6 +671,7 @@ def null_emit(module, sexp):
 
 def cons_emit(module, cons):
     keyword = car(cons)
+    # keyword can not have dot-in-name
     if keyword in keyword_dict.keys():
         fun = keyword_dict[keyword]
         return fun(module, cdr(cons))
@@ -668,6 +680,8 @@ def cons_emit(module, cons):
         new_sexp = fun(cdr(cons))
         return sexp_emit(module, new_sexp)
     else:
+        # a call to string_emit
+        # handles dot-in-name in head of sexp
         vm = VM([cdr(cons)],
                 [RP(JOJO(string_emit(module, keyword)))])
         vm.exe()
@@ -1671,6 +1685,21 @@ def k_set(module, sexp_list):
     jo_vect.extend([MARK])
     jo_vect.extend(sexp_list_emit(module, sexp_list))
     jo_vect.extend([COLLECT_VECT, vect_to_set])
+    return jo_vect
+
+@keyword('primitive')
+def k_primitive(module, sexp_list):
+    jo_vect = []
+    sexp_vect = list_to_vect(sexp_list)
+    for sexp in sexp_vect:
+        if not string_p(sexp):
+            print("- (primitive) syntax error")
+            print("  body of (primitive) must be names")
+            print("  non string sexp : {}".format(sexp))
+            print("  body : {}".format(sexp_vect))
+            error()
+        else:
+            jo_vect.extend([PRIMITIVE(operator.attrgetter(sexp)(module))])
     return jo_vect
 
 @keyword("import")

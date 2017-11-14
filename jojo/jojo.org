@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+*** a syntax to get literal python function
+
 *** (call)
 
     - (call <fun> .arg1 .arg2)
@@ -65,6 +67,7 @@
     import os
     import itertools
     import collections
+    import operator
     #+end_src
 
 *** utility
@@ -713,6 +716,20 @@
             p_print("clear")
     #+end_src
 
+*** PRIMITIVE
+
+    #+begin_src python
+    class PRIMITIVE:
+        def __init__(self, fun):
+            self.fun = fun
+
+        def jo_exe(self, rp, vm):
+            vm.ds.append(self.fun)
+
+        def jo_print(self):
+            p_print(self.fun)
+    #+end_src
+
 * ------
 * scan -- lexer for sexp
 
@@ -1008,6 +1025,16 @@
     - :local!
     - .message
 
+*** dot-in-name
+
+    - string_emitters for dot-in-name
+      | name.message     | name_message_string_emitter    |
+      | :local.message   | local_message_string_emitter   |
+      | .message.message | message_message_string_emitter |
+
+    - while dot-in-name occurs in head of sexp
+      is handled by cons_emit.
+
 * compiler
 
 *** new_module
@@ -1118,6 +1145,7 @@
     #+begin_src python
     def cons_emit(module, cons):
         keyword = car(cons)
+        # keyword can not have dot-in-name
         if keyword in keyword_dict.keys():
             fun = keyword_dict[keyword]
             return fun(module, cdr(cons))
@@ -1126,6 +1154,8 @@
             new_sexp = fun(cdr(cons))
             return sexp_emit(module, new_sexp)
         else:
+            # a call to string_emit
+            # handles dot-in-name in head of sexp
             vm = VM([cdr(cons)],
                     [RP(JOJO(string_emit(module, keyword)))])
             vm.exe()
@@ -2752,6 +2782,25 @@
         jo_vect.extend([MARK])
         jo_vect.extend(sexp_list_emit(module, sexp_list))
         jo_vect.extend([COLLECT_VECT, vect_to_set])
+        return jo_vect
+    #+end_src
+
+*** (primitive)
+
+    #+begin_src python
+    @keyword('primitive')
+    def k_primitive(module, sexp_list):
+        jo_vect = []
+        sexp_vect = list_to_vect(sexp_list)
+        for sexp in sexp_vect:
+            if not string_p(sexp):
+                print("- (primitive) syntax error")
+                print("  body of (primitive) must be names")
+                print("  non string sexp : {}".format(sexp))
+                print("  body : {}".format(sexp_vect))
+                error()
+            else:
+                jo_vect.extend([PRIMITIVE(operator.attrgetter(sexp)(module))])
         return jo_vect
     #+end_src
 
