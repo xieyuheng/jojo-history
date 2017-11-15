@@ -379,6 +379,27 @@ class DATA_PRED:
         p_print(data_class.__name__)
         p_print('?')
 
+# class NEW:
+#     @classmethod
+#     def jo_exe(self, rp, vm):
+#         x = vm.ds.pop()
+#         if not class_p(x):
+#             print("- NEW.jo_exe fail")
+#             print("  argument is not a class : {}".format(x))
+#             error()
+#         if JOJO_DATA in x.__bases__:
+#             data_dict = {}
+#             for field_name in x.reversed_field_name_vect:
+#                 data_dict[field_name] = vm.ds.pop()
+#             data_instance = x(data_dict)
+#             vm.ds.append(data_instance)
+#         else:
+#             exe_fun(x, vm)
+
+#     def jo_print(self):
+#         p_print("new")
+
+
 class NEW:
     @classmethod
     def jo_exe(self, rp, vm):
@@ -387,12 +408,6 @@ class NEW:
             print("- NEW.jo_exe fail")
             print("  argument is not a class : {}".format(x))
             error()
-        if JOJO_DATA in x.__bases__:
-            data_dict = {}
-            for field_name in x.reversed_field_name_vect:
-                data_dict[field_name] = vm.ds.pop()
-            data_instance = x(data_dict)
-            vm.ds.append(data_instance)
         else:
             exe_fun(x, vm)
 
@@ -1592,10 +1607,10 @@ def prepare_default_arguments(field_vect, value_vect, fun):
     default_arg_dict = fun_to_positional_default_arg_dict(fun)
     if len(field_vect) == 0:
         normal_value_vect = value_vect
-        default_value_vect = []
+        field_value_vect = []
     elif len(field_vect) <= len(value_vect):
         normal_value_vect = value_vect[:-len(field_vect)]
-        default_value_vect = value_vect[len(value_vect)-len(field_vect):]
+        field_value_vect = value_vect[len(value_vect)-len(field_vect):]
     else:
         print("- prepare_default_arguments")
         print("  length of field_vect")
@@ -1606,7 +1621,7 @@ def prepare_default_arguments(field_vect, value_vect, fun):
         print("  field_vect : {}".format(field_vect))
         error()
 
-    for k, v in zip(field_vect, default_value_vect):
+    for k, v in zip(field_vect, field_value_vect):
         if k in default_arg_dict:
             default_arg_dict[k] = v
         else:
@@ -1621,6 +1636,24 @@ def prepare_default_arguments(field_vect, value_vect, fun):
 
     result_vect = normal_value_vect + Vect(default_arg_dict.values())
     return VALUES(*result_vect)
+
+@prim('prepare-data-arguments')
+def prepare_data_arguments(field_vect, value_vect, data):
+    if len(field_vect) == 0:
+        normal_value_vect = value_vect
+        field_value_vect = []
+    elif len(field_vect) <= len(value_vect):
+        normal_value_vect = value_vect[:-len(field_vect)]
+        field_value_vect = value_vect[len(value_vect)-len(field_vect):]
+    else:
+        print("- prepare_data_arguments")
+        print("  length of field_vect")
+        print("    must be shorter then length of value_vect")
+        print("  length of field_vect : {}".format(len(field_vect)))
+        print("  length of value_vect : {}".format(len(value_vect)))
+        print("  data : {}".format(data))
+        print("  field_vect : {}".format(field_vect))
+        error()
 
 keyword_dict = {}
 
@@ -1879,6 +1912,8 @@ def plus_data(module, body):
 
     jojo_define(module, data_name, data_class)
 
+    # generate more bindings
+
     constructor_name = data_name[1:-1]
     jojo_define(module, constructor_name, JOJO([data_class, NEW]))
 
@@ -1908,20 +1943,58 @@ def data_name_string_p(string):
 class JOJO_DATA:
     pass
 
+# def create_data_init(field_name_vect):
+#     '''
+#     just like
+#     def __init__(self, field1, field2):
+#         self.field1 = field1
+#         self.field2 = field2
+#     lambda self, field1, field2:
+#         self.field1 = field1
+#         self.field2 = field2
+#     '''
+#     exec("def init(self, kwargs):" +
+#          "self.__dict__.update(kwargs)",
+#          globals())
+#     return init
+
+
+def create_data_init(field_name_vect):
+    '''
+    just like
+    def __init__(self, field1, field2):
+        self.field1 = field1
+        self.field2 = field2
+    '''
+    if len(field_name_vect) == 0:
+        code = "def init(self):pass"
+        exec(code, globals())
+        return init
+    else:
+        pieces = []
+        pieces.append("def init(self")
+        for field_name in field_name_vect:
+            pieces.append(",{}".format(field_name))
+        pieces.append("):")
+        for field_name in field_name_vect:
+            pieces.append("self.{}={};".format(field_name,
+                                              field_name))
+        code = ''.join(pieces)
+        exec(code, globals())
+        return init
+
 def create_data_class(data_name, field_name_vect):
     rev = vect_copy(field_name_vect)
     rev.reverse()
-    def init(self, kwargs):
-        self.__dict__.update(kwargs)
     def update_ns(ns):
         ns.update({
-            '__init__' : init,
+            '__init__' : create_data_init(field_name_vect),
             'field_name_vect': field_name_vect,
             'reversed_field_name_vect': rev,
         })
     return types.new_class(
         data_name,
-        bases = (JOJO_DATA, ),
+        # bases = (JOJO_DATA, ),
         kwds = None,
         exec_body = update_ns)
 
@@ -2171,6 +2244,21 @@ def k_call(body):
 
 @macro('create')
 def k_create(body):
+    name = car(body)
+    if not string_p(name):
+        # the second place in (create)
+        #   can returns a data
+        k_create_from_data(body)
+    elif dot_data_name_string_p(name):
+        k_create_from_data(body)
+    else:
+        k_create_from_class(body)
+
+def dot_data_name_string_p(string):
+    string_vect = string.split('.')
+    return data_name_string_p(string_vect[-1])
+
+def k_create_from_class(body):
     rest_vect = list_to_vect(cdr(body))
     name = car(body)
     fields = []
@@ -2186,6 +2274,25 @@ def k_create(body):
          'mark', new_body, 'collect-vect',
          ['primitive', name],
          'prepare-default-arguments',
+         name,
+         'new'])
+
+def k_create_from_data(body):
+    rest_vect = list_to_vect(cdr(body))
+    name = car(body)
+    fields = []
+    new_body = ['begin']
+    for sexp in rest_vect:
+       if message_string_p(sexp):
+           fields.append(sexp[1:])
+       else:
+           new_body.append(sexp)
+    return vect_to_sexp(
+        ['begin',
+         ['quote', fields], 'list->vect',
+         'mark', new_body, 'collect-vect',
+         name,
+         'prepare-data-arguments',
          name,
          'new'])
 

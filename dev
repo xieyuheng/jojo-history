@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd jojo; ./tangle-jojo; cd ..
+
+pip install . --upgrade
+
+py.test
