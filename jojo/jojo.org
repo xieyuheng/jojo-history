@@ -4,22 +4,22 @@
 
 * [todo-stack]
 
-*** some documentation about the implementation
+*** to be useful
 
-    - how the documentation of such a project should be ?
+***** more about python module system
 
-      - learn from pooco
+***** build system
 
-*** we need a way to use python decorator in jojo
+***** to use python decorator in jojo
 
-*** start jojo-in-javascript
+      - for flask and celery
 
-*** use python to normalize features
+***** python like generator and yield
 
-*** python like generator and yield
+      - for scrapy
 
-    - (+generator k1 1 give k1)
-      k1 next
+      - (+generator k1 1 give k1)
+        k1 next
 
 *** parse_sexp_vect -- error handling
 
