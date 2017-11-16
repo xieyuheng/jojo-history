@@ -6,6 +6,8 @@ import os
 import itertools
 import collections
 import operator
+import traceback
+import pprint
 
 def get_signature(fun):
     try:
@@ -379,27 +381,6 @@ class DATA_PRED:
         p_print(data_class.__name__)
         p_print('?')
 
-# class NEW:
-#     @classmethod
-#     def jo_exe(self, rp, vm):
-#         x = vm.ds.pop()
-#         if not class_p(x):
-#             print("- NEW.jo_exe fail")
-#             print("  argument is not a class : {}".format(x))
-#             error()
-#         if JOJO_DATA in x.__bases__:
-#             data_dict = {}
-#             for field_name in x.reversed_field_name_vect:
-#                 data_dict[field_name] = vm.ds.pop()
-#             data_instance = x(data_dict)
-#             vm.ds.append(data_instance)
-#         else:
-#             exe_fun(x, vm)
-
-#     def jo_print(self):
-#         p_print("new")
-
-
 class NEW:
     @classmethod
     def jo_exe(self, rp, vm):
@@ -719,6 +700,9 @@ def string_emit(module, string):
         return key_jo_dict[string]
 
     # normal function call
+    if string == None:
+        traceback.print_stack()
+        exit()
     return [CALL_FROM_MODULE(module, string)]
 
 def sexp_value(module, sexp):
@@ -745,6 +729,8 @@ def string_emitter(p, emitter):
     string_emitter_vect.append((p, emitter))
 
 def int_string_p(string):
+    if not string_p(string):
+        return False
     length = len(string)
     if length == 0:
         return False
@@ -754,6 +740,8 @@ def int_string_p(string):
         return nat_string_p(string)
 
 def nat_string_p(string):
+    if not string_p(string):
+        return False
     return string.isdecimal()
 
 def int_string_emitter(module, string):
@@ -763,6 +751,8 @@ string_emitter(int_string_p,
                int_string_emitter)
 
 def doublequoted_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 3:
         return False
     elif string[0] != '"':
@@ -780,6 +770,8 @@ string_emitter(doublequoted_string_p,
                doublequoted_string_emitter)
 
 def local_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 2:
         return False
     elif string.count('.') != 0:
@@ -800,6 +792,8 @@ string_emitter(local_string_p,
                local_string_emitter)
 
 def set_local_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 3:
         return False
     elif string.count('.') != 0:
@@ -819,6 +813,8 @@ string_emitter(set_local_string_p,
                set_local_string_emitter)
 
 def message_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 2:
         return False
     elif string[0] != '.':
@@ -836,6 +832,8 @@ string_emitter(message_string_p,
                message_string_emitter)
 
 def name_message_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 3: # example : 'n.s'
         return False
     elif string[0] == '.':
@@ -868,6 +866,8 @@ string_emitter(name_message_string_p,
                name_message_string_emitter)
 
 def local_message_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 4:
         return False
     elif string[0] != ':':
@@ -892,6 +892,8 @@ string_emitter(local_message_string_p,
                local_message_string_emitter)
 
 def message_message_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 4:
         return False
     elif string[0] != '.':
@@ -1090,16 +1092,6 @@ def vect_copy(vect):
 def vect_member_p(x, vect):
     return x in vect
 
-@prim('vect->sexp')
-def vect_to_sexp(vect):
-    if vect == []:
-        return null
-    elif not vect_p(vect):
-        return vect
-    else:
-        return cons(vect_to_sexp(vect[0]),
-                    vect_to_sexp(vect[1:]))
-
 @prim('vect-length')
 def vect_length(vect):
     return len(vect)
@@ -1129,6 +1121,26 @@ def vect_zip_dict(v1, v2):
     for k, v in zip(v1, v2):
        d[k] = v
     return d
+
+@prim('vect->sexp')
+def vect_to_sexp(vect):
+    if vect == []:
+        return null
+    elif not vect_p(vect):
+        return vect
+    else:
+        return cons(vect_to_sexp(vect[0]),
+                    vect_to_sexp(vect[1:]))
+
+@prim('sexp->vect')
+def sexp_to_vect(sexp):
+    if string_p(sexp):
+        return sexp
+    sexp_vect = list_to_vect(sexp)
+    result_vect = []
+    for s in sexp_vect:
+        result_vect.append(sexp_to_vect(s))
+    return result_vect
 
 prim('<null>')(Null)
 prim('<cons>')(Cons)
@@ -1500,6 +1512,8 @@ def module_repl_one_step(module):
         error_info = sys.exc_info()[1]
         print("- error : {}".format(error_name))
         print("  info : {}".format(error_info))
+        print("  traceback : ")
+        traceback.print_exc()
         call_module_debug(module, 1)
 
 prim('error')(error)
@@ -1564,6 +1578,8 @@ def module_debug_one_step(module, level):
         error_info = sys.exc_info()[1]
         print("- error : {}".format(error_name))
         print("  info : {}".format(error_info))
+        p_print("  traceback : ")
+        traceback.print_exc()
         call_module_debug(module, level + 1)
 
 def call_module_debug(module, level):
@@ -1639,6 +1655,17 @@ def prepare_default_arguments(field_vect, value_vect, fun):
 
 @prim('prepare-data-arguments')
 def prepare_data_arguments(field_vect, value_vect, data):
+    if not class_p(data):
+        print("- prepare_data_arguments fail")
+        print("  data must be a python class")
+        print("  data : {}".format(data))
+        error()
+    elif not hasattr(data, 'field_name_vect'):
+        print("- prepare_data_arguments fail")
+        print("  data must has 'field_name_vect' attribute")
+        print("  data : {}".format(data))
+        error()
+
     if len(field_vect) == 0:
         normal_value_vect = value_vect
         field_value_vect = []
@@ -1646,7 +1673,7 @@ def prepare_data_arguments(field_vect, value_vect, data):
         normal_value_vect = value_vect[:-len(field_vect)]
         field_value_vect = value_vect[len(value_vect)-len(field_vect):]
     else:
-        print("- prepare_data_arguments")
+        print("- prepare_data_arguments fail")
         print("  length of field_vect")
         print("    must be shorter then length of value_vect")
         print("  length of field_vect : {}".format(len(field_vect)))
@@ -1654,6 +1681,15 @@ def prepare_data_arguments(field_vect, value_vect, data):
         print("  data : {}".format(data))
         print("  field_vect : {}".format(field_vect))
         error()
+
+    field_dict = dict(zip(field_vect, field_value_vect))
+    ordered_vect = []
+    for field_name in data.field_name_vect:
+        if field_name in field_dict.keys():
+            ordered_vect.append(field_dict[field_name])
+
+    result_vect = normal_value_vect + ordered_vect
+    return VALUES(*result_vect)
 
 keyword_dict = {}
 
@@ -1901,28 +1937,34 @@ def plus_data(module, body):
         print("  data_name : {}".format(data_name))
         error()
 
-    field_name_vect = []
-    for string in list_to_vect(cdr(body)):
-        if message_string_p(string):
-            string = string[1:]
-            field_name_vect.append(string)
-
+    field_name_vect = body_to_field_name_vect(cdr(body))
     data_class = create_data_class(data_name, field_name_vect)
     data_class.__module__ = module
-
     jojo_define(module, data_name, data_class)
-
     # generate more bindings
-
     constructor_name = data_name[1:-1]
     jojo_define(module, constructor_name, JOJO([data_class, NEW]))
-
     predicate_name = "".join([constructor_name, "?"])
     jojo_define(module, predicate_name, DATA_PRED(data_class))
-
     return []
 
+def body_to_field_name_vect(body):
+    body_vect = list_to_vect(body)
+    field_name_vect = []
+    for sexp in body_vect:
+        if string_p(sexp):
+            if message_string_p(sexp):
+                sexp = sexp[1:]
+                field_name_vect.append(sexp)
+        elif cons_p(sexp):
+            if car(sexp) == '.':
+                vect1 = body_to_field_name_vect(cdr(sexp))
+                field_name_vect.extend(vect1)
+    return field_name_vect
+
 def data_name_string_p(string):
+    if not string_p(string):
+        return False
     if len(string) < 3: # example : '<n>'
         return False
     elif string[0] != '<':
@@ -1940,45 +1982,27 @@ def data_name_string_p(string):
     else:
         return True
 
-class JOJO_DATA:
-    pass
-
-# def create_data_init(field_name_vect):
-#     '''
-#     just like
-#     def __init__(self, field1, field2):
-#         self.field1 = field1
-#         self.field2 = field2
-#     lambda self, field1, field2:
-#         self.field1 = field1
-#         self.field2 = field2
-#     '''
-#     exec("def init(self, kwargs):" +
-#          "self.__dict__.update(kwargs)",
-#          globals())
-#     return init
-
-
 def create_data_init(field_name_vect):
     '''
     just like
-    def __init__(self, field1, field2):
-        self.field1 = field1
-        self.field2 = field2
+    def __init__(self, x1, x2):
+        self.__dict__['field-name-1'] = x1
+        self.__dict__['field-name-2'] = x2
     '''
     if len(field_name_vect) == 0:
         code = "def init(self):pass"
         exec(code, globals())
         return init
     else:
+        length = len(field_name_vect)
         pieces = []
         pieces.append("def init(self")
-        for field_name in field_name_vect:
-            pieces.append(",{}".format(field_name))
+        for field_name, index in zip(field_name_vect, range(length)):
+            pieces.append(",{}".format('x'+str(index)))
         pieces.append("):")
-        for field_name in field_name_vect:
-            pieces.append("self.{}={};".format(field_name,
-                                              field_name))
+        for field_name, index in zip(field_name_vect, range(length)):
+            pieces.append("self.__dict__['{}']={};".format(field_name,
+                                               ('x'+str(index))))
         code = ''.join(pieces)
         exec(code, globals())
         return init
@@ -1994,7 +2018,6 @@ def create_data_class(data_name, field_name_vect):
         })
     return types.new_class(
         data_name,
-        # bases = (JOJO_DATA, ),
         kwds = None,
         exec_body = update_ns)
 
@@ -2248,11 +2271,11 @@ def k_create(body):
     if not string_p(name):
         # the second place in (create)
         #   can returns a data
-        k_create_from_data(body)
+        return k_create_from_data(body)
     elif dot_data_name_string_p(name):
-        k_create_from_data(body)
+        return k_create_from_data(body)
     else:
-        k_create_from_class(body)
+        return k_create_from_class(body)
 
 def dot_data_name_string_p(string):
     string_vect = string.split('.')
@@ -2264,10 +2287,10 @@ def k_create_from_class(body):
     fields = []
     new_body = ['begin']
     for sexp in rest_vect:
-       if message_string_p(sexp):
-           fields.append(sexp[1:])
-       else:
-           new_body.append(sexp)
+        if message_string_p(sexp):
+            fields.append(sexp[1:])
+        else:
+            new_body.append(sexp)
     return vect_to_sexp(
         ['begin',
          ['quote', fields], 'list->vect',
@@ -2283,10 +2306,10 @@ def k_create_from_data(body):
     fields = []
     new_body = ['begin']
     for sexp in rest_vect:
-       if message_string_p(sexp):
-           fields.append(sexp[1:])
-       else:
-           new_body.append(sexp)
+        if message_string_p(sexp):
+            fields.append(sexp[1:])
+        else:
+            new_body.append(sexp)
     return vect_to_sexp(
         ['begin',
          ['quote', fields], 'list->vect',

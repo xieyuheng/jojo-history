@@ -4,8 +4,6 @@
 
 * [todo-stack]
 
-*** to handle (. .field .field <type>) in (-> ...)
-
 *** some documentation about the implementation
 
     - how the documentation of such a project should be ?
@@ -45,6 +43,8 @@
     import itertools
     import collections
     import operator
+    import traceback
+    import pprint
     #+end_src
 
 *** utility
@@ -1153,6 +1153,9 @@
             return key_jo_dict[string]
 
         # normal function call
+        if string == None:
+            traceback.print_stack()
+            exit()
         return [CALL_FROM_MODULE(module, string)]
     #+end_src
 
@@ -1200,6 +1203,8 @@
 
       #+begin_src python
       def int_string_p(string):
+          if not string_p(string):
+              return False
           length = len(string)
           if length == 0:
               return False
@@ -1213,6 +1218,8 @@
 
       #+begin_src python
       def nat_string_p(string):
+          if not string_p(string):
+              return False
           return string.isdecimal()
       #+end_src
 
@@ -1236,6 +1243,8 @@
 
       #+begin_src python
       def doublequoted_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 3:
               return False
           elif string[0] != '"':
@@ -1267,6 +1276,8 @@
 
       #+begin_src python
       def local_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 2:
               return False
           elif string.count('.') != 0:
@@ -1301,6 +1312,8 @@
 
       #+begin_src python
       def set_local_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 3:
               return False
           elif string.count('.') != 0:
@@ -1334,6 +1347,8 @@
 
       #+begin_src python
       def message_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 2:
               return False
           elif string[0] != '.':
@@ -1365,6 +1380,8 @@
 
       #+begin_src python
       def name_message_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 3: # example : 'n.s'
               return False
           elif string[0] == '.':
@@ -1411,6 +1428,8 @@
 
       #+begin_src python
       def local_message_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 4:
               return False
           elif string[0] != ':':
@@ -1449,6 +1468,8 @@
 
       #+begin_src python
       def message_message_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 4:
               return False
           elif string[0] != '.':
@@ -1793,20 +1814,6 @@
         return x in vect
     #+end_src
 
-*** vect_to_sexp
-
-    #+begin_src python
-    @prim('vect->sexp')
-    def vect_to_sexp(vect):
-        if vect == []:
-            return null
-        elif not vect_p(vect):
-            return vect
-        else:
-            return cons(vect_to_sexp(vect[0]),
-                        vect_to_sexp(vect[1:]))
-    #+end_src
-
 *** vect_length
 
     #+begin_src python
@@ -1851,6 +1858,34 @@
         for k, v in zip(v1, v2):
            d[k] = v
         return d
+    #+end_src
+
+*** vect_to_sexp
+
+    #+begin_src python
+    @prim('vect->sexp')
+    def vect_to_sexp(vect):
+        if vect == []:
+            return null
+        elif not vect_p(vect):
+            return vect
+        else:
+            return cons(vect_to_sexp(vect[0]),
+                        vect_to_sexp(vect[1:]))
+    #+end_src
+
+*** sexp_to_vect
+
+    #+begin_src python
+    @prim('sexp->vect')
+    def sexp_to_vect(sexp):
+        if string_p(sexp):
+            return sexp
+        sexp_vect = list_to_vect(sexp)
+        result_vect = []
+        for s in sexp_vect:
+            result_vect.append(sexp_to_vect(s))
+        return result_vect
     #+end_src
 
 * *list*
@@ -2438,6 +2473,8 @@
               error_info = sys.exc_info()[1]
               print("- error : {}".format(error_name))
               print("  info : {}".format(error_info))
+              print("  traceback : ")
+              traceback.print_exc()
               call_module_debug(module, 1)
       #+end_src
 
@@ -2526,6 +2563,8 @@
               error_info = sys.exc_info()[1]
               print("- error : {}".format(error_name))
               print("  info : {}".format(error_info))
+              p_print("  traceback : ")
+              traceback.print_exc()
               call_module_debug(module, level + 1)
       #+end_src
 
@@ -2645,6 +2684,17 @@
     #+begin_src python
     @prim('prepare-data-arguments')
     def prepare_data_arguments(field_vect, value_vect, data):
+        if not class_p(data):
+            print("- prepare_data_arguments fail")
+            print("  data must be a python class")
+            print("  data : {}".format(data))
+            error()
+        elif not hasattr(data, 'field_name_vect'):
+            print("- prepare_data_arguments fail")
+            print("  data must has 'field_name_vect' attribute")
+            print("  data : {}".format(data))
+            error()
+
         if len(field_vect) == 0:
             normal_value_vect = value_vect
             field_value_vect = []
@@ -2652,7 +2702,7 @@
             normal_value_vect = value_vect[:-len(field_vect)]
             field_value_vect = value_vect[len(value_vect)-len(field_vect):]
         else:
-            print("- prepare_data_arguments")
+            print("- prepare_data_arguments fail")
             print("  length of field_vect")
             print("    must be shorter then length of value_vect")
             print("  length of field_vect : {}".format(len(field_vect)))
@@ -2660,7 +2710,17 @@
             print("  data : {}".format(data))
             print("  field_vect : {}".format(field_vect))
             error()
+
+        field_dict = dict(zip(field_vect, field_value_vect))
+        ordered_vect = []
+        for field_name in data.field_name_vect:
+            if field_name in field_dict.keys():
+                ordered_vect.append(field_dict[field_name])
+
+        result_vect = normal_value_vect + ordered_vect
+        return VALUES(*result_vect)
     #+end_src
+
 * ------
 * keyword_dict
 
@@ -3013,32 +3073,42 @@
               print("  data_name : {}".format(data_name))
               error()
 
-          field_name_vect = []
-          for string in list_to_vect(cdr(body)):
-              if message_string_p(string):
-                  string = string[1:]
-                  field_name_vect.append(string)
-
+          field_name_vect = body_to_field_name_vect(cdr(body))
           data_class = create_data_class(data_name, field_name_vect)
           data_class.__module__ = module
-
           jojo_define(module, data_name, data_class)
-
           # generate more bindings
-
           constructor_name = data_name[1:-1]
           jojo_define(module, constructor_name, JOJO([data_class, NEW]))
-
           predicate_name = "".join([constructor_name, "?"])
           jojo_define(module, predicate_name, DATA_PRED(data_class))
-
           return []
+      #+end_src
+
+***** body_to_field_name_vect
+
+      #+begin_src python
+      def body_to_field_name_vect(body):
+          body_vect = list_to_vect(body)
+          field_name_vect = []
+          for sexp in body_vect:
+              if string_p(sexp):
+                  if message_string_p(sexp):
+                      sexp = sexp[1:]
+                      field_name_vect.append(sexp)
+              elif cons_p(sexp):
+                  if car(sexp) == '.':
+                      vect1 = body_to_field_name_vect(cdr(sexp))
+                      field_name_vect.extend(vect1)
+          return field_name_vect
       #+end_src
 
 ***** data_name_string_p
 
       #+begin_src python
       def data_name_string_p(string):
+          if not string_p(string):
+              return False
           if len(string) < 3: # example : '<n>'
               return False
           elif string[0] != '<':
@@ -3063,23 +3133,24 @@
       def create_data_init(field_name_vect):
           '''
           just like
-          def __init__(self, field1, field2):
-              self.field1 = field1
-              self.field2 = field2
+          def __init__(self, x1, x2):
+              self.__dict__['field-name-1'] = x1
+              self.__dict__['field-name-2'] = x2
           '''
           if len(field_name_vect) == 0:
               code = "def init(self):pass"
               exec(code, globals())
               return init
           else:
+              length = len(field_name_vect)
               pieces = []
               pieces.append("def init(self")
-              for field_name in field_name_vect:
-                  pieces.append(",{}".format(field_name))
+              for field_name, index in zip(field_name_vect, range(length)):
+                  pieces.append(",{}".format('x'+str(index)))
               pieces.append("):")
-              for field_name in field_name_vect:
-                  pieces.append("self.{}={};".format(field_name,
-                                                    field_name))
+              for field_name, index in zip(field_name_vect, range(length)):
+                  pieces.append("self.__dict__['{}']={};".format(field_name,
+                                                     ('x'+str(index))))
               code = ''.join(pieces)
               exec(code, globals())
               return init
@@ -3467,11 +3538,11 @@
           if not string_p(name):
               # the second place in (create)
               #   can returns a data
-              k_create_from_data(body)
+              return k_create_from_data(body)
           elif dot_data_name_string_p(name):
-              k_create_from_data(body)
+              return k_create_from_data(body)
           else:
-              k_create_from_class(body)
+              return k_create_from_class(body)
       #+end_src
 
 ***** dot_data_name_string_p
@@ -3491,10 +3562,10 @@
           fields = []
           new_body = ['begin']
           for sexp in rest_vect:
-             if message_string_p(sexp):
-                 fields.append(sexp[1:])
-             else:
-                 new_body.append(sexp)
+              if message_string_p(sexp):
+                  fields.append(sexp[1:])
+              else:
+                  new_body.append(sexp)
           return vect_to_sexp(
               ['begin',
                ['quote', fields], 'list->vect',
@@ -3514,10 +3585,10 @@
           fields = []
           new_body = ['begin']
           for sexp in rest_vect:
-             if message_string_p(sexp):
-                 fields.append(sexp[1:])
-             else:
-                 new_body.append(sexp)
+              if message_string_p(sexp):
+                  fields.append(sexp[1:])
+              else:
+                  new_body.append(sexp)
           return vect_to_sexp(
               ['begin',
                ['quote', fields], 'list->vect',
