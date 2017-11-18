@@ -1,20 +1,23 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
+* module system
+
+  - how to write a jojo module
+
+  - jojo script as build system
 
 * [todo-stack]
 
 *** to be useful
 
-***** more about python module system
-
-***** build system
+***** (+actor)
 
 ***** to use python decorator in jojo
 
       - for flask and celery
 
-***** python like generator and yield
+***** (+generator) -- python like generator and yield
 
       - for scrapy
 
@@ -627,15 +630,12 @@
               v = getattr(o, self.message)
               if method_p(v):
                   exe_fun(v, vm)
-              elif type(v) == JOJO:
-                  vm.ds.append(o)
-                  exe_jo(v, rp, vm)
               else:
                   exe_jo(v, rp, vm)
 
           def jo_print(self):
               p_print(".")
-              p_print(message)
+              p_print(self.message)
       #+end_src
 
 ***** SET_FIELD
@@ -652,7 +652,7 @@
 
            def jo_print(self):
                p_print(".")
-               p_print(field_name)
+               p_print(self.field_name)
                p_print("!")
        #+end_src
 
@@ -1099,7 +1099,6 @@
 
           # normal function call
           return [CALL_FROM_MODULE(module, string)]
-
       #+end_src
 
 ***** dot_in_string_emit

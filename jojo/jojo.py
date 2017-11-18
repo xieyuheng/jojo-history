@@ -404,15 +404,12 @@ class MSG:
         v = getattr(o, self.message)
         if method_p(v):
             exe_fun(v, vm)
-        elif type(v) == JOJO:
-            vm.ds.append(o)
-            exe_jo(v, rp, vm)
         else:
             exe_jo(v, rp, vm)
 
     def jo_print(self):
         p_print(".")
-        p_print(message)
+        p_print(self.message)
 
 class SET_FIELD:
     def __init__(self, field_name):
@@ -425,7 +422,7 @@ class SET_FIELD:
 
     def jo_print(self):
         p_print(".")
-        p_print(field_name)
+        p_print(self.field_name)
         p_print("!")
 
 class GENE:

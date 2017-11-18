@@ -19,5 +19,6 @@ from jojo.jojo import (
 
     core_module,
 
-    load, run,
+    load,
+    run,
 )
