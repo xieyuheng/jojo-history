@@ -7,9 +7,9 @@
   2 swap zons
   3 swap zons
   :l!
-  :l .zar print nl
-  :l .zdr .zar print nl
-  :l .zdr .zdr .zar print nl)
+  :l.zar print nl
+  :l.zdr.zar print nl
+  :l.zdr.zdr.zar print nl)
 
 (+jojo t2
   <zull> new

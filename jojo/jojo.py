@@ -690,15 +690,32 @@ def string_emit(module, string):
         if p(string):
             return e(module, string)
 
+    # dot in string
+    if '.' in string:
+        return dot_in_string_emit(module, string)
+
     # built-in keyword
     if string in key_jo_dict.keys():
         return key_jo_dict[string]
 
     # normal function call
-    if string == None:
-        traceback.print_stack()
-        exit()
     return [CALL_FROM_MODULE(module, string)]
+
+def dot_in_string_emit(module, string):
+    jo_vect = []
+    string_vect = string.split('.')
+    head_string = string_vect[0]
+    if head_string == '':
+        pass
+    else:
+        jo_vect.extend(string_emit(module, head_string))
+
+    tail_string_vect = string_vect[1:]
+    for s in tail_string_vect:
+        s1 = '.' + s
+        jo_vect.extend(string_emit(module, s1))
+
+    return jo_vect
 
 string_emitter_vect = []
 
@@ -800,83 +817,6 @@ def message_string_p(string):
 def message_string_emitter(module, string):
     string = string[1:]
     return [MSG(string)]
-
-def name_message_string_p(string):
-    if not string_p(string):
-        return False
-    if len(string) < 3: # example : 'n.s'
-        return False
-    elif string[0] == '.':
-        return False
-    elif string.count('.') == 0:
-        return False
-    elif string.count('..') != 0:
-        return False
-    elif string.count(':') != 0:
-        return False
-    elif string[-1] == '.':
-        return False
-    else:
-        return True
-
-@string_emitter(name_message_string_p)
-def name_message_string_emitter(module, string):
-    jo_vect = []
-    string_vect = string.split('.')
-
-    name_string = string_vect[0]
-    jo_vect.extend(string_emit(module, name_string))
-
-    message_string_vect = string_vect[1:]
-    for message_string in message_string_vect:
-        jo_vect.append(MSG(message_string))
-
-    return jo_vect
-
-def local_message_string_p(string):
-    if not string_p(string):
-        return False
-    if len(string) < 4:
-        return False
-    elif string[0] != ':':
-        return False
-    else:
-        return name_message_string_p(string[1:])
-
-@string_emitter(local_message_string_p)
-def local_message_string_emitter(module, string):
-    jo_vect = []
-    string_vect = string.split('.')
-
-    local_string = string_vect[0]
-    jo_vect.append(GET(local_string))
-
-    message_string_vect = string_vect[1:]
-    for message_string in message_string_vect:
-        jo_vect.append(MSG(message_string))
-
-    return jo_vect
-
-def message_message_string_p(string):
-    if not string_p(string):
-        return False
-    if len(string) < 4:
-        return False
-    elif string[0] != '.':
-        return False
-    else:
-        return name_message_string_p(string[1:])
-
-@string_emitter(message_message_string_p)
-def message_message_string_emitter(module, string):
-    jo_vect = []
-    string_vect = string.split('.')
-
-    message_string_vect = string_vect[1:]
-    for message_string in message_string_vect:
-        jo_vect.append(MSG(message_string))
-
-    return jo_vect
 
 prim_dict = {}
 
