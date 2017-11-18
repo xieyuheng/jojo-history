@@ -2268,8 +2268,14 @@ def maybe_drop_shebang(code):
         else:
             return code[end_of_first_line:]
 
-def load(path):
-    path = os.path.abspath(path)
+def load(name, path):
+    current_module = sys.modules[inspect.stack()[1].frame.f_globals['__name__']]
+    if ((current_module.__name__ == '__main__') or
+        (not hasattr(current_module, '__file__'))):
+        path = os.path.abspath(path)
+    else:
+        current_module_dir = os.path.dirname(current_module.__file__)
+        path = "/".join([current_module_dir, path])
 
     if not os.path.exists(path):
         print("- load fail")
@@ -2287,7 +2293,7 @@ def load(path):
         code = f.read()
         code = maybe_drop_shebang(code)
         sexp_vect = parse_sexp_vect(code_scan(code))
-        module = compile_module(path, sexp_vect)
+        module = compile_module(name, sexp_vect)
 
     module.__file__ = path
 

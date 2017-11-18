@@ -13,4 +13,4 @@ if __name__ == '__main__':
         jojo.module_repl(module)
     else:
         path = sys.argv[1]
-        module = jojo.load(path)
+        module = jojo.load("script", path)
