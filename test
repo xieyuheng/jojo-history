@@ -1,0 +1,10 @@
+#!/bin/sh
+
+py.test
+
+cd play
+for testfile in test-*.jo
+do
+    jojo $testfile
+done
+cd ..

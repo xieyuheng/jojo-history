@@ -5,12 +5,3 @@ cd jojo
 cd ..
 
 pip install . --upgrade
-
-py.test
-
-cd play
-for testfile in test-*.jo
-do
-    jojo $testfile
-done
-cd ..
