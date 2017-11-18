@@ -686,14 +686,9 @@ def cons_emit(module, cons):
 
 def string_emit(module, string):
     # special strings
-    i = 0
-    while i < len(string_emitter_vect):
-        p = string_emitter_vect[i][0]
-        e = string_emitter_vect[i][1]
+    for p, e in string_emitter_vect:
         if p(string):
             return e(module, string)
-        else:
-            i = i + 1
 
     # built-in keyword
     if string in key_jo_dict.keys():
@@ -707,8 +702,11 @@ def string_emit(module, string):
 
 string_emitter_vect = []
 
-def string_emitter(p, emitter):
-    string_emitter_vect.append((p, emitter))
+def string_emitter(p):
+    def decorator(emitter):
+        string_emitter_vect.append((p, emitter))
+        return emitter
+    return decorator
 
 def int_string_p(string):
     if not string_p(string):
@@ -726,11 +724,9 @@ def nat_string_p(string):
         return False
     return string.isdecimal()
 
+@string_emitter(int_string_p)
 def int_string_emitter(module, string):
     return [int(string)]
-
-string_emitter(int_string_p,
-               int_string_emitter)
 
 def doublequoted_string_p(string):
     if not string_p(string):
@@ -744,12 +740,10 @@ def doublequoted_string_p(string):
     else:
         return True
 
+@string_emitter(doublequoted_string_p)
 def doublequoted_string_emitter(module, string):
     string = string[1:-1]
     return [string]
-
-string_emitter(doublequoted_string_p,
-               doublequoted_string_emitter)
 
 def local_string_p(string):
     if not string_p(string):
@@ -767,11 +761,9 @@ def local_string_p(string):
     else:
         return True
 
+@string_emitter(local_string_p)
 def local_string_emitter(module, string):
     return [GET(string)]
-
-string_emitter(local_string_p,
-               local_string_emitter)
 
 def set_local_string_p(string):
     if not string_p(string):
@@ -787,12 +779,10 @@ def set_local_string_p(string):
     else:
         return True
 
+@string_emitter(set_local_string_p)
 def set_local_string_emitter(module, string):
     string = string[:-1]
     return [SET(string)]
-
-string_emitter(set_local_string_p,
-               set_local_string_emitter)
 
 def message_string_p(string):
     if not string_p(string):
@@ -806,12 +796,10 @@ def message_string_p(string):
     else:
         return True
 
+@string_emitter(message_string_p)
 def message_string_emitter(module, string):
     string = string[1:]
     return [MSG(string)]
-
-string_emitter(message_string_p,
-               message_string_emitter)
 
 def name_message_string_p(string):
     if not string_p(string):
@@ -831,6 +819,7 @@ def name_message_string_p(string):
     else:
         return True
 
+@string_emitter(name_message_string_p)
 def name_message_string_emitter(module, string):
     jo_vect = []
     string_vect = string.split('.')
@@ -844,9 +833,6 @@ def name_message_string_emitter(module, string):
 
     return jo_vect
 
-string_emitter(name_message_string_p,
-               name_message_string_emitter)
-
 def local_message_string_p(string):
     if not string_p(string):
         return False
@@ -857,6 +843,7 @@ def local_message_string_p(string):
     else:
         return name_message_string_p(string[1:])
 
+@string_emitter(local_message_string_p)
 def local_message_string_emitter(module, string):
     jo_vect = []
     string_vect = string.split('.')
@@ -870,9 +857,6 @@ def local_message_string_emitter(module, string):
 
     return jo_vect
 
-string_emitter(local_message_string_p,
-               local_message_string_emitter)
-
 def message_message_string_p(string):
     if not string_p(string):
         return False
@@ -883,6 +867,7 @@ def message_message_string_p(string):
     else:
         return name_message_string_p(string[1:])
 
+@string_emitter(message_message_string_p)
 def message_message_string_emitter(module, string):
     jo_vect = []
     string_vect = string.split('.')
@@ -892,9 +877,6 @@ def message_message_string_emitter(module, string):
         jo_vect.append(MSG(message_string))
 
     return jo_vect
-
-string_emitter(message_message_string_p,
-               message_message_string_emitter)
 
 prim_dict = {}
 

@@ -1068,14 +1068,9 @@
       #+begin_src python
       def string_emit(module, string):
           # special strings
-          i = 0
-          while i < len(string_emitter_vect):
-              p = string_emitter_vect[i][0]
-              e = string_emitter_vect[i][1]
+          for p, e in string_emitter_vect:
               if p(string):
                   return e(module, string)
-              else:
-                  i = i + 1
 
           # built-in keyword
           if string in key_jo_dict.keys():
@@ -1088,339 +1083,281 @@
           return [CALL_FROM_MODULE(module, string)]
       #+end_src
 
-***** string_emitter_vect
+***** string_emitter_vect & @string_emitter
 
 ******* string_emitter_vect
+
+        - vect is used,
+          for the order matters.
 
         #+begin_src python
         string_emitter_vect = []
         #+end_src
 
-******* string_emitter
+******* @string_emitter
 
         #+begin_src python
-        def string_emitter(p, emitter):
-            string_emitter_vect.append((p, emitter))
+        def string_emitter(p):
+            def decorator(emitter):
+                string_emitter_vect.append((p, emitter))
+                return emitter
+            return decorator
         #+end_src
 
-******* int_string
-
-********* int_string_p
-
-          #+begin_src python
-          def int_string_p(string):
-              if not string_p(string):
-                  return False
-              length = len(string)
-              if length == 0:
-                  return False
-              elif string[0] == '-':
-                  return nat_string_p(string[1:])
-              else:
-                  return nat_string_p(string)
-          #+end_src
-
-********* nat_string_p
-
-          #+begin_src python
-          def nat_string_p(string):
-              if not string_p(string):
-                  return False
-              return string.isdecimal()
-          #+end_src
-
-********* int_string_emitter
-
-          #+begin_src python
-          def int_string_emitter(module, string):
-              return [int(string)]
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(int_string_p,
-                         int_string_emitter)
-          #+end_src
-
-******* doublequoted_string
-
-********* doublequoted_string_p
-
-          - "doublequoted"
-
-          #+begin_src python
-          def doublequoted_string_p(string):
-              if not string_p(string):
-                  return False
-              if len(string) < 3:
-                  return False
-              elif string[0] != '"':
-                  return False
-              elif string[-1] != '"':
-                  return False
-              else:
-                  return True
-          #+end_src
-
-********* doublequoted_string_emitter
-
-          #+begin_src python
-          def doublequoted_string_emitter(module, string):
-              string = string[1:-1]
-              return [string]
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(doublequoted_string_p,
-                         doublequoted_string_emitter)
-          #+end_src
-
-******* local_string
-
-********* local_string_p
-
-          - :local
-
-          #+begin_src python
-          def local_string_p(string):
-              if not string_p(string):
-                  return False
-              if len(string) < 2:
-                  return False
-              elif string.count('.') != 0:
-                  return False
-              elif string.count(':') != 1:
-                  return False
-              elif string[0] != ':':
-                  return False
-              elif string[-1] == '!':
-                  return False
-              else:
-                  return True
-          #+end_src
-
-********* local_string_emitter
-
-          #+begin_src python
-          def local_string_emitter(module, string):
-              return [GET(string)]
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(local_string_p,
-                         local_string_emitter)
-          #+end_src
-
-******* set_local_string
-
-********* set_local_string_p
-
-          - :local!
-
-          #+begin_src python
-          def set_local_string_p(string):
-              if not string_p(string):
-                  return False
-              if len(string) < 3:
-                  return False
-              elif string.count('.') != 0:
-                  return False
-              elif string[0] != ':':
-                  return False
-              elif string[-1] != '!':
-                  return False
-              else:
-                  return True
-          #+end_src
-
-********* set_local_string_emitter
-
-          #+begin_src python
-          def set_local_string_emitter(module, string):
-              string = string[:-1]
-              return [SET(string)]
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(set_local_string_p,
-                         set_local_string_emitter)
-          #+end_src
-
-******* message_string
-
-********* message_string_p
-
-          - .message
-
-          #+begin_src python
-          def message_string_p(string):
-              if not string_p(string):
-                  return False
-              if len(string) < 2:
-                  return False
-              elif string[0] != '.':
-                  return False
-              elif string.count('.') != 1:
-                  return False
-              else:
-                  return True
-          #+end_src
-
-********* message_string_emitter
-
-          #+begin_src python
-          def message_string_emitter(module, string):
-              string = string[1:]
-              return [MSG(string)]
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(message_string_p,
-                         message_string_emitter)
-          #+end_src
-
-******* name_message_string
-
-********* name_message_string_p
-
-          - name.message
-            name.message.message
-
-          #+begin_src python
-          def name_message_string_p(string):
-              if not string_p(string):
-                  return False
-              if len(string) < 3: # example : 'n.s'
-                  return False
-              elif string[0] == '.':
-                  return False
-              elif string.count('.') == 0:
-                  return False
-              elif string.count('..') != 0:
-                  return False
-              elif string.count(':') != 0:
-                  return False
-              elif string[-1] == '.':
-                  return False
-              else:
-                  return True
-          #+end_src
-
-********* name_message_string_emitter
-
-          #+begin_src python
-          def name_message_string_emitter(module, string):
-              jo_vect = []
-              string_vect = string.split('.')
-
-              name_string = string_vect[0]
-              jo_vect.extend(string_emit(module, name_string))
-
-              message_string_vect = string_vect[1:]
-              for message_string in message_string_vect:
-                  jo_vect.append(MSG(message_string))
-
-              return jo_vect
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(name_message_string_p,
-                         name_message_string_emitter)
-          #+end_src
-
-******* local_message_string
-
-********* local_message_string_p
-
-          - :local.message
-          - :local.message.message
-
-          #+begin_src python
-          def local_message_string_p(string):
-              if not string_p(string):
-                  return False
-              if len(string) < 4:
-                  return False
-              elif string[0] != ':':
-                  return False
-              else:
-                  return name_message_string_p(string[1:])
-          #+end_src
-
-********* local_message_string_emitter
-
-          #+begin_src python
-          def local_message_string_emitter(module, string):
-              jo_vect = []
-              string_vect = string.split('.')
-
-              local_string = string_vect[0]
-              jo_vect.append(GET(local_string))
-
-              message_string_vect = string_vect[1:]
-              for message_string in message_string_vect:
-                  jo_vect.append(MSG(message_string))
-
-              return jo_vect
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(local_message_string_p,
-                         local_message_string_emitter)
-          #+end_src
-
-******* message_message_string
-
-********* message_message_string_p
-
-          - .message.message
-          - .message.message.message
-
-          #+begin_src python
-          def message_message_string_p(string):
-              if not string_p(string):
-                  return False
-              if len(string) < 4:
-                  return False
-              elif string[0] != '.':
-                  return False
-              else:
-                  return name_message_string_p(string[1:])
-          #+end_src
-
-********* message_message_string_emitter
-
-          #+begin_src python
-          def message_message_string_emitter(module, string):
-              jo_vect = []
-              string_vect = string.split('.')
-
-              message_string_vect = string_vect[1:]
-              for message_string in message_string_vect:
-                  jo_vect.append(MSG(message_string))
-
-              return jo_vect
-          #+end_src
-
-********* record
-
-          #+begin_src python
-          string_emitter(message_message_string_p,
-                         message_message_string_emitter)
-          #+end_src
+******* int_string_p
+
+        #+begin_src python
+        def int_string_p(string):
+            if not string_p(string):
+                return False
+            length = len(string)
+            if length == 0:
+                return False
+            elif string[0] == '-':
+                return nat_string_p(string[1:])
+            else:
+                return nat_string_p(string)
+        #+end_src
+
+******* nat_string_p
+
+        #+begin_src python
+        def nat_string_p(string):
+            if not string_p(string):
+                return False
+            return string.isdecimal()
+        #+end_src
+
+******* int_string_emitter
+
+        #+begin_src python
+        @string_emitter(int_string_p)
+        def int_string_emitter(module, string):
+            return [int(string)]
+        #+end_src
+
+******* doublequoted_string_p
+
+        - "doublequoted"
+
+        #+begin_src python
+        def doublequoted_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 3:
+                return False
+            elif string[0] != '"':
+                return False
+            elif string[-1] != '"':
+                return False
+            else:
+                return True
+        #+end_src
+
+******* doublequoted_string_emitter
+
+        #+begin_src python
+        @string_emitter(doublequoted_string_p)
+        def doublequoted_string_emitter(module, string):
+            string = string[1:-1]
+            return [string]
+        #+end_src
+
+******* local_string_p
+
+        - :local
+
+        #+begin_src python
+        def local_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 2:
+                return False
+            elif string.count('.') != 0:
+                return False
+            elif string.count(':') != 1:
+                return False
+            elif string[0] != ':':
+                return False
+            elif string[-1] == '!':
+                return False
+            else:
+                return True
+        #+end_src
+
+******* local_string_emitter
+
+        #+begin_src python
+        @string_emitter(local_string_p)
+        def local_string_emitter(module, string):
+            return [GET(string)]
+        #+end_src
+
+******* set_local_string_p
+
+        - :local!
+
+        #+begin_src python
+        def set_local_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 3:
+                return False
+            elif string.count('.') != 0:
+                return False
+            elif string[0] != ':':
+                return False
+            elif string[-1] != '!':
+                return False
+            else:
+                return True
+        #+end_src
+
+******* set_local_string_emitter
+
+        #+begin_src python
+        @string_emitter(set_local_string_p)
+        def set_local_string_emitter(module, string):
+            string = string[:-1]
+            return [SET(string)]
+        #+end_src
+
+******* message_string_p
+
+        - .message
+
+        #+begin_src python
+        def message_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 2:
+                return False
+            elif string[0] != '.':
+                return False
+            elif string.count('.') != 1:
+                return False
+            else:
+                return True
+        #+end_src
+
+******* message_string_emitter
+
+        #+begin_src python
+        @string_emitter(message_string_p)
+        def message_string_emitter(module, string):
+            string = string[1:]
+            return [MSG(string)]
+        #+end_src
+
+******* name_message_string_p
+
+        - name.message
+          name.message.message
+
+        #+begin_src python
+        def name_message_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 3: # example : 'n.s'
+                return False
+            elif string[0] == '.':
+                return False
+            elif string.count('.') == 0:
+                return False
+            elif string.count('..') != 0:
+                return False
+            elif string.count(':') != 0:
+                return False
+            elif string[-1] == '.':
+                return False
+            else:
+                return True
+        #+end_src
+
+******* name_message_string_emitter
+
+        #+begin_src python
+        @string_emitter(name_message_string_p)
+        def name_message_string_emitter(module, string):
+            jo_vect = []
+            string_vect = string.split('.')
+
+            name_string = string_vect[0]
+            jo_vect.extend(string_emit(module, name_string))
+
+            message_string_vect = string_vect[1:]
+            for message_string in message_string_vect:
+                jo_vect.append(MSG(message_string))
+
+            return jo_vect
+        #+end_src
+
+******* local_message_string_p
+
+        - :local.message
+        - :local.message.message
+
+        #+begin_src python
+        def local_message_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 4:
+                return False
+            elif string[0] != ':':
+                return False
+            else:
+                return name_message_string_p(string[1:])
+        #+end_src
+
+******* local_message_string_emitter
+
+        #+begin_src python
+        @string_emitter(local_message_string_p)
+        def local_message_string_emitter(module, string):
+            jo_vect = []
+            string_vect = string.split('.')
+
+            local_string = string_vect[0]
+            jo_vect.append(GET(local_string))
+
+            message_string_vect = string_vect[1:]
+            for message_string in message_string_vect:
+                jo_vect.append(MSG(message_string))
+
+            return jo_vect
+        #+end_src
+
+******* message_message_string_p
+
+        - .message.message
+        - .message.message.message
+
+        #+begin_src python
+        def message_message_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 4:
+                return False
+            elif string[0] != '.':
+                return False
+            else:
+                return name_message_string_p(string[1:])
+        #+end_src
+
+******* message_message_string_emitter
+
+        #+begin_src python
+        @string_emitter(message_message_string_p)
+        def message_message_string_emitter(module, string):
+            jo_vect = []
+            string_vect = string.split('.')
+
+            message_string_vect = string_vect[1:]
+            for message_string in message_string_vect:
+                jo_vect.append(MSG(message_string))
+
+            return jo_vect
+        #+end_src
 
 * prim_dict
 
