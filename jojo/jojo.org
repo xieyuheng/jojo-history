@@ -1,7 +1,8 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-
+* dot in name is handled by string_emit
+* to handle .message!
 * [todo-stack]
 
 *** to be useful
@@ -29,7 +30,6 @@
 
     - to avoid the use of 'try & except'
 
-* ------
 * prolog
 
 *** import
@@ -158,7 +158,6 @@
           raise JOJO_ERROR()
       #+end_src
 
-* ------
 * vm
 
 *** RP
@@ -386,9 +385,7 @@
           return default_dict
       #+end_src
 
-* jo
-
-*** top level
+*** jo
 
 ***** JOJO
 
@@ -402,8 +399,6 @@
           def jo_exe(self, rp, vm):
               vm.rs.append(RP(self))
       #+end_src
-
-*** closure
 
 ***** CLO
 
@@ -439,8 +434,6 @@
               p_print("apply")
       #+end_src
 
-*** branching
-
 ***** IFTE
 
       #+begin_src python
@@ -459,24 +452,22 @@
               p_print("ifte")
       #+end_src
 
-*** CALL_FROM_MODULE
+***** CALL_FROM_MODULE
 
-    #+begin_src python
-    class CALL_FROM_MODULE:
-        def __init__(self, module, name):
-            self.module = module
-            self.name = name
+      #+begin_src python
+      class CALL_FROM_MODULE:
+          def __init__(self, module, name):
+              self.module = module
+              self.name = name
 
-        def jo_exe(self, rp, vm):
-            jo = getattr(self.module, self.name)
-            exe_jo(jo, rp, vm)
+          def jo_exe(self, rp, vm):
+              jo = getattr(self.module, self.name)
+              exe_jo(jo, rp, vm)
 
-        def jo_print(self):
-            # p_print("(call {} from {})".format(self.name, self.module.__name__))
-            p_print(self.name)
-    #+end_src
-
-*** local variable
+          def jo_print(self):
+              # p_print("(call {} from {})".format(self.name, self.module.__name__))
+              p_print(self.name)
+      #+end_src
 
 ***** GET
 
@@ -508,8 +499,6 @@
               p_print(self.name)
               p_print('!')
       #+end_src
-
-*** mark and collect
 
 ***** MARK -- for collectors
 
@@ -593,8 +582,6 @@
               p_print("list-spread")
       #+end_src
 
-*** data
-
 ***** DATA_PRED -- for data predicate
 
       #+begin_src python
@@ -611,247 +598,246 @@
               p_print('?')
       #+end_src
 
-*** NEW -- create object from data and class
+***** NEW -- create object from data and class
 
-    #+begin_src python
-    class NEW:
-        @classmethod
-        def jo_exe(self, rp, vm):
-            x = vm.ds.pop()
-            if not class_p(x):
-                print("- NEW.jo_exe fail")
-                print("  argument is not a class : {}".format(x))
-                error()
-            else:
-                exe_fun(x, vm)
+      #+begin_src python
+      class NEW:
+          @classmethod
+          def jo_exe(self, rp, vm):
+              x = vm.ds.pop()
+              if not class_p(x):
+                  print("- NEW.jo_exe fail")
+                  print("  argument is not a class : {}".format(x))
+                  error()
+              else:
+                  exe_fun(x, vm)
 
-        def jo_print(self):
-            p_print("new")
-    #+end_src
+          def jo_print(self):
+              p_print("new")
+      #+end_src
 
-*** MSG -- message to object
+***** MSG -- message to object
 
-    #+begin_src python
-    class MSG:
-        def __init__(self, message):
-            self.message = message
+      #+begin_src python
+      class MSG:
+          def __init__(self, message):
+              self.message = message
 
-        def jo_exe(self, rp, vm):
-            o = vm.ds.pop()
-            v = getattr(o, self.message)
-            if method_p(v):
-                exe_fun(v, vm)
-            elif type(v) == JOJO:
-                vm.ds.append(o)
-                exe_jo(v, rp, vm)
-            else:
-                exe_jo(v, rp, vm)
+          def jo_exe(self, rp, vm):
+              o = vm.ds.pop()
+              v = getattr(o, self.message)
+              if method_p(v):
+                  exe_fun(v, vm)
+              elif type(v) == JOJO:
+                  vm.ds.append(o)
+                  exe_jo(v, rp, vm)
+              else:
+                  exe_jo(v, rp, vm)
 
-        def jo_print(self):
-            p_print(".")
-            p_print(message)
-    #+end_src
+          def jo_print(self):
+              p_print(".")
+              p_print(message)
+      #+end_src
 
-*** GENE
+***** GENE
 
-    #+begin_src python
-    class GENE:
-        def __init__(self, arity, default_jojo):
-            self.arity = arity
-            self.default_jojo = default_jojo
-            self.disp_dict = {}
+      #+begin_src python
+      class GENE:
+          def __init__(self, arity, default_jojo):
+              self.arity = arity
+              self.default_jojo = default_jojo
+              self.disp_dict = {}
 
-        def jo_exe(self, rp, vm):
-            value_vect = vm.ds[(- self.arity):]
-            type_vect = []
-            for value in value_vect:
-                type_vect.append(type(value))
+          def jo_exe(self, rp, vm):
+              value_vect = vm.ds[(- self.arity):]
+              type_vect = []
+              for value in value_vect:
+                  type_vect.append(type(value))
 
-            type_tuple = tuple(type_vect)
-            if type_tuple in self.disp_dict:
-                jojo = self.disp_dict[type_tuple]
-                jojo.jo_exe(rp, vm)
-            else:
-                self.default_jojo.jo_exe(rp, vm)
-    #+end_src
+              type_tuple = tuple(type_vect)
+              if type_tuple in self.disp_dict:
+                  jojo = self.disp_dict[type_tuple]
+                  jojo.jo_exe(rp, vm)
+              else:
+                  self.default_jojo.jo_exe(rp, vm)
+      #+end_src
 
-*** CLEAR
+***** CLEAR
 
-    #+begin_src python
-    class CLEAR:
-        @classmethod
-        def jo_exe(self, rp, vm):
-            vm.ds = []
+      #+begin_src python
+      class CLEAR:
+          @classmethod
+          def jo_exe(self, rp, vm):
+              vm.ds = []
 
-        def jo_print(self):
-            p_print("clear")
-    #+end_src
+          def jo_print(self):
+              p_print("clear")
+      #+end_src
 
-*** PRIMITIVE
+***** PRIMITIVE
 
-    #+begin_src python
-    class PRIMITIVE:
-        def __init__(self, fun):
-            self.fun = fun
+      #+begin_src python
+      class PRIMITIVE:
+          def __init__(self, fun):
+              self.fun = fun
 
-        def jo_exe(self, rp, vm):
-            vm.ds.append(self.fun)
+          def jo_exe(self, rp, vm):
+              vm.ds.append(self.fun)
 
-        def jo_print(self):
-            p_print(self.fun)
-    #+end_src
-
-* ------
-* scan -- lexer for sexp
-
-*** code_scan
-
-    #+begin_src python
-    def code_scan(string):
-        string_vect = []
-        i = 0
-        length = len(string)
-        while i < length:
-            char = string[i]
-
-            if space_p(char):
-                i = i + 1
-
-            elif delimiter_p(char):
-                string_vect.append(char)
-                i = i + 1
-
-            elif doublequote_p(char):
-                doublequote_end_index = string.find('"', i+1)
-                if doublequote_end_index == -1:
-                    print("- code_scan fail")
-                    print("  doublequote mismatch")
-                    print("  string : {}".format(string))
-                    error()
-                end = doublequote_end_index + 1
-                string_vect.append(string[i:end])
-                i = end
-
-            else:
-                end = find_end(string, i+1)
-                string_vect.append(string[i:end])
-                i = end
-
-        return string_vect
-    #+end_src
-
-*** find_end
-
-    #+begin_src python
-    def find_end(string, begin):
-        length = len(string)
-        i = begin
-        while True:
-           if i == length:
-               return i
-           char = string[i]
-           if (space_p(char) or
-               delimiter_p(char) or
-               doublequote_p(char)):
-               return i
-           i = i + 1
-    #+end_src
-
-*** space_p
-
-    #+begin_src python
-    def space_p(char):
-        return char.isspace()
-    #+end_src
-
-*** delimiter_p
-
-    #+begin_src python
-    def delimiter_p(char):
-        return (char == '(' or
-                char == ')' or
-                char == '[' or
-                char == ']' or
-                char == '{' or
-                char == '}' or
-                char == ',' or
-                char == '`' or
-                char == "'")
-    #+end_src
-
-*** doublequote_p
-
-    #+begin_src python
-    def doublequote_p(char):
-        return char == '"'
-    #+end_src
-
-* null & cons
-
-*** Null
-
-    #+begin_src python
-    class Null:
-        pass
-    #+end_src
-
-*** null
-
-    #+begin_src python
-    null = Null()
-    #+end_src
-
-*** null_p
-
-    #+begin_src python
-    def null_p(x):
-        return x == null
-    #+end_src
-
-*** Cons
-
-    #+begin_src python
-    class Cons:
-        def __init__(self, car, cdr):
-            self.car = car
-            self.cdr = cdr
-    #+end_src
-
-*** cons
-
-    #+begin_src python
-    def cons(car, cdr):
-        if null_p(cdr) or cons_p(cdr):
-            return Cons(car, cdr)
-        else:
-            print("- cons fail")
-            print("  cdr of cons must be a cons or null")
-            print("  cdr : {}".format(cdr))
-            error()
-    #+end_src
-
-*** cons_p
-
-    #+begin_src python
-    def cons_p(x):
-        return isinstance(x, Cons)
-    #+end_src
-
-*** cdr
-
-    #+begin_src python
-    def cdr(x):
-        return x.cdr
-    #+end_src
-
-*** car
-
-    #+begin_src python
-    def car(x):
-        return x.car
-    #+end_src
+          def jo_print(self):
+              p_print(self.fun)
+      #+end_src
 
 * sexp -- string expression
+
+*** scan -- lexer for sexp
+
+***** code_scan
+
+      #+begin_src python
+      def code_scan(string):
+          string_vect = []
+          i = 0
+          length = len(string)
+          while i < length:
+              char = string[i]
+
+              if space_p(char):
+                  i = i + 1
+
+              elif delimiter_p(char):
+                  string_vect.append(char)
+                  i = i + 1
+
+              elif doublequote_p(char):
+                  doublequote_end_index = string.find('"', i+1)
+                  if doublequote_end_index == -1:
+                      print("- code_scan (fail")
+                      print("  doublequote mismatch")
+                      print("  string : {}".format(string))
+                      error()
+                  end = doublequote_end_index + 1
+                  string_vect.append(string[i:end])
+                  i = end
+
+              else:
+                  end = find_end(string, i+1)
+                  string_vect.append(string[i:end])
+                  i = end
+
+          return string_vect
+      #+end_src
+
+***** find_end
+
+      #+begin_src python
+      def find_end(string, begin):
+          length = len(string)
+          i = begin
+          while True:
+             if i == length:
+                 return i
+             char = string[i]
+             if (space_p(char) or
+                 delimiter_p(char) or
+                 doublequote_p(char)):
+                 return i
+             i = i + 1
+      #+end_src
+
+***** space_p
+
+      #+begin_src python
+      def space_p(char):
+          return char.isspace()
+      #+end_src
+
+***** delimiter_p
+
+      #+begin_src python
+      def delimiter_p(char):
+          return (char == '(' or
+                  char == ')' or
+                  char == '[' or
+                  char == ']' or
+                  char == '{' or
+                  char == '}' or
+                  char == ',' or
+                  char == '`' or
+                  char == "'")
+      #+end_src
+
+***** doublequote_p
+
+      #+begin_src python
+      def doublequote_p(char):
+          return char == '"'
+      #+end_src
+
+*** null & cons
+
+***** Null
+
+      #+begin_src python
+      class Null:
+          pass
+      #+end_src
+
+***** null
+
+      #+begin_src python
+      null = Null()
+      #+end_src
+
+***** null_p
+
+      #+begin_src python
+      def null_p(x):
+          return x == null
+      #+end_src
+
+***** Cons
+
+      #+begin_src python
+      class Cons:
+          def __init__(self, car, cdr):
+              self.car = car
+              self.cdr = cdr
+      #+end_src
+
+***** cons
+
+      #+begin_src python
+      def cons(car, cdr):
+          if null_p(cdr) or cons_p(cdr):
+              return Cons(car, cdr)
+          else:
+              print("- cons fail")
+              print("  cdr of cons must be a cons or null")
+              print("  cdr : {}".format(cdr))
+              error()
+      #+end_src
+
+***** cons_p
+
+      #+begin_src python
+      def cons_p(x):
+          return isinstance(x, Cons)
+      #+end_src
+
+***** cdr
+
+      #+begin_src python
+      def cdr(x):
+          return x.cdr
+      #+end_src
+
+***** car
+
+      #+begin_src python
+      def car(x):
+          return x.car
+      #+end_src
 
 *** [note] syntax sugar
 
@@ -947,65 +933,6 @@
             sexp_list_print(cdr(s_cons))
     #+end_src
 
-* [note] syntax
-
-*** top level
-
-    - (note)
-    - (import)
-
-    - (+jojo)
-    - (+macro)
-
-    - (+data)
-    - (+union)
-    - (+gene)
-    - (+disp)
-
-*** control
-
-    - (begin)
-    - (clo)
-    - (cond)
-
-    - (if)
-    - (case)
-
-*** sexp quote
-
-    - (quote)
-    - (partquote (@))
-
-*** data
-
-    - (list)
-    - (vect)
-    - (dict)
-    - (tuple) (*)
-    - (set)
-
-*** key jo
-
-    - apply
-    - ifte
-    - new
-
-*** jo pattern
-
-    - :local
-    - :local!
-    - .message
-
-*** dot-in-name
-
-    - string_emitters for dot-in-name
-      | name.message     | name_message_string_emitter    |
-      | :local.message   | local_message_string_emitter   |
-      | .message.message | message_message_string_emitter |
-
-    - while dot-in-name occurs in head of sexp
-      is handled by cons_emit.
-
 * compiler
 
 *** new_module
@@ -1094,422 +1021,414 @@
 
 *** sexp_emit
 
-    #+begin_src python
-    def sexp_emit(module, sexp):
-        if null_p(sexp):
-            return null_emit(module, sexp)
-        elif cons_p(sexp):
-            return cons_emit(module, sexp)
-        else:
-            return string_emit(module, sexp)
-    #+end_src
-
-*** null_emit
-
-    #+begin_src python
-    def null_emit(module, sexp):
-        return [null]
-    #+end_src
-
-*** cons_emit
-
-    #+begin_src python
-    def cons_emit(module, cons):
-        keyword = car(cons)
-        # keyword can not have dot-in-name
-        if keyword in keyword_dict.keys():
-            fun = keyword_dict[keyword]
-            return fun(module, cdr(cons))
-        elif keyword in macro_dict.keys():
-            fun = macro_dict[keyword]
-            new_sexp = fun(cdr(cons))
-            return sexp_emit(module, new_sexp)
-        else:
-            # a call to string_emit
-            # handles dot-in-name in head of sexp
-            vm = VM([cdr(cons)],
-                    [RP(JOJO(string_emit(module, keyword)))])
-            vm.exe()
-            new_sexp = vm.ds[0]
-            return sexp_emit(module, new_sexp)
-    #+end_src
-
-*** string_emit
-
-    #+begin_src python
-    def string_emit(module, string):
-        # special strings
-        i = 0
-        while i < len(string_emitter_vect):
-            p = string_emitter_vect[i][0]
-            e = string_emitter_vect[i][1]
-            if p(string):
-                return e(module, string)
-            else:
-                i = i + 1
-
-        # built-in keyword
-        if string in key_jo_dict.keys():
-            return key_jo_dict[string]
-
-        # normal function call
-        if string == None:
-            traceback.print_stack()
-            exit()
-        return [CALL_FROM_MODULE(module, string)]
-    #+end_src
-
-*** sexp_value
-
-    #+begin_src python
-    def sexp_value(module, sexp):
-        jo_vect = sexp_emit(module, sexp)
-        jojo = JOJO(jo_vect)
-        vm = VM([], [RP(jojo)])
-        vm.exe()
-        if len(vm.ds) != 1:
-            print("- sexp_value fail")
-            print("  sexp must return one value")
-            p_print("  sexp : ")
-            sexp_print(sexp)
-            newline()
-            print("  number of values : {}".format(len(vm.ds)))
-            print("  returned : {}".format(vm.ds))
-            error()
-
-        value = vm.ds[0]
-        return value
-    #+end_src
-
-* ------
-* string_emitter_vect
-
-*** string_emitter_vect
-
-    #+begin_src python
-    string_emitter_vect = []
-    #+end_src
-
-*** string_emitter
-
-    #+begin_src python
-    def string_emitter(p, emitter):
-        string_emitter_vect.append((p, emitter))
-    #+end_src
-
-*** int_string
-
-***** int_string_p
+***** sexp_emit
 
       #+begin_src python
-      def int_string_p(string):
-          if not string_p(string):
-              return False
-          length = len(string)
-          if length == 0:
-              return False
-          elif string[0] == '-':
-              return nat_string_p(string[1:])
+      def sexp_emit(module, sexp):
+          if null_p(sexp):
+              return null_emit(module, sexp)
+          elif cons_p(sexp):
+              return cons_emit(module, sexp)
           else:
-              return nat_string_p(string)
+              return string_emit(module, sexp)
       #+end_src
 
-***** nat_string_p
+***** null_emit
 
       #+begin_src python
-      def nat_string_p(string):
-          if not string_p(string):
-              return False
-          return string.isdecimal()
+      def null_emit(module, sexp):
+          return [null]
       #+end_src
 
-***** int_string_emitter
+***** cons_emit
 
       #+begin_src python
-      def int_string_emitter(module, string):
-          return [int(string)]
-      #+end_src
-
-***** record
-
-      #+begin_src python
-      string_emitter(int_string_p,
-                     int_string_emitter)
-      #+end_src
-
-*** doublequoted_string
-
-***** doublequoted_string_p
-
-      #+begin_src python
-      def doublequoted_string_p(string):
-          if not string_p(string):
-              return False
-          if len(string) < 3:
-              return False
-          elif string[0] != '"':
-              return False
-          elif string[-1] != '"':
-              return False
+      def cons_emit(module, cons):
+          keyword = car(cons)
+          # keyword can not have dot-in-name
+          if keyword in keyword_dict.keys():
+              fun = keyword_dict[keyword]
+              return fun(module, cdr(cons))
+          elif keyword in macro_dict.keys():
+              fun = macro_dict[keyword]
+              new_sexp = fun(cdr(cons))
+              return sexp_emit(module, new_sexp)
           else:
-              return True
+              # a call to string_emit
+              # handles dot-in-name in head of sexp
+              vm = VM([cdr(cons)],
+                      [RP(JOJO(string_emit(module, keyword)))])
+              vm.exe()
+              new_sexp = vm.ds[0]
+              return sexp_emit(module, new_sexp)
       #+end_src
 
-***** doublequoted_string_emitter
+***** string_emit
 
       #+begin_src python
-      def doublequoted_string_emitter(module, string):
-          string = string[1:-1]
-          return [string]
+      def string_emit(module, string):
+          # special strings
+          i = 0
+          while i < len(string_emitter_vect):
+              p = string_emitter_vect[i][0]
+              e = string_emitter_vect[i][1]
+              if p(string):
+                  return e(module, string)
+              else:
+                  i = i + 1
+
+          # built-in keyword
+          if string in key_jo_dict.keys():
+              return key_jo_dict[string]
+
+          # normal function call
+          if string == None:
+              traceback.print_stack()
+              exit()
+          return [CALL_FROM_MODULE(module, string)]
       #+end_src
 
-***** record
+***** string_emitter_vect
 
-      #+begin_src python
-      string_emitter(doublequoted_string_p,
-                     doublequoted_string_emitter)
-      #+end_src
+******* string_emitter_vect
 
-*** local_string
+        #+begin_src python
+        string_emitter_vect = []
+        #+end_src
 
-***** local_string_p
+******* string_emitter
 
-      #+begin_src python
-      def local_string_p(string):
-          if not string_p(string):
-              return False
-          if len(string) < 2:
-              return False
-          elif string.count('.') != 0:
-              return False
-          elif string.count(':') != 1:
-              return False
-          elif string[0] != ':':
-              return False
-          elif string[-1] == '!':
-              return False
-          else:
-              return True
-      #+end_src
+        #+begin_src python
+        def string_emitter(p, emitter):
+            string_emitter_vect.append((p, emitter))
+        #+end_src
 
-***** local_string_emitter
+******* int_string
 
-      #+begin_src python
-      def local_string_emitter(module, string):
-          return [GET(string)]
-      #+end_src
+********* int_string_p
 
-***** record
+          #+begin_src python
+          def int_string_p(string):
+              if not string_p(string):
+                  return False
+              length = len(string)
+              if length == 0:
+                  return False
+              elif string[0] == '-':
+                  return nat_string_p(string[1:])
+              else:
+                  return nat_string_p(string)
+          #+end_src
 
-      #+begin_src python
-      string_emitter(local_string_p,
-                     local_string_emitter)
-      #+end_src
+********* nat_string_p
 
-*** set_local_string
+          #+begin_src python
+          def nat_string_p(string):
+              if not string_p(string):
+                  return False
+              return string.isdecimal()
+          #+end_src
 
-***** set_local_string_p
+********* int_string_emitter
 
-      #+begin_src python
-      def set_local_string_p(string):
-          if not string_p(string):
-              return False
-          if len(string) < 3:
-              return False
-          elif string.count('.') != 0:
-              return False
-          elif string[0] != ':':
-              return False
-          elif string[-1] != '!':
-              return False
-          else:
-              return True
-      #+end_src
+          #+begin_src python
+          def int_string_emitter(module, string):
+              return [int(string)]
+          #+end_src
 
-***** set_local_string_emitter
+********* record
 
-      #+begin_src python
-      def set_local_string_emitter(module, string):
-          string = string[:-1]
-          return [SET(string)]
-      #+end_src
+          #+begin_src python
+          string_emitter(int_string_p,
+                         int_string_emitter)
+          #+end_src
 
-***** record
+******* doublequoted_string
 
-      #+begin_src python
-      string_emitter(set_local_string_p,
-                     set_local_string_emitter)
-      #+end_src
+********* doublequoted_string_p
 
-*** message_string
+          - "doublequoted"
 
-***** message_string_p
+          #+begin_src python
+          def doublequoted_string_p(string):
+              if not string_p(string):
+                  return False
+              if len(string) < 3:
+                  return False
+              elif string[0] != '"':
+                  return False
+              elif string[-1] != '"':
+                  return False
+              else:
+                  return True
+          #+end_src
 
-      #+begin_src python
-      def message_string_p(string):
-          if not string_p(string):
-              return False
-          if len(string) < 2:
-              return False
-          elif string[0] != '.':
-              return False
-          elif string.count('.') != 1:
-              return False
-          else:
-              return True
-      #+end_src
+********* doublequoted_string_emitter
 
-***** message_string_emitter
+          #+begin_src python
+          def doublequoted_string_emitter(module, string):
+              string = string[1:-1]
+              return [string]
+          #+end_src
 
-      #+begin_src python
-      def message_string_emitter(module, string):
-          string = string[1:]
-          return [MSG(string)]
-      #+end_src
+********* record
 
-***** record
+          #+begin_src python
+          string_emitter(doublequoted_string_p,
+                         doublequoted_string_emitter)
+          #+end_src
 
-      #+begin_src python
-      string_emitter(message_string_p,
-                     message_string_emitter)
-      #+end_src
+******* local_string
 
-*** name_message_string
+********* local_string_p
 
-***** name_message_string_p
+          - :local
 
-      #+begin_src python
-      def name_message_string_p(string):
-          if not string_p(string):
-              return False
-          if len(string) < 3: # example : 'n.s'
-              return False
-          elif string[0] == '.':
-              return False
-          elif string.count('.') == 0:
-              return False
-          elif string.count('..') != 0:
-              return False
-          elif string.count(':') != 0:
-              return False
-          elif string[-1] == '.':
-              return False
-          else:
-              return True
-      #+end_src
+          #+begin_src python
+          def local_string_p(string):
+              if not string_p(string):
+                  return False
+              if len(string) < 2:
+                  return False
+              elif string.count('.') != 0:
+                  return False
+              elif string.count(':') != 1:
+                  return False
+              elif string[0] != ':':
+                  return False
+              elif string[-1] == '!':
+                  return False
+              else:
+                  return True
+          #+end_src
 
-***** name_message_string_emitter
+********* local_string_emitter
 
-      #+begin_src python
-      def name_message_string_emitter(module, string):
-          jo_vect = []
-          string_vect = string.split('.')
+          #+begin_src python
+          def local_string_emitter(module, string):
+              return [GET(string)]
+          #+end_src
 
-          name_string = string_vect[0]
-          jo_vect.extend(string_emit(module, name_string))
+********* record
 
-          message_string_vect = string_vect[1:]
-          for message_string in message_string_vect:
-              jo_vect.append(MSG(message_string))
+          #+begin_src python
+          string_emitter(local_string_p,
+                         local_string_emitter)
+          #+end_src
 
-          return jo_vect
-      #+end_src
+******* set_local_string
 
-***** record
+********* set_local_string_p
 
-      #+begin_src python
-      string_emitter(name_message_string_p,
-                     name_message_string_emitter)
-      #+end_src
+          - :local!
 
-*** local_message_string
+          #+begin_src python
+          def set_local_string_p(string):
+              if not string_p(string):
+                  return False
+              if len(string) < 3:
+                  return False
+              elif string.count('.') != 0:
+                  return False
+              elif string[0] != ':':
+                  return False
+              elif string[-1] != '!':
+                  return False
+              else:
+                  return True
+          #+end_src
 
-***** local_message_string_p
+********* set_local_string_emitter
 
-      #+begin_src python
-      def local_message_string_p(string):
-          if not string_p(string):
-              return False
-          if len(string) < 4:
-              return False
-          elif string[0] != ':':
-              return False
-          else:
-              return name_message_string_p(string[1:])
-      #+end_src
+          #+begin_src python
+          def set_local_string_emitter(module, string):
+              string = string[:-1]
+              return [SET(string)]
+          #+end_src
 
-***** local_message_string_emitter
+********* record
 
-      #+begin_src python
-      def local_message_string_emitter(module, string):
-          jo_vect = []
-          string_vect = string.split('.')
+          #+begin_src python
+          string_emitter(set_local_string_p,
+                         set_local_string_emitter)
+          #+end_src
 
-          local_string = string_vect[0]
-          jo_vect.append(GET(local_string))
+******* message_string
 
-          message_string_vect = string_vect[1:]
-          for message_string in message_string_vect:
-              jo_vect.append(MSG(message_string))
+********* message_string_p
 
-          return jo_vect
-      #+end_src
+          - .message
 
-***** record
+          #+begin_src python
+          def message_string_p(string):
+              if not string_p(string):
+                  return False
+              if len(string) < 2:
+                  return False
+              elif string[0] != '.':
+                  return False
+              elif string.count('.') != 1:
+                  return False
+              else:
+                  return True
+          #+end_src
 
-      #+begin_src python
-      string_emitter(local_message_string_p,
-                     local_message_string_emitter)
-      #+end_src
+********* message_string_emitter
 
-*** message_message_string
+          #+begin_src python
+          def message_string_emitter(module, string):
+              string = string[1:]
+              return [MSG(string)]
+          #+end_src
 
-***** message_message_string_p
+********* record
 
-      #+begin_src python
-      def message_message_string_p(string):
-          if not string_p(string):
-              return False
-          if len(string) < 4:
-              return False
-          elif string[0] != '.':
-              return False
-          else:
-              return name_message_string_p(string[1:])
-      #+end_src
+          #+begin_src python
+          string_emitter(message_string_p,
+                         message_string_emitter)
+          #+end_src
 
-***** message_message_string_emitter
+******* name_message_string
 
-      #+begin_src python
-      def message_message_string_emitter(module, string):
-          jo_vect = []
-          string_vect = string.split('.')
+********* name_message_string_p
 
-          message_string_vect = string_vect[1:]
-          for message_string in message_string_vect:
-              jo_vect.append(MSG(message_string))
+          - name.message
+            name.message.message
 
-          return jo_vect
-      #+end_src
+          #+begin_src python
+          def name_message_string_p(string):
+              if not string_p(string):
+                  return False
+              if len(string) < 3: # example : 'n.s'
+                  return False
+              elif string[0] == '.':
+                  return False
+              elif string.count('.') == 0:
+                  return False
+              elif string.count('..') != 0:
+                  return False
+              elif string.count(':') != 0:
+                  return False
+              elif string[-1] == '.':
+                  return False
+              else:
+                  return True
+          #+end_src
 
-***** record
+********* name_message_string_emitter
 
-      #+begin_src python
-      string_emitter(message_message_string_p,
-                     message_message_string_emitter)
-      #+end_src
+          #+begin_src python
+          def name_message_string_emitter(module, string):
+              jo_vect = []
+              string_vect = string.split('.')
+
+              name_string = string_vect[0]
+              jo_vect.extend(string_emit(module, name_string))
+
+              message_string_vect = string_vect[1:]
+              for message_string in message_string_vect:
+                  jo_vect.append(MSG(message_string))
+
+              return jo_vect
+          #+end_src
+
+********* record
+
+          #+begin_src python
+          string_emitter(name_message_string_p,
+                         name_message_string_emitter)
+          #+end_src
+
+******* local_message_string
+
+********* local_message_string_p
+
+          - :local.message
+          - :local.message.message
+
+          #+begin_src python
+          def local_message_string_p(string):
+              if not string_p(string):
+                  return False
+              if len(string) < 4:
+                  return False
+              elif string[0] != ':':
+                  return False
+              else:
+                  return name_message_string_p(string[1:])
+          #+end_src
+
+********* local_message_string_emitter
+
+          #+begin_src python
+          def local_message_string_emitter(module, string):
+              jo_vect = []
+              string_vect = string.split('.')
+
+              local_string = string_vect[0]
+              jo_vect.append(GET(local_string))
+
+              message_string_vect = string_vect[1:]
+              for message_string in message_string_vect:
+                  jo_vect.append(MSG(message_string))
+
+              return jo_vect
+          #+end_src
+
+********* record
+
+          #+begin_src python
+          string_emitter(local_message_string_p,
+                         local_message_string_emitter)
+          #+end_src
+
+******* message_message_string
+
+********* message_message_string_p
+
+          - .message.message
+          - .message.message.message
+
+          #+begin_src python
+          def message_message_string_p(string):
+              if not string_p(string):
+                  return False
+              if len(string) < 4:
+                  return False
+              elif string[0] != '.':
+                  return False
+              else:
+                  return name_message_string_p(string[1:])
+          #+end_src
+
+********* message_message_string_emitter
+
+          #+begin_src python
+          def message_message_string_emitter(module, string):
+              jo_vect = []
+              string_vect = string.split('.')
+
+              message_string_vect = string_vect[1:]
+              for message_string in message_string_vect:
+                  jo_vect.append(MSG(message_string))
+
+              return jo_vect
+          #+end_src
+
+********* record
+
+          #+begin_src python
+          string_emitter(message_message_string_p,
+                         message_message_string_emitter)
+          #+end_src
 
 * prim_dict
 
-*** prim_dict
+*** prim_dict & @prim
 
     #+begin_src python
     prim_dict = {}
-    #+end_src
 
-*** @prim
-
-    #+begin_src python
     def prim(name):
         def decorator(fun):
             prim_dict[name] = fun
@@ -1517,1211 +1436,1209 @@
         return decorator
     #+end_src
 
-* ------
-* *stack operation*
-
-  #+begin_src python
-  @prim('drop')
-  def drop(a):
-      return None
-
-  @prim('dup')
-  def dup(a):
-      return VALUES(a, a)
-
-  @prim('over')
-  def over(a, b):
-      return VALUES(a, b, a)
-
-  @prim('tuck')
-  def tuck(a, b):
-      return VALUES(b, a, b)
-
-  @prim('swap')
-  def swap(a, b):
-      return VALUES(b, a)
-  #+end_src
-
-* *int*
-
-*** Int
+*** *stack operation*
 
     #+begin_src python
-    prim('Int')(int)
+    @prim('drop')
+    def drop(a):
+        return None
+
+    @prim('dup')
+    def dup(a):
+        return VALUES(a, a)
+
+    @prim('over')
+    def over(a, b):
+        return VALUES(a, b, a)
+
+    @prim('tuck')
+    def tuck(a, b):
+        return VALUES(b, a, b)
+
+    @prim('swap')
+    def swap(a, b):
+        return VALUES(b, a)
     #+end_src
 
-*** int_p
+*** *int*
 
-    #+begin_src python
-    @prim('int?')
-    def int_p(x):
-        return type(x) == int
-    #+end_src
-
-*** primary school
-
-    #+begin_src python
-    @prim('inc')
-    def inc(a):
-        return a + 1
-
-    @prim('dec')
-    def dec(a):
-        return a - 1
-
-    @prim('add')
-    def add(a, b):
-        return a + b
-
-    @prim('sub')
-    def sub(a, b):
-        return a - b
-
-    @prim('mul')
-    def mul(a, b):
-        return a * b
-
-    @prim('div')
-    def div(a, b):
-        return a // b
-
-    @prim('mod')
-    def mod(a, b):
-        return a % b
-
-    @prim('divmod')
-    def p_divmod(a, b):
-        return VALUES(*divmod(a, b))
-    #+end_src
-
-*** compare
-
-***** lt_p -- less then
+***** Int
 
       #+begin_src python
-      @prim('lt?')
-      def lt_p(a, b):
-          return a < b
+      prim('Int')(int)
       #+end_src
 
-***** gt_p -- greater then
+***** int_p
 
       #+begin_src python
-      @prim('gt?')
-      def gt_p(a, b):
-          return a > b
+      @prim('int?')
+      def int_p(x):
+          return type(x) == int
       #+end_src
 
-***** lteq_p -- less then or equal to
+***** primary school
 
       #+begin_src python
-      @prim('lteq?')
-      def lteq_p(a, b):
-          return a <= b
+      @prim('inc')
+      def inc(a):
+          return a + 1
+
+      @prim('dec')
+      def dec(a):
+          return a - 1
+
+      @prim('add')
+      def add(a, b):
+          return a + b
+
+      @prim('sub')
+      def sub(a, b):
+          return a - b
+
+      @prim('mul')
+      def mul(a, b):
+          return a * b
+
+      @prim('div')
+      def div(a, b):
+          return a // b
+
+      @prim('mod')
+      def mod(a, b):
+          return a % b
+
+      @prim('divmod')
+      def p_divmod(a, b):
+          return VALUES(*divmod(a, b))
       #+end_src
 
-***** gteq_p -- greater then or equal to
+***** compare
+
+******* lt_p -- less then
+
+        #+begin_src python
+        @prim('lt?')
+        def lt_p(a, b):
+            return a < b
+        #+end_src
+
+******* gt_p -- greater then
+
+        #+begin_src python
+        @prim('gt?')
+        def gt_p(a, b):
+            return a > b
+        #+end_src
+
+******* lteq_p -- less then or equal to
+
+        #+begin_src python
+        @prim('lteq?')
+        def lteq_p(a, b):
+            return a <= b
+        #+end_src
+
+******* gteq_p -- greater then or equal to
+
+        #+begin_src python
+        @prim('gteq?')
+        def gteq_p(a, b):
+            return a >= b
+        #+end_src
+
+***** int_print
 
       #+begin_src python
-      @prim('gteq?')
-      def gteq_p(a, b):
-          return a >= b
+      @prim('int-print')
+      def int_print(i):
+          p_print(i)
       #+end_src
 
-*** int_print
+*** *bool*
+
+***** Bool
+
+      #+begin_src python
+      prim('Bool')(bool)
+      #+end_src
+
+***** basic
+
+      #+begin_src python
+      @prim('true')
+      def true():
+          return True
+
+      @prim('false')
+      def false():
+          return False
+
+      @prim('not')
+      def p_not(b):
+          return not b
+
+      @prim('and')
+      def p_and(a, b):
+          return (a and b)
+
+      @prim('or')
+      def p_or(a, b):
+          return (a or b)
+      #+end_src
+
+*** *equivalence*
 
     #+begin_src python
-    @prim('int-print')
-    def int_print(i):
-        p_print(i)
-    #+end_src
-
-* *bool*
-
-*** Bool
-
-    #+begin_src python
-    prim('Bool')(bool)
-    #+end_src
-
-*** basic
-
-    #+begin_src python
-    @prim('true')
-    def true():
-        return True
-
-    @prim('false')
-    def false():
-        return False
-
-    @prim('not')
-    def p_not(b):
-        return not b
-
-    @prim('and')
-    def p_and(a, b):
-        return (a and b)
-
-    @prim('or')
-    def p_or(a, b):
-        return (a or b)
-    #+end_src
-
-* *equivalence*
-
-  #+begin_src python
-  @prim('eq?')
-  def eq_p(a, b):
-      if string_p(a):
-          return a == b
-      else:
-          return a is b
-  #+end_src
-
-* *sexp*
-
-  #+begin_src python
-  prim('null')(null)
-  prim('null?')(null_p)
-
-  prim('cons')(cons)
-  prim('cons?')(cons_p)
-
-  prim('car')(car)
-  prim('cdr')(cdr)
-
-  prim('sexp-print')(sexp_print)
-  prim('sexp-list-print')(sexp_list_print)
-
-  prim('code-scan')(code_scan)
-  #+end_src
-
-* *string*
-
-*** String
-
-    #+begin_src python
-    prim('String')(str)
-    #+end_src
-
-*** string_p
-
-    #+begin_src python
-    prim('string?')(string_p)
-    #+end_src
-
-*** string_print
-
-    #+begin_src python
-    @prim('string-print')
-    def string_print(string):
-        p_print(string)
-    #+end_src
-
-*** string_length
-
-    #+begin_src python
-    @prim('string_length')
-    def string_length(string):
-        return len(string)
-    #+end_src
-
-*** string_ref
-
-    #+begin_src python
-    @prim('string-ref')
-    def string_ref(string, index):
-        return string[index]
-    #+end_src
-
-*** string_append
-
-    #+begin_src python
-    @prim('string-append')
-    def string_append(string1, string2):
-        return "".join([string1, string2])
-    #+end_src
-
-*** string_slice
-
-    #+begin_src python
-    @prim('string-slice')
-    def string_slice(string, begin, end):
-        return string[begin:end]
-    #+end_src
-
-*** string_empty_p
-
-    #+begin_src python
-    @prim('string-empty?')
-    def string_empty_p(string):
-        return len(string) == 0
-    #+end_src
-
-*** string_eq_p
-
-    #+begin_src python
-    @prim('string-eq?')
-    def string_eq_p(string1, string2):
-        return string1 == string2
-    #+end_src
-
-*** string_to_int
-
-    #+begin_src python
-    @prim('string->int')
-    def string_to_int(string):
-        return int(string)
-    #+end_src
-
-*** string predicates
-
-    #+begin_src python
-    prim('int-string?')(int_string_p)
-    prim('local-string?')(local_string_p)
-    #+end_src
-
-* *vect*
-
-*** [note]
-
-    - vect is the pivot among :
-      - list
-      - dict
-      - tuple
-      - set
-
-*** vect_p
-
-    #+begin_src python
-    prim('vect?')(vect_p)
-    #+end_src
-
-*** vect_copy
-
-    #+begin_src python
-    @prim('vect-copy')
-    def vect_copy(vect):
-        return vect[:]
-    #+end_src
-
-*** vect_member_p
-
-    #+begin_src python
-    @prim('vect-member?')
-    def vect_member_p(x, vect):
-        return x in vect
-    #+end_src
-
-*** vect_length
-
-    #+begin_src python
-    @prim('vect-length')
-    def vect_length(vect):
-        return len(vect)
-    #+end_src
-
-*** vect_ref
-
-    #+begin_src python
-    @prim('vect-ref')
-    def vect_ref(vect, index):
-        return vect[index]
-    #+end_src
-
-*** vect_append -- no-side-effect
-
-    #+begin_src python
-    @prim('vect-append')
-    def vect_append(vect1, vect2):
-        vect1_copy = vect_copy(vect1)
-        vect1_copy.extend(vect2)
-        return vect1_copy
-    #+end_src
-
-*** vect_zip_dict
-
-    #+begin_src python
-    @prim('vect-zip-dict')
-    def vect_zip_dict(v1, v2):
-        if len(v1) != len(v2):
-            print("- vect_zip_dict fail")
-            print("  length of vect1")
-            print("    is not equal to length of vect2")
-            print("  length of vect1 : {}".format(len(v1)))
-            print("  length of vect2 : {}".format(len(v2)))
-            print("  vect1 : {}".format(v1))
-            print("  vect2 : {}".format(v2))
-            error()
-        d = {}
-        for k, v in zip(v1, v2):
-           d[k] = v
-        return d
-    #+end_src
-
-*** vect_to_sexp
-
-    #+begin_src python
-    @prim('vect->sexp')
-    def vect_to_sexp(vect):
-        if vect == []:
-            return null
-        elif not vect_p(vect):
-            return vect
+    @prim('eq?')
+    def eq_p(a, b):
+        if string_p(a):
+            return a == b
         else:
-            return cons(vect_to_sexp(vect[0]),
-                        vect_to_sexp(vect[1:]))
+            return a is b
     #+end_src
 
-*** sexp_to_vect
+*** *sexp*
 
     #+begin_src python
-    @prim('sexp->vect')
-    def sexp_to_vect(sexp):
-        if string_p(sexp):
-            return sexp
-        sexp_vect = list_to_vect(sexp)
-        result_vect = []
-        for s in sexp_vect:
-            result_vect.append(sexp_to_vect(s))
-        return result_vect
+    prim('null')(null)
+    prim('null?')(null_p)
+
+    prim('cons')(cons)
+    prim('cons?')(cons_p)
+
+    prim('car')(car)
+    prim('cdr')(cdr)
+
+    prim('sexp-print')(sexp_print)
+    prim('sexp-list-print')(sexp_list_print)
+
+    prim('code-scan')(code_scan)
     #+end_src
 
-* *list*
+*** *string*
 
-*** Null & Cons
-
-    #+begin_src python
-    prim('<null>')(Null)
-    prim('<cons>')(Cons)
-    #+end_src
-
-*** list_p
-
-    #+begin_src python
-    @prim('list?')
-    def list_p(x):
-        return null_p(x) or cons_p(x)
-    #+end_src
-
-*** vect_to_list
-
-    #+begin_src python
-    @prim('vect->list')
-    def vect_to_list(vect):
-        if vect == []:
-            return null
-        else:
-            return cons(vect[0], vect_to_list(vect[1:]))
-    #+end_src
-
-*** list_to_vect
-
-    #+begin_src python
-    @prim('list->vect')
-    def list_to_vect(l):
-        vect = []
-        while not null_p(l):
-            vect.append(car(l))
-            l = cdr(l)
-        return vect
-    #+end_src
-
-*** list_length
-
-    #+begin_src python
-    def list_length(l):
-        if null_p(l):
-            return 0
-        else:
-            return list_length(cdr(l)) + 1
-    #+end_src
-
-*** list_ref
-
-    #+begin_src python
-    def list_ref(l, i):
-        if null_p(l):
-            print("- list_ref fail")
-            print("  index greater then length of list")
-            error()
-        elif i == 0:
-            return car(l)
-        else:
-            return list_ref(cdr(l), i-1)
-    #+end_src
-
-*** list_append
-
-    #+begin_src python
-    def list_append(ante, succ):
-        if null_p(ante):
-            return succ
-        else:
-            return cons(car(ante),
-                        list_append(cdr (ante), succ))
-    #+end_src
-
-*** tail_cons
-
-    #+begin_src python
-    def tail_cons(ante, value):
-        return list_append(ante, cons(value, null))
-    #+end_src
-
-*** list_zip_dict
-
-    #+begin_src python
-    @prim('list-zip-dict')
-    def list_zip_dict(l1, l2):
-        v1 = list_to_vect(l1)
-        v2 = list_to_vect(l2)
-        return vect_zip_dict(v1, v2)
-    #+end_src
-
-* *dict*
-
-*** Dict
-
-    #+begin_src python
-    prim('Dict')(dict)
-    #+end_src
-
-*** dict_p
-
-    #+begin_src python
-    @prim('dict?')
-    def dict_p(x):
-        return type(x) == dict
-    #+end_src
-
-*** dict_copy
-
-    #+begin_src python
-    @prim('dict-copy')
-    def dict_copy(d):
-        return d.copy()
-    #+end_src
-
-*** vect_to_dict
-
-    #+begin_src python
-    @prim('vect->dict')
-    def vect_to_dict(vect):
-        length = len(vect)
-        if length % 2 != 0:
-            print("- vect->dict fail")
-            print("  length of vect must be even")
-            print("  length : {}".format(length))
-            print("  vect : {}".format(vect))
-            error()
-
-        d = {}
-        i = 0
-        while i < length:
-            k = vect[i]
-            v = vect[i+1]
-            d[k] = v
-            i = i + 2
-
-        return d
-    #+end_src
-
-*** dict_length
-
-    #+begin_src python
-    @prim('dict-length')
-    def dict_length(d):
-        return len(d)
-    #+end_src
-
-*** dict_find
-
-    #+begin_src python
-    @prim('dict-find')
-    def dict_find(d, k):
-        try:
-            return VALUES(d[k], True)
-        except KeyError:
-            return False
-    #+end_src
-
-*** dict_update -- no-side-effect
-
-    #+begin_src python
-    @prim('dict-update')
-    def dict_update(d1, d2):
-        d1 = dict_copy(d1)
-        return d1.update(d2)
-    #+end_src
-
-*** dict_delete -- no-side-effect
-
-    #+begin_src python
-    @prim('dict-delete')
-    def dict_delete(d, k):
-        d = dict_copy(d)
-        del d[k]
-        return d
-    #+end_src
-
-* *tuple*
-
-*** Tuple
-
-    #+begin_src python
-    prim('Tuple')(tuple)
-    #+end_src
-
-*** tuple_p
-
-    #+begin_src python
-    @prim('tuple?')
-    def tuple_p(x):
-        return type(x) == tuple
-    #+end_src
-
-*** vect_to_tuple
-
-    #+begin_src python
-    @prim('vect->tuple')
-    def vect_to_tuple(vect):
-        return tuple(vect)
-    #+end_src
-
-*** tuple_to_vect
-
-    #+begin_src python
-    @prim('tuple->vect')
-    def tuple_to_vect(tu):
-        return Vect(tu)
-    #+end_src
-
-*** tuple_length
-
-    #+begin_src python
-    @prim('tuple-length')
-    def tuple_length(tu):
-        return len(tu)
-    #+end_src
-
-*** tuple_ref
-
-    #+begin_src python
-    @prim('tuple-ref')
-    def tuple_ref(tu, index):
-        return tu[index]
-    #+end_src
-
-*** tuple_append
-
-    #+begin_src python
-    @prim('tuple-append')
-    def tuple_append(tu1, tu2):
-        vect1 = Vect(tu1)
-        vect1.extend(tu2)
-        return tuple(vect1)
-    #+end_src
-
-* *set*
-
-*** Set
-
-    #+begin_src python
-    prim('Set')(set)
-    #+end_src
-
-*** set_p
-
-    #+begin_src python
-    @prim('set?')
-    def set_p(x):
-        return type(x) == set
-    #+end_src
-
-*** vect_to_set
-
-    #+begin_src python
-    @prim('vect->set')
-    def vect_to_set(vect):
-        return set(vect)
-    #+end_src
-
-*** set_to_vect
-
-    #+begin_src python
-    @prim('set->vect')
-    def set_to_vect(s):
-        return Vect(s)
-    #+end_src
-
-*** set_length
-
-    #+begin_src python
-    @prim('set-length')
-    def set_length(s):
-        return len(s)
-    #+end_src
-
-*** set_member_p
-
-    #+begin_src python
-    @prim('set-member?')
-    def set_member_p(x, s):
-        return x in s
-    #+end_src
-
-*** high school
-
-    #+begin_src python
-    @prim('set-disjoint?')
-    def set_disjoint_p(s1, s2):
-        return s1.isdisjoint(s2)
-
-    @prim('set-subset?')
-    def set_subset_p(s1, s2):
-        return s1.issubset(s2)
-
-    @prim('set-superset?')
-    def set_superset_p(s1, s2):
-        return s1.issuperset(s2)
-
-    @prim('set-union')
-    def set_union(s1, s2):
-        return s1.union(s2)
-
-    @prim('set-intersection')
-    def set_intersection(s1, s2):
-        return s1.intersection(s2)
-
-    @prim('set-difference')
-    def set_difference(s1, s2):
-        return s1.difference(s2)
-
-    @prim('set-symmetric-difference')
-    def set_symmetric_difference(s1, s2):
-        return s1.symmetric_difference(s2)
-    #+end_src
-
-* *io*
-
-*** print
-
-    #+begin_src python
-    prim('print')(p_print)
-    #+end_src
-
-*** nl -- newline
-
-    #+begin_src python
-    @prim('newline')
-    def newline():
-        print("")
-
-    prim('nl')(newline)
-    #+end_src
-
-*** space
-
-    #+begin_src python
-    @prim('space')
-    def space():
-        p_print(" ")
-    #+end_src
-
-* *sys*
-
-*** bye
-
-    #+begin_src python
-    @prim('bye')
-    def bye():
-        print("bye bye ^-^/")
-        sys.exit()
-    #+end_src
-
-* *repl*
-
-*** read_sexp
-
-***** read_char
+***** String
 
       #+begin_src python
-      def read_char(char_stack):
-          if len(char_stack) == 0:
-              return sys.stdin.read(1)
-          else:
-              return char_stack.pop()
+      prim('String')(str)
       #+end_src
 
-***** read_string
+***** string_p
 
       #+begin_src python
-      def read_string(char_stack):
-          char_vect = []
-          collecting_bytes_p = False
-
-          while True:
-              char = read_char(char_stack)
-              if not collecting_bytes_p:
-                  if space_p(char):
-                      pass
-                  elif doublequote_p(char):
-                      return read_doublequoted_string(char_stack)
-                  elif delimiter_p(char):
-                      char_vect.append(char)
-                      break
-                  else:
-                      char_vect.append(char)
-                      collecting_bytes_p = True
-
-              else:
-                  if (doublequote_p(char) or
-                      delimiter_p(char) or
-                      space_p(char)):
-                      char_stack.append(char)
-                      break
-                  else:
-                      char_vect.append(char)
-
-          return "".join(char_vect)
+      prim('string?')(string_p)
       #+end_src
 
-***** read_doublequoted_string
+***** string_print
 
       #+begin_src python
-      def read_doublequoted_string(char_stack):
-          char_vect = []
-          char_vect.append('"')
-          while True:
-              char = read_char(char_stack)
-              if char == '"':
-                  break
-              else:
-                  char_vect.append(char)
-          char_vect.append('"')
-          return "".join(char_vect)
+      @prim('string-print')
+      def string_print(string):
+          p_print(string)
       #+end_src
 
-***** read_sexp
-
-      - with a char_stack,
-        read a sexp from stdin.
+***** string_length
 
       #+begin_src python
-      def read_sexp(char_stack):
-          string = read_string(char_stack)
-          if string == '(':
-              sexp_list = read_sexp_list_until_ket(char_stack, ')')
-              return sexp_list
-          elif string == '[':
-              sexp_list = read_sexp_list_until_ket(char_stack, ']')
-              return cons('begin', sexp_list)
-          elif string == '{':
-              sexp_list = read_sexp_list_until_ket(char_stack, '}')
-              return cons('clo', sexp_list)
-          elif string == '"':
-              return read_doublequoted_string(char_stack)
-          elif string == "'":
-              sexp = read_sexp(char_stack)
-              return cons('quote', cons(sexp, null))
-          elif string == "`":
-              sexp = read_sexp(char_stack)
-              return cons('partquote', cons(sexp, null))
-          else:
-              return string
+      @prim('string_length')
+      def string_length(string):
+          return len(string)
       #+end_src
 
-***** read_sexp_list_until_ket
+***** string_ref
 
       #+begin_src python
-      def read_sexp_list_until_ket(char_stack, ket):
-          string = read_string(char_stack)
-          if string == ket:
-              return null
-          else:
-              char_vect = Vect(string)
-              char_vect.reverse()
-              char_stack.extend(char_vect)
-              sexp = read_sexp(char_stack)
-              recur = read_sexp_list_until_ket(char_stack, ket)
-              return cons(sexp, recur)
+      @prim('string-ref')
+      def string_ref(string, index):
+          return string[index]
       #+end_src
 
-*** print_data_stack
-
-    #+begin_src python
-    def print_data_stack(ds):
-        p_print("  * {} *  ".format(len(ds)))
-        print(ds)
-    #+end_src
-
-*** print_return_stack
-
-***** print_return_stack
+***** string_append
 
       #+begin_src python
-      def print_return_stack(rs):
-          print("- return-stack * {} *".format(len(rs)))
-          for rp in rs:
-              return_point_print(rp)
+      @prim('string-append')
+      def string_append(string1, string2):
+          return "".join([string1, string2])
       #+end_src
 
-***** return_point_print
+***** string_slice
 
       #+begin_src python
-      def return_point_print(rp):
-          p_print("  - progress : {} / {}".format(rp.cursor, rp.length))
-          newline()
-
-          next_cursor = rp.cursor
-          last_cursor = rp.cursor - 1
-
-          if last_cursor == 0:
-              pass
-          else:
-              p_print("    pass : ")
-              i = 0
-              while i < last_cursor:
-                  jo_print(rp.body[i])
-                  space()
-                  i = i + 1
-              newline()
-
-          p_print("    last : ")
-          jo_print(rp.body[last_cursor])
-          newline()
-
-          if next_cursor == rp.length:
-              pass
-          else:
-              p_print("    next : ")
-              i = next_cursor
-              while i < rp.length:
-                  jo_print(rp.body[i])
-                  space()
-                  i = i + 1
-              newline()
-
-          if len(rp.lr) == 0:
-             pass
-          else:
-             p_print("    where : {}".format(rp.lr))
-             newline()
+      @prim('string-slice')
+      def string_slice(string, begin, end):
+          return string[begin:end]
       #+end_src
 
-***** jo_print
+***** string_empty_p
 
       #+begin_src python
-      def jo_print(jo):
-          if fun_p(jo):
-              p_print(jo.__module__)
-              p_print(".")
-              p_print(jo.__name__)
-          elif hasattr(jo, "jo_print"):
-              jo.jo_print()
-          else:
-              p_print(jo)
+      @prim('string-empty?')
+      def string_empty_p(string):
+          return len(string) == 0
       #+end_src
 
-*** module_repl
+***** string_eq_p
+
+      #+begin_src python
+      @prim('string-eq?')
+      def string_eq_p(string1, string2):
+          return string1 == string2
+      #+end_src
+
+***** string_to_int
+
+      #+begin_src python
+      @prim('string->int')
+      def string_to_int(string):
+          return int(string)
+      #+end_src
+
+***** string predicates
+
+      #+begin_src python
+      prim('int-string?')(int_string_p)
+      prim('local-string?')(local_string_p)
+      #+end_src
+
+*** *vect*
 
 ***** [note]
 
-      - a repl_char_stack is added to the module,
-        for reading sexp one by one.
+      - vect is the pivot among :
+        - list
+        - dict
+        - tuple
+        - set
+
+***** vect_p
+
+      #+begin_src python
+      prim('vect?')(vect_p)
+      #+end_src
+
+***** vect_copy
+
+      #+begin_src python
+      @prim('vect-copy')
+      def vect_copy(vect):
+          return vect[:]
+      #+end_src
+
+***** vect_member_p
+
+      #+begin_src python
+      @prim('vect-member?')
+      def vect_member_p(x, vect):
+          return x in vect
+      #+end_src
+
+***** vect_length
+
+      #+begin_src python
+      @prim('vect-length')
+      def vect_length(vect):
+          return len(vect)
+      #+end_src
+
+***** vect_ref
+
+      #+begin_src python
+      @prim('vect-ref')
+      def vect_ref(vect, index):
+          return vect[index]
+      #+end_src
+
+***** vect_append -- no-side-effect
+
+      #+begin_src python
+      @prim('vect-append')
+      def vect_append(vect1, vect2):
+          vect1_copy = vect_copy(vect1)
+          vect1_copy.extend(vect2)
+          return vect1_copy
+      #+end_src
+
+***** vect_zip_dict
+
+      #+begin_src python
+      @prim('vect-zip-dict')
+      def vect_zip_dict(v1, v2):
+          if len(v1) != len(v2):
+              print("- vect_zip_dict fail")
+              print("  length of vect1")
+              print("    is not equal to length of vect2")
+              print("  length of vect1 : {}".format(len(v1)))
+              print("  length of vect2 : {}".format(len(v2)))
+              print("  vect1 : {}".format(v1))
+              print("  vect2 : {}".format(v2))
+              error()
+          d = {}
+          for k, v in zip(v1, v2):
+             d[k] = v
+          return d
+      #+end_src
+
+***** vect_to_sexp
+
+      #+begin_src python
+      @prim('vect->sexp')
+      def vect_to_sexp(vect):
+          if vect == []:
+              return null
+          elif not vect_p(vect):
+              return vect
+          else:
+              return cons(vect_to_sexp(vect[0]),
+                          vect_to_sexp(vect[1:]))
+      #+end_src
+
+***** sexp_to_vect
+
+      #+begin_src python
+      @prim('sexp->vect')
+      def sexp_to_vect(sexp):
+          if string_p(sexp):
+              return sexp
+          sexp_vect = list_to_vect(sexp)
+          result_vect = []
+          for s in sexp_vect:
+              result_vect.append(sexp_to_vect(s))
+          return result_vect
+      #+end_src
+
+*** *list*
+
+***** Null & Cons
+
+      #+begin_src python
+      prim('<null>')(Null)
+      prim('<cons>')(Cons)
+      #+end_src
+
+***** list_p
+
+      #+begin_src python
+      @prim('list?')
+      def list_p(x):
+          return null_p(x) or cons_p(x)
+      #+end_src
+
+***** vect_to_list
+
+      #+begin_src python
+      @prim('vect->list')
+      def vect_to_list(vect):
+          if vect == []:
+              return null
+          else:
+              return cons(vect[0], vect_to_list(vect[1:]))
+      #+end_src
+
+***** list_to_vect
+
+      #+begin_src python
+      @prim('list->vect')
+      def list_to_vect(l):
+          vect = []
+          while not null_p(l):
+              vect.append(car(l))
+              l = cdr(l)
+          return vect
+      #+end_src
+
+***** list_length
+
+      #+begin_src python
+      def list_length(l):
+          if null_p(l):
+              return 0
+          else:
+              return list_length(cdr(l)) + 1
+      #+end_src
+
+***** list_ref
+
+      #+begin_src python
+      def list_ref(l, i):
+          if null_p(l):
+              print("- list_ref fail")
+              print("  index greater then length of list")
+              error()
+          elif i == 0:
+              return car(l)
+          else:
+              return list_ref(cdr(l), i-1)
+      #+end_src
+
+***** list_append
+
+      #+begin_src python
+      def list_append(ante, succ):
+          if null_p(ante):
+              return succ
+          else:
+              return cons(car(ante),
+                          list_append(cdr (ante), succ))
+      #+end_src
+
+***** tail_cons
+
+      #+begin_src python
+      def tail_cons(ante, value):
+          return list_append(ante, cons(value, null))
+      #+end_src
+
+***** list_zip_dict
+
+      #+begin_src python
+      @prim('list-zip-dict')
+      def list_zip_dict(l1, l2):
+          v1 = list_to_vect(l1)
+          v2 = list_to_vect(l2)
+          return vect_zip_dict(v1, v2)
+      #+end_src
+
+*** *dict*
+
+***** Dict
+
+      #+begin_src python
+      prim('Dict')(dict)
+      #+end_src
+
+***** dict_p
+
+      #+begin_src python
+      @prim('dict?')
+      def dict_p(x):
+          return type(x) == dict
+      #+end_src
+
+***** dict_copy
+
+      #+begin_src python
+      @prim('dict-copy')
+      def dict_copy(d):
+          return d.copy()
+      #+end_src
+
+***** vect_to_dict
+
+      #+begin_src python
+      @prim('vect->dict')
+      def vect_to_dict(vect):
+          length = len(vect)
+          if length % 2 != 0:
+              print("- vect->dict fail")
+              print("  length of vect must be even")
+              print("  length : {}".format(length))
+              print("  vect : {}".format(vect))
+              error()
+
+          d = {}
+          i = 0
+          while i < length:
+              k = vect[i]
+              v = vect[i+1]
+              d[k] = v
+              i = i + 2
+
+          return d
+      #+end_src
+
+***** dict_length
+
+      #+begin_src python
+      @prim('dict-length')
+      def dict_length(d):
+          return len(d)
+      #+end_src
+
+***** dict_find
+
+      #+begin_src python
+      @prim('dict-find')
+      def dict_find(d, k):
+          try:
+              return VALUES(d[k], True)
+          except KeyError:
+              return False
+      #+end_src
+
+***** dict_update -- no-side-effect
+
+      #+begin_src python
+      @prim('dict-update')
+      def dict_update(d1, d2):
+          d1 = dict_copy(d1)
+          return d1.update(d2)
+      #+end_src
+
+***** dict_delete -- no-side-effect
+
+      #+begin_src python
+      @prim('dict-delete')
+      def dict_delete(d, k):
+          d = dict_copy(d)
+          del d[k]
+          return d
+      #+end_src
+
+*** *tuple*
+
+***** Tuple
+
+      #+begin_src python
+      prim('Tuple')(tuple)
+      #+end_src
+
+***** tuple_p
+
+      #+begin_src python
+      @prim('tuple?')
+      def tuple_p(x):
+          return type(x) == tuple
+      #+end_src
+
+***** vect_to_tuple
+
+      #+begin_src python
+      @prim('vect->tuple')
+      def vect_to_tuple(vect):
+          return tuple(vect)
+      #+end_src
+
+***** tuple_to_vect
+
+      #+begin_src python
+      @prim('tuple->vect')
+      def tuple_to_vect(tu):
+          return Vect(tu)
+      #+end_src
+
+***** tuple_length
+
+      #+begin_src python
+      @prim('tuple-length')
+      def tuple_length(tu):
+          return len(tu)
+      #+end_src
+
+***** tuple_ref
+
+      #+begin_src python
+      @prim('tuple-ref')
+      def tuple_ref(tu, index):
+          return tu[index]
+      #+end_src
+
+***** tuple_append
+
+      #+begin_src python
+      @prim('tuple-append')
+      def tuple_append(tu1, tu2):
+          vect1 = Vect(tu1)
+          vect1.extend(tu2)
+          return tuple(vect1)
+      #+end_src
+
+*** *set*
+
+***** Set
+
+      #+begin_src python
+      prim('Set')(set)
+      #+end_src
+
+***** set_p
+
+      #+begin_src python
+      @prim('set?')
+      def set_p(x):
+          return type(x) == set
+      #+end_src
+
+***** vect_to_set
+
+      #+begin_src python
+      @prim('vect->set')
+      def vect_to_set(vect):
+          return set(vect)
+      #+end_src
+
+***** set_to_vect
+
+      #+begin_src python
+      @prim('set->vect')
+      def set_to_vect(s):
+          return Vect(s)
+      #+end_src
+
+***** set_length
+
+      #+begin_src python
+      @prim('set-length')
+      def set_length(s):
+          return len(s)
+      #+end_src
+
+***** set_member_p
+
+      #+begin_src python
+      @prim('set-member?')
+      def set_member_p(x, s):
+          return x in s
+      #+end_src
+
+***** high school
+
+      #+begin_src python
+      @prim('set-disjoint?')
+      def set_disjoint_p(s1, s2):
+          return s1.isdisjoint(s2)
+
+      @prim('set-subset?')
+      def set_subset_p(s1, s2):
+          return s1.issubset(s2)
+
+      @prim('set-superset?')
+      def set_superset_p(s1, s2):
+          return s1.issuperset(s2)
+
+      @prim('set-union')
+      def set_union(s1, s2):
+          return s1.union(s2)
+
+      @prim('set-intersection')
+      def set_intersection(s1, s2):
+          return s1.intersection(s2)
+
+      @prim('set-difference')
+      def set_difference(s1, s2):
+          return s1.difference(s2)
+
+      @prim('set-symmetric-difference')
+      def set_symmetric_difference(s1, s2):
+          return s1.symmetric_difference(s2)
+      #+end_src
+
+*** *io*
+
+***** print
+
+      #+begin_src python
+      prim('print')(p_print)
+      #+end_src
+
+***** nl -- newline
+
+      #+begin_src python
+      @prim('newline')
+      def newline():
+          print("")
+
+      prim('nl')(newline)
+      #+end_src
+
+***** space
+
+      #+begin_src python
+      @prim('space')
+      def space():
+          p_print(" ")
+      #+end_src
+
+*** *sys*
+
+***** bye
+
+      #+begin_src python
+      @prim('bye')
+      def bye():
+          print("bye bye ^-^/")
+          sys.exit()
+      #+end_src
+
+*** *repl*
+
+***** read_sexp
+
+******* read_char
+
+        #+begin_src python
+        def read_char(char_stack):
+            if len(char_stack) == 0:
+                return sys.stdin.read(1)
+            else:
+                return char_stack.pop()
+        #+end_src
+
+******* read_string
+
+        #+begin_src python
+        def read_string(char_stack):
+            char_vect = []
+            collecting_bytes_p = False
+
+            while True:
+                char = read_char(char_stack)
+                if not collecting_bytes_p:
+                    if space_p(char):
+                        pass
+                    elif doublequote_p(char):
+                        return read_doublequoted_string(char_stack)
+                    elif delimiter_p(char):
+                        char_vect.append(char)
+                        break
+                    else:
+                        char_vect.append(char)
+                        collecting_bytes_p = True
+
+                else:
+                    if (doublequote_p(char) or
+                        delimiter_p(char) or
+                        space_p(char)):
+                        char_stack.append(char)
+                        break
+                    else:
+                        char_vect.append(char)
+
+            return "".join(char_vect)
+        #+end_src
+
+******* read_doublequoted_string
+
+        #+begin_src python
+        def read_doublequoted_string(char_stack):
+            char_vect = []
+            char_vect.append('"')
+            while True:
+                char = read_char(char_stack)
+                if char == '"':
+                    break
+                else:
+                    char_vect.append(char)
+            char_vect.append('"')
+            return "".join(char_vect)
+        #+end_src
+
+******* read_sexp
+
+        - with a char_stack,
+          read a sexp from stdin.
+
+        #+begin_src python
+        def read_sexp(char_stack):
+            string = read_string(char_stack)
+            if string == '(':
+                sexp_list = read_sexp_list_until_ket(char_stack, ')')
+                return sexp_list
+            elif string == '[':
+                sexp_list = read_sexp_list_until_ket(char_stack, ']')
+                return cons('begin', sexp_list)
+            elif string == '{':
+                sexp_list = read_sexp_list_until_ket(char_stack, '}')
+                return cons('clo', sexp_list)
+            elif string == '"':
+                return read_doublequoted_string(char_stack)
+            elif string == "'":
+                sexp = read_sexp(char_stack)
+                return cons('quote', cons(sexp, null))
+            elif string == "`":
+                sexp = read_sexp(char_stack)
+                return cons('partquote', cons(sexp, null))
+            else:
+                return string
+        #+end_src
+
+******* read_sexp_list_until_ket
+
+        #+begin_src python
+        def read_sexp_list_until_ket(char_stack, ket):
+            string = read_string(char_stack)
+            if string == ket:
+                return null
+            else:
+                char_vect = Vect(string)
+                char_vect.reverse()
+                char_stack.extend(char_vect)
+                sexp = read_sexp(char_stack)
+                recur = read_sexp_list_until_ket(char_stack, ket)
+                return cons(sexp, recur)
+        #+end_src
+
+***** print_data_stack
+
+      #+begin_src python
+      def print_data_stack(ds):
+          p_print("  * {} *  ".format(len(ds)))
+          print(ds)
+      #+end_src
+
+***** print_return_stack
+
+******* print_return_stack
+
+        #+begin_src python
+        def print_return_stack(rs):
+            print("- return-stack * {} *".format(len(rs)))
+            for rp in rs:
+                return_point_print(rp)
+        #+end_src
+
+******* return_point_print
+
+        #+begin_src python
+        def return_point_print(rp):
+            p_print("  - progress : {} / {}".format(rp.cursor, rp.length))
+            newline()
+
+            next_cursor = rp.cursor
+            last_cursor = rp.cursor - 1
+
+            if last_cursor == 0:
+                pass
+            else:
+                p_print("    pass : ")
+                i = 0
+                while i < last_cursor:
+                    jo_print(rp.body[i])
+                    space()
+                    i = i + 1
+                newline()
+
+            p_print("    last : ")
+            jo_print(rp.body[last_cursor])
+            newline()
+
+            if next_cursor == rp.length:
+                pass
+            else:
+                p_print("    next : ")
+                i = next_cursor
+                while i < rp.length:
+                    jo_print(rp.body[i])
+                    space()
+                    i = i + 1
+                newline()
+
+            if len(rp.lr) == 0:
+               pass
+            else:
+               p_print("    where : {}".format(rp.lr))
+               newline()
+        #+end_src
+
+******* jo_print
+
+        #+begin_src python
+        def jo_print(jo):
+            if fun_p(jo):
+                p_print(jo.__module__)
+                p_print(".")
+                p_print(jo.__name__)
+            elif hasattr(jo, "jo_print"):
+                jo.jo_print()
+            else:
+                p_print(jo)
+        #+end_src
 
 ***** module_repl
 
+******* [note]
+
+        - a repl_char_stack is added to the module,
+          for reading sexp one by one.
+
+******* module_repl
+
+        #+begin_src python
+        def module_repl(module):
+            module.repl_char_stack = []
+            print_data_stack(module.vm.ds)
+            try:
+                while True:
+                    module_repl_one_step(module)
+            except KeyboardInterrupt:
+                return
+            except EXIT_MODULE_REPL:
+                return
+        #+end_src
+
+******* EXIT_MODULE_REPL
+
+        #+begin_src python
+        class EXIT_MODULE_REPL(Exception):
+            pass
+        #+end_src
+
+******* module_repl_one_step
+
+        #+begin_src python
+        def module_repl_one_step(module):
+            sexp = read_sexp(module.repl_char_stack)
+            if sexp == 'exit':
+                raise EXIT_MODULE_REPL()
+
+            try:
+                merge_sexp_vect(module, [sexp])
+                print_data_stack(module.vm.ds)
+            except SystemExit:
+                sys.exit()
+            except:
+                error_type = sys.exc_info()[0]
+                error_name = error_type.__name__
+                error_info = sys.exc_info()[1]
+                print("- error : {}".format(error_name))
+                print("  info : {}".format(error_info))
+                print("  traceback : ")
+                traceback.print_exc()
+                call_module_debug(module, 1)
+        #+end_src
+
+*** *error*
+
+***** error
+
       #+begin_src python
-      def module_repl(module):
-          module.repl_char_stack = []
-          print_data_stack(module.vm.ds)
-          try:
-              while True:
-                  module_repl_one_step(module)
-          except KeyboardInterrupt:
-              return
-          except EXIT_MODULE_REPL:
-              return
+      prim('error')(error)
       #+end_src
-
-***** EXIT_MODULE_REPL
-
-      #+begin_src python
-      class EXIT_MODULE_REPL(Exception):
-          pass
-      #+end_src
-
-***** module_repl_one_step
-
-      #+begin_src python
-      def module_repl_one_step(module):
-          sexp = read_sexp(module.repl_char_stack)
-          if sexp == 'exit':
-              raise EXIT_MODULE_REPL()
-
-          try:
-              merge_sexp_vect(module, [sexp])
-              print_data_stack(module.vm.ds)
-          except SystemExit:
-              sys.exit()
-          except:
-              error_type = sys.exc_info()[0]
-              error_name = error_type.__name__
-              error_info = sys.exc_info()[1]
-              print("- error : {}".format(error_name))
-              print("  info : {}".format(error_info))
-              print("  traceback : ")
-              traceback.print_exc()
-              call_module_debug(module, 1)
-      #+end_src
-
-* *error*
-
-*** error
-
-    #+begin_src python
-    prim('error')(error)
-    #+end_src
-
-*** module_debug
 
 ***** module_debug
 
+******* module_debug
+
+        #+begin_src python
+        @prim('module-debug')
+        def module_debug(module, level):
+            print("- enter debug-repl [level : {}]".format(level))
+            module.debug_repl_char_stack = []
+            print_return_stack(module.vm.rs)
+            print_data_stack(module.vm.ds)
+            try:
+                while True:
+                    module_debug_one_step(module, level)
+            except KeyboardInterrupt:
+                module.vm.rs = []
+                newline()
+                print("- leave debug-repl [level : {}]".format(level))
+                print("  return-stack is cleared")
+                print("  for module : {}".format(module.__name__))
+                print_data_stack(module.vm.ds)
+                return
+            except EXIT_MODULE_DEBUG_REPL:
+                module.vm.ds = []
+                module.vm.rs = []
+                print("- exit debug-repl [level : {}]".format(level))
+                print("  return-stack is cleared")
+                print("  data-stack is cleared")
+                print("  for module : {}".format(module.__name__))
+                print_data_stack(module.vm.ds)
+                return
+            except LEAVE_MODULE_DEBUG_REPL:
+                module.vm.rs = []
+                print("- leave debug-repl [level : {}]".format(level))
+                print("  return-stack is cleared")
+                print("  for module : {}".format(module.__name__))
+                print_data_stack(module.vm.ds)
+                return
+        #+end_src
+
+******* EXIT_MODULE_DEBUG_REPL
+
+        #+begin_src python
+        class EXIT_MODULE_DEBUG_REPL(Exception):
+            pass
+        #+end_src
+
+******* LEAVE_MODULE_DEBUG_REPL
+
+        #+begin_src python
+        class LEAVE_MODULE_DEBUG_REPL(Exception):
+            pass
+        #+end_src
+
+******* module_debug_one_step
+
+        #+begin_src python
+        def module_debug_one_step(module, level):
+            p_print("debug[{}]> ".format(level))
+            sys.stdout.flush()
+            sexp = read_sexp(module.debug_repl_char_stack)
+            if sexp == 'exit':
+                raise EXIT_MODULE_DEBUG_REPL()
+            if sexp == 'leave':
+                raise LEAVE_MODULE_DEBUG_REPL()
+
+            try:
+                merge_sexp_vect(module, [sexp])
+                print_data_stack(module.vm.ds)
+            except SystemExit:
+                sys.exit()
+            except:
+                error_type = sys.exc_info()[0]
+                error_name = error_type.__name__
+                error_info = sys.exc_info()[1]
+                print("- error : {}".format(error_name))
+                print("  info : {}".format(error_info))
+                p_print("  traceback : ")
+                traceback.print_exc()
+                call_module_debug(module, level + 1)
+        #+end_src
+
+***** call_module_debug
+
       #+begin_src python
-      @prim('module-debug')
-      def module_debug(module, level):
-          print("- enter debug-repl [level : {}]".format(level))
-          module.debug_repl_char_stack = []
-          print_return_stack(module.vm.rs)
-          print_data_stack(module.vm.ds)
-          try:
-              while True:
-                  module_debug_one_step(module, level)
-          except KeyboardInterrupt:
-              module.vm.rs = []
-              newline()
-              print("- leave debug-repl [level : {}]".format(level))
-              print("  return-stack is cleared")
-              print("  for module : {}".format(module.__name__))
-              print_data_stack(module.vm.ds)
-              return
-          except EXIT_MODULE_DEBUG_REPL:
-              module.vm.ds = []
-              module.vm.rs = []
-              print("- exit debug-repl [level : {}]".format(level))
-              print("  return-stack is cleared")
-              print("  data-stack is cleared")
-              print("  for module : {}".format(module.__name__))
-              print_data_stack(module.vm.ds)
-              return
-          except LEAVE_MODULE_DEBUG_REPL:
-              module.vm.rs = []
-              print("- leave debug-repl [level : {}]".format(level))
-              print("  return-stack is cleared")
-              print("  for module : {}".format(module.__name__))
-              print_data_stack(module.vm.ds)
-              return
+      def call_module_debug(module, level):
+          jojo = JOJO([module, level, module_debug, nop])
+          module.vm.rs.append(RP(jojo))
+          module.vm.exe()
       #+end_src
 
-***** EXIT_MODULE_DEBUG_REPL
+*** *object*
+
+***** Object
 
       #+begin_src python
-      class EXIT_MODULE_DEBUG_REPL(Exception):
-          pass
+      prim('Object')(object)
       #+end_src
 
-***** LEAVE_MODULE_DEBUG_REPL
+*** *class*
+
+***** value_to_class
 
       #+begin_src python
-      class LEAVE_MODULE_DEBUG_REPL(Exception):
-          pass
+      @prim('value->class')
+      def value_to_class(value):
+          return type(value)
       #+end_src
 
-***** module_debug_one_step
+***** subclass_p
+
+      - treat UNION specially
 
       #+begin_src python
-      def module_debug_one_step(module, level):
-          p_print("debug[{}]> ".format(level))
-          sys.stdout.flush()
-          sexp = read_sexp(module.debug_repl_char_stack)
-          if sexp == 'exit':
-              raise EXIT_MODULE_DEBUG_REPL()
-          if sexp == 'leave':
-              raise LEAVE_MODULE_DEBUG_REPL()
-
-          try:
-              merge_sexp_vect(module, [sexp])
-              print_data_stack(module.vm.ds)
-          except SystemExit:
-              sys.exit()
-          except:
-              error_type = sys.exc_info()[0]
-              error_name = error_type.__name__
-              error_info = sys.exc_info()[1]
-              print("- error : {}".format(error_name))
-              print("  info : {}".format(error_info))
-              p_print("  traceback : ")
-              traceback.print_exc()
-              call_module_debug(module, level + 1)
+      @prim('subclass?')
+      def subclass_p(c1, c2):
+          if type(c2) == UNION:
+             return c1 in c2.get_type_vect()
+          else:
+             return issubclass(c1, c2)
       #+end_src
 
-*** call_module_debug
+*** *misc*
 
-    #+begin_src python
-    def call_module_debug(module, level):
-        jojo = JOJO([module, level, module_debug, nop])
-        module.vm.rs.append(RP(jojo))
-        module.vm.exe()
-    #+end_src
+***** nop
 
-* *object*
+      #+begin_src python
+      @prim('nop')
+      def nop():
+          return
+      #+end_src
 
-*** Object
+***** none
 
-    #+begin_src python
-    prim('Object')(object)
-    #+end_src
+      #+begin_src python
+      @prim('none')
+      def none():
+          return VALUES(None)
+      #+end_src
 
-* *class*
+***** fun_to_positional_default_arg_dict
 
-*** value_to_class
+      #+begin_src python
+      def fun_to_positional_default_arg_dict(fun):
+          signature = get_signature(fun)
+          if signature == None:
+              print("- fun_to_positional_default_arg_dict")
+              print("  fail to get signature")
+              print("  fun : {}".format(fun))
+              error()
+          parameters = signature.parameters
+          return get_positional_default_arg_dict(parameters)
+      #+end_src
 
-    #+begin_src python
-    @prim('value->class')
-    def value_to_class(value):
-        return type(value)
-    #+end_src
+***** prepare_default_arguments
 
-*** subclass_p
+      #+begin_src python
+      @prim('prepare-default-arguments')
+      def prepare_default_arguments(field_vect, value_vect, fun):
+          default_arg_dict = fun_to_positional_default_arg_dict(fun)
+          if len(field_vect) == 0:
+              normal_value_vect = value_vect
+              field_value_vect = []
+          elif len(field_vect) <= len(value_vect):
+              normal_value_vect = value_vect[:-len(field_vect)]
+              field_value_vect = value_vect[len(value_vect)-len(field_vect):]
+          else:
+              print("- prepare_default_arguments")
+              print("  length of field_vect")
+              print("    must be shorter then length of value_vect")
+              print("  length of field_vect : {}".format(len(field_vect)))
+              print("  length of value_vect : {}".format(len(value_vect)))
+              print("  fun : {}".format(fun))
+              print("  field_vect : {}".format(field_vect))
+              error()
 
-    - treat UNION specially
+          for k, v in zip(field_vect, field_value_vect):
+              if k in default_arg_dict:
+                  default_arg_dict[k] = v
+              else:
+                  print("- prepare_default_arguments")
+                  print("  a key used in field_vect")
+                  print("    is not in default_arg_dict")
+                  print("  key : {}".format(k))
+                  print("  fun : {}".format(fun))
+                  print("  field_vect : {}".format(field_vect))
+                  print("  default_arg_dict : {}".format(default_arg_dict))
+                  error()
 
-    #+begin_src python
-    @prim('subclass?')
-    def subclass_p(c1, c2):
-        if type(c2) == UNION:
-           return c1 in c2.get_type_vect()
-        else:
-           return issubclass(c1, c2)
-    #+end_src
+          result_vect = normal_value_vect + Vect(default_arg_dict.values())
+          return VALUES(*result_vect)
+      #+end_src
 
-* *misc*
+***** prepare_data_arguments
 
-*** nop
+      #+begin_src python
+      @prim('prepare-data-arguments')
+      def prepare_data_arguments(field_vect, value_vect, data):
+          if not class_p(data):
+              print("- prepare_data_arguments fail")
+              print("  data must be a python class")
+              print("  data : {}".format(data))
+              error()
+          elif not hasattr(data, 'field_name_vect'):
+              print("- prepare_data_arguments fail")
+              print("  data must has 'field_name_vect' attribute")
+              print("  data : {}".format(data))
+              error()
 
-    #+begin_src python
-    @prim('nop')
-    def nop():
-        return
-    #+end_src
+          if len(field_vect) == 0:
+              normal_value_vect = value_vect
+              field_value_vect = []
+          elif len(field_vect) <= len(value_vect):
+              normal_value_vect = value_vect[:-len(field_vect)]
+              field_value_vect = value_vect[len(value_vect)-len(field_vect):]
+          else:
+              print("- prepare_data_arguments fail")
+              print("  length of field_vect")
+              print("    must be shorter then length of value_vect")
+              print("  length of field_vect : {}".format(len(field_vect)))
+              print("  length of value_vect : {}".format(len(value_vect)))
+              print("  data : {}".format(data))
+              print("  field_vect : {}".format(field_vect))
+              error()
 
-*** none
+          field_dict = dict(zip(field_vect, field_value_vect))
+          ordered_vect = []
+          for field_name in data.field_name_vect:
+              if field_name in field_dict.keys():
+                  ordered_vect.append(field_dict[field_name])
 
-    #+begin_src python
-    @prim('none')
-    def none():
-        return VALUES(None)
-    #+end_src
+          result_vect = normal_value_vect + ordered_vect
+          return VALUES(*result_vect)
+      #+end_src
 
-*** fun_to_positional_default_arg_dict
-
-    #+begin_src python
-    def fun_to_positional_default_arg_dict(fun):
-        signature = get_signature(fun)
-        if signature == None:
-            print("- fun_to_positional_default_arg_dict")
-            print("  fail to get signature")
-            print("  fun : {}".format(fun))
-            error()
-        parameters = signature.parameters
-        return get_positional_default_arg_dict(parameters)
-    #+end_src
-
-*** prepare_default_arguments
-
-    #+begin_src python
-    @prim('prepare-default-arguments')
-    def prepare_default_arguments(field_vect, value_vect, fun):
-        default_arg_dict = fun_to_positional_default_arg_dict(fun)
-        if len(field_vect) == 0:
-            normal_value_vect = value_vect
-            field_value_vect = []
-        elif len(field_vect) <= len(value_vect):
-            normal_value_vect = value_vect[:-len(field_vect)]
-            field_value_vect = value_vect[len(value_vect)-len(field_vect):]
-        else:
-            print("- prepare_default_arguments")
-            print("  length of field_vect")
-            print("    must be shorter then length of value_vect")
-            print("  length of field_vect : {}".format(len(field_vect)))
-            print("  length of value_vect : {}".format(len(value_vect)))
-            print("  fun : {}".format(fun))
-            print("  field_vect : {}".format(field_vect))
-            error()
-
-        for k, v in zip(field_vect, field_value_vect):
-            if k in default_arg_dict:
-                default_arg_dict[k] = v
-            else:
-                print("- prepare_default_arguments")
-                print("  a key used in field_vect")
-                print("    is not in default_arg_dict")
-                print("  key : {}".format(k))
-                print("  fun : {}".format(fun))
-                print("  field_vect : {}".format(field_vect))
-                print("  default_arg_dict : {}".format(default_arg_dict))
-                error()
-
-        result_vect = normal_value_vect + Vect(default_arg_dict.values())
-        return VALUES(*result_vect)
-    #+end_src
-
-*** prepare_data_arguments
-
-    #+begin_src python
-    @prim('prepare-data-arguments')
-    def prepare_data_arguments(field_vect, value_vect, data):
-        if not class_p(data):
-            print("- prepare_data_arguments fail")
-            print("  data must be a python class")
-            print("  data : {}".format(data))
-            error()
-        elif not hasattr(data, 'field_name_vect'):
-            print("- prepare_data_arguments fail")
-            print("  data must has 'field_name_vect' attribute")
-            print("  data : {}".format(data))
-            error()
-
-        if len(field_vect) == 0:
-            normal_value_vect = value_vect
-            field_value_vect = []
-        elif len(field_vect) <= len(value_vect):
-            normal_value_vect = value_vect[:-len(field_vect)]
-            field_value_vect = value_vect[len(value_vect)-len(field_vect):]
-        else:
-            print("- prepare_data_arguments fail")
-            print("  length of field_vect")
-            print("    must be shorter then length of value_vect")
-            print("  length of field_vect : {}".format(len(field_vect)))
-            print("  length of value_vect : {}".format(len(value_vect)))
-            print("  data : {}".format(data))
-            print("  field_vect : {}".format(field_vect))
-            error()
-
-        field_dict = dict(zip(field_vect, field_value_vect))
-        ordered_vect = []
-        for field_name in data.field_name_vect:
-            if field_name in field_dict.keys():
-                ordered_vect.append(field_dict[field_name])
-
-        result_vect = normal_value_vect + ordered_vect
-        return VALUES(*result_vect)
-    #+end_src
-
-* ------
 * keyword_dict
 
 *** [note] type
@@ -2905,7 +2822,7 @@
         return jo_vect
     #+end_src
 
-* top_level_keywordm
+* top_level_keyword
 
 *** (import)
 
@@ -3157,6 +3074,11 @@
       #+end_src
 
 ***** create_data_class
+
+      - a data in jojo is simply a python class
+        with the following special fields :
+        - 'field_name_vect'
+        - 'reversed_field_name_vect'
 
       #+begin_src python
       def create_data_class(data_name, field_name_vect):
@@ -3599,7 +3521,6 @@
                'new'])
       #+end_src
 
-* ------
 * epilog -- interface
 
 *** maybe_drop_shebang
@@ -3703,5 +3624,3 @@
       core_path = "/".join([current_module_dir, "core.jo"])
       core_module = load_core(core_path)
       #+end_src
-
-* ------

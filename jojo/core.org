@@ -4,6 +4,16 @@
 
 * [todo-stack]
 
+*** Stack
+
+    - stack-pop
+      stack-push
+      stack-drop
+      stack-dup
+      stack-over
+      stack-tuck
+      stack-swap
+
 * Int
 
   #+begin_src jojo

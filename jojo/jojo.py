@@ -468,7 +468,7 @@ def code_scan(string):
         elif doublequote_p(char):
             doublequote_end_index = string.find('"', i+1)
             if doublequote_end_index == -1:
-                print("- code_scan fail")
+                print("- code_scan (fail")
                 print("  doublequote mismatch")
                 print("  string : {}".format(string))
                 error()
@@ -704,24 +704,6 @@ def string_emit(module, string):
         traceback.print_stack()
         exit()
     return [CALL_FROM_MODULE(module, string)]
-
-def sexp_value(module, sexp):
-    jo_vect = sexp_emit(module, sexp)
-    jojo = JOJO(jo_vect)
-    vm = VM([], [RP(jojo)])
-    vm.exe()
-    if len(vm.ds) != 1:
-        print("- sexp_value fail")
-        print("  sexp must return one value")
-        p_print("  sexp : ")
-        sexp_print(sexp)
-        newline()
-        print("  number of values : {}".format(len(vm.ds)))
-        print("  returned : {}".format(vm.ds))
-        error()
-
-    value = vm.ds[0]
-    return value
 
 string_emitter_vect = []
 
