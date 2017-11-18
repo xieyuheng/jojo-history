@@ -1,21 +1,16 @@
 #!/bin/sh
 
-cd jojo; ./tangle-jojo; cd ..
+cd jojo
+./tangle-jojo
+cd ..
 
 pip install . --upgrade
 
 py.test
 
-./play/k1
-./play/list
-jojo ./play/test-core.jo
-jojo ./play/test-data.jo
-jojo ./play/test-dict.jo
-jojo ./play/test-from-as.jo
-jojo ./play/test-from.jo
-jojo ./play/test-gene.jo
-jojo ./play/test-import.jo
-jojo ./play/test-list.jo
-jojo ./play/test-play.jo
-jojo ./play/test-set.jo
-jojo ./play/test-tuple.jo
+cd play
+for testfile in test-*.jo
+do
+    jojo $testfile
+done
+cd ..

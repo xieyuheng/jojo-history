@@ -1,5 +1,3 @@
-#!/usr/bin/env jojo
-
 (+gene 2print (-> :x :y --) :x print space :y print)
 
 (+disp 2print (-> Int Int --) drop drop "Int Int" print nl)
