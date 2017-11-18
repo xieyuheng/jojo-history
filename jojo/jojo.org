@@ -1,7 +1,7 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+property: tangle jojo.py
 #+title: jojo's programming adventure in python
-* to handle .message!
+
 * [todo-stack]
 
 *** to be useful
@@ -638,6 +638,24 @@
               p_print(message)
       #+end_src
 
+***** SET_FIELD
+
+       #+begin_src python
+       class SET_FIELD:
+           def __init__(self, field_name):
+               self.field_name = field_name
+
+           def jo_exe(self, rp, vm):
+               o = vm.ds.pop()
+               v = vm.ds.pop()
+               setattr(o, self.field_name, v)
+
+           def jo_print(self):
+               p_print(".")
+               p_print(field_name)
+               p_print("!")
+       #+end_src
+
 ***** GENE
 
       #+begin_src python
@@ -1257,6 +1275,8 @@
                 return False
             elif string.count('.') != 1:
                 return False
+            elif string[-1] == '!':
+                return False
             else:
                 return True
         #+end_src
@@ -1268,6 +1288,35 @@
         def message_string_emitter(module, string):
             string = string[1:]
             return [MSG(string)]
+        #+end_src
+
+******* set_message_string_p
+
+        - .message!
+
+        #+begin_src python
+        def set_message_string_p(string):
+            if not string_p(string):
+                return False
+            if len(string) < 2:
+                return False
+            elif string[0] != '.':
+                return False
+            elif string.count('.') != 1:
+                return False
+            elif string[-1] != '!':
+                return False
+            else:
+                return True
+        #+end_src
+
+******* set_message_string_emitter
+
+        #+begin_src python
+        @string_emitter(set_message_string_p)
+        def set_message_string_emitter(module, string):
+            string = string[1:-1]
+            return [SET_FIELD(string)]
         #+end_src
 
 * prim_dict

@@ -414,6 +414,20 @@ class MSG:
         p_print(".")
         p_print(message)
 
+class SET_FIELD:
+    def __init__(self, field_name):
+        self.field_name = field_name
+
+    def jo_exe(self, rp, vm):
+        o = vm.ds.pop()
+        v = vm.ds.pop()
+        setattr(o, self.field_name, v)
+
+    def jo_print(self):
+        p_print(".")
+        p_print(field_name)
+        p_print("!")
+
 class GENE:
     def __init__(self, arity, default_jojo):
         self.arity = arity
@@ -810,6 +824,8 @@ def message_string_p(string):
         return False
     elif string.count('.') != 1:
         return False
+    elif string[-1] == '!':
+        return False
     else:
         return True
 
@@ -817,6 +833,25 @@ def message_string_p(string):
 def message_string_emitter(module, string):
     string = string[1:]
     return [MSG(string)]
+
+def set_message_string_p(string):
+    if not string_p(string):
+        return False
+    if len(string) < 2:
+        return False
+    elif string[0] != '.':
+        return False
+    elif string.count('.') != 1:
+        return False
+    elif string[-1] != '!':
+        return False
+    else:
+        return True
+
+@string_emitter(set_message_string_p)
+def set_message_string_emitter(module, string):
+    string = string[1:-1]
+    return [SET_FIELD(string)]
 
 prim_dict = {}
 
