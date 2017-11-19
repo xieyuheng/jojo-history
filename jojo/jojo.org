@@ -4,20 +4,18 @@
 
 * [todo-stack]
 
-*** to be useful
+*** (+actor)
 
-***** (+actor)
+*** to use python decorator in jojo
 
-***** to use python decorator in jojo
+    - for flask and celery
 
-      - for flask and celery
+*** (+generator) -- python like generator and yield
 
-***** (+generator) -- python like generator and yield
+    - for scrapy
 
-      - for scrapy
-
-      - (+generator k1 1 give k1)
-        k1 next
+    - (+generator k1 1 give k1)
+      k1 next
 
 *** parse_sexp_vect -- error handling
 
