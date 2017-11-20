@@ -1,0 +1,132 @@
+#+html_head: <link rel="stylesheet" href="css/org-page.css"/>
+#+title: jojo-in-python reference
+
+* [todo-stack]
+
+  - doc the core
+
+* getting start
+
+  #+begin_src sh
+  pip install jojo
+  #+end_src
+
+* data stack
+
+  #+begin_src jojo
+
+  #+end_src
+
+* postfix notation calculator
+
+  #+begin_src jojo
+
+  #+end_src
+
+* stack operation
+
+  #+begin_src jojo
+  drop
+  dup
+  over
+  tuck
+  swap
+  #+end_src
+
+* list processing
+
+* comments
+
+  #+begin_src jojo
+
+  #+end_src
+
+* (+jojo) -- define function
+
+  #+begin_src jojo
+  (+jojo)
+  #+end_src
+
+* local variable
+
+* (begin) -- sequential
+
+  #+begin_src jojo
+
+  #+end_src
+
+* (clo) -- closure
+
+  #+begin_src jojo
+
+  #+end_src
+
+* condition
+
+*** ifte
+
+*** (if)
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** (when)
+
+*** (cond)
+
+*** (case)
+
+* tail call recursion as loop
+
+* built-in datatypes
+
+*** (list)
+
+*** ><
+
+* (+data) -- define new datatype
+
+  #+begin_src jojo
+  (+data)
+  #+end_src
+
+* multiple dispatching
+
+*** (+gene) -- define generic function prototype
+
+*** (+disp) -- dispatching function
+
+* built-in generics
+
+*** p -- print
+
+*** equal?
+
+* print formated string
+
+* macro system
+
+*** (quote)
+
+*** ><
+
+* import python module
+
+  #+begin_src jojo
+
+  #+end_src
+
+* create jojo module
+
+  - I use module system of python.
+
+  #+begin_src jojo
+
+  #+end_src
+
+* testing
+
+* command line interface
+
+* writing script

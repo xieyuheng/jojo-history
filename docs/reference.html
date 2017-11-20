@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2017-11-20 Mon 18:53 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>jojo-in-python reference</title>
+<meta name="generator" content="Org-mode" />
+<meta name="author" content="xieyuheng" />
+<link rel="stylesheet" href="css/org-page.css"/>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">jojo-in-python reference</h1>
+<div id="table-of-contents">
+<h2>overview</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org777b025"><span class="done _todo_stack_">[todo-stack]</span> </a></li>
+<li><a href="#orgc3ecf97">getting start</a></li>
+<li><a href="#org3a6fc11">data stack</a></li>
+<li><a href="#orga11787c">postfix notation calculator</a></li>
+<li><a href="#org93136c3">stack operation</a></li>
+<li><a href="#org22bce87">list processing</a></li>
+<li><a href="#orgf713912">comments</a></li>
+<li><a href="#org2f9087f">(+jojo) &#x2013; define function</a></li>
+<li><a href="#org53c48bc">local variable</a></li>
+<li><a href="#org6f39943">(begin) &#x2013; sequential</a></li>
+<li><a href="#orga8639a2">(clo) &#x2013; closure</a></li>
+<li><a href="#orgfa30dd5">condition</a>
+<ul>
+<li><a href="#orgff2c7b7">ifte</a></li>
+<li><a href="#orgb69e8a7">(if)</a></li>
+<li><a href="#org7b30f2b">(when)</a></li>
+<li><a href="#orge627930">(cond)</a></li>
+<li><a href="#org7a6f32d">(case)</a></li>
+</ul>
+</li>
+<li><a href="#org977245e">tail call recursion as loop</a></li>
+<li><a href="#org77b896f">built-in datatypes</a>
+<ul>
+<li><a href="#org807f5fe">(list)</a></li>
+<li><a href="#org8aa97de"><span class="todo _gt__lt_">&gt;&lt;</span> </a></li>
+</ul>
+</li>
+<li><a href="#org14f7b49">(+data) &#x2013; define new datatype</a></li>
+<li><a href="#org8f396ad">multiple dispatching</a>
+<ul>
+<li><a href="#org672438e">(+gene) &#x2013; define generic function prototype</a></li>
+<li><a href="#org6ac2f51">(+disp) &#x2013; dispatching function</a></li>
+</ul>
+</li>
+<li><a href="#org7b68496">built-in generics</a>
+<ul>
+<li><a href="#orga170ce2">p &#x2013; print</a></li>
+<li><a href="#orgb83b56b">equal?</a></li>
+</ul>
+</li>
+<li><a href="#org9681f6b">print formated string</a></li>
+<li><a href="#org8d07b2e">macro system</a>
+<ul>
+<li><a href="#org22b1a7">(quote)</a></li>
+<li><a href="#org6a1d858"><span class="todo _gt__lt_">&gt;&lt;</span> </a></li>
+</ul>
+</li>
+<li><a href="#orgb453e56">module system</a></li>
+<li><a href="#orgb1f3b50">testing</a></li>
+<li><a href="#org5574ae0">writing script</a></li>
+</ul>
+</div>
+</div>
+<ul class="org-ul">
+<li><p>docs really</p></li></ul>
+<div id="outline-container-org777b025" class="outline-2">
+<h2 id="org777b025"><span class="done _todo_stack_">[todo-stack]</span> </h2>
+<div class="outline-text-2" id="text-org777b025">
+<ul class="org-ul">
+<li><p>doc the core</p></li></ul>
+</div>
+</div>
+
+<div id="outline-container-orgc3ecf97" class="outline-2">
+<h2 id="orgc3ecf97">getting start</h2>
+<div class="outline-text-2" id="text-orgc3ecf97">
+<div class="org-src-container">
+
+<pre class="src src-sh">pip install jojo
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3a6fc11" class="outline-2">
+<h2 id="org3a6fc11">data stack</h2>
+<div class="outline-text-2" id="text-org3a6fc11">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga11787c" class="outline-2">
+<h2 id="orga11787c">postfix notation calculator</h2>
+<div class="outline-text-2" id="text-orga11787c">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org93136c3" class="outline-2">
+<h2 id="org93136c3">stack operation</h2>
+<div class="outline-text-2" id="text-org93136c3">
+<div class="org-src-container">
+
+<pre class="src src-jojo">drop
+dup
+over
+tuck
+swap
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org22bce87" class="outline-2">
+<h2 id="org22bce87">list processing</h2>
+</div>
+
+<div id="outline-container-orgf713912" class="outline-2">
+<h2 id="orgf713912">comments</h2>
+<div class="outline-text-2" id="text-orgf713912">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2f9087f" class="outline-2">
+<h2 id="org2f9087f">(+jojo) &#x2013; define function</h2>
+<div class="outline-text-2" id="text-org2f9087f">
+<div class="org-src-container">
+
+<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span><span style="color: #696969;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org53c48bc" class="outline-2">
+<h2 id="org53c48bc">local variable</h2>
+</div>
+
+<div id="outline-container-org6f39943" class="outline-2">
+<h2 id="org6f39943">(begin) &#x2013; sequential</h2>
+<div class="outline-text-2" id="text-org6f39943">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga8639a2" class="outline-2">
+<h2 id="orga8639a2">(clo) &#x2013; closure</h2>
+<div class="outline-text-2" id="text-orga8639a2">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgfa30dd5" class="outline-2">
+<h2 id="orgfa30dd5">condition</h2>
+<div class="outline-text-2" id="text-orgfa30dd5">
+</div><div id="outline-container-orgff2c7b7" class="outline-3">
+<h3 id="orgff2c7b7">ifte</h3>
+</div>
+
+<div id="outline-container-orgb69e8a7" class="outline-3">
+<h3 id="orgb69e8a7">(if)</h3>
+<div class="outline-text-3" id="text-orgb69e8a7">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7b30f2b" class="outline-3">
+<h3 id="org7b30f2b">(when)</h3>
+</div>
+
+<div id="outline-container-orge627930" class="outline-3">
+<h3 id="orge627930">(cond)</h3>
+</div>
+
+<div id="outline-container-org7a6f32d" class="outline-3">
+<h3 id="org7a6f32d">(case)</h3>
+</div>
+</div>
+
+<div id="outline-container-org977245e" class="outline-2">
+<h2 id="org977245e">tail call recursion as loop</h2>
+</div>
+
+<div id="outline-container-org77b896f" class="outline-2">
+<h2 id="org77b896f">built-in datatypes</h2>
+<div class="outline-text-2" id="text-org77b896f">
+</div><div id="outline-container-org807f5fe" class="outline-3">
+<h3 id="org807f5fe">(list)</h3>
+</div>
+
+<div id="outline-container-org8aa97de" class="outline-3">
+<h3 id="org8aa97de"><span class="todo _gt__lt_">&gt;&lt;</span> </h3>
+</div>
+</div>
+
+<div id="outline-container-org14f7b49" class="outline-2">
+<h2 id="org14f7b49">(+data) &#x2013; define new datatype</h2>
+<div class="outline-text-2" id="text-org14f7b49">
+<div class="org-src-container">
+
+<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+data</span><span style="color: #696969;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8f396ad" class="outline-2">
+<h2 id="org8f396ad">multiple dispatching</h2>
+<div class="outline-text-2" id="text-org8f396ad">
+</div><div id="outline-container-org672438e" class="outline-3">
+<h3 id="org672438e">(+gene) &#x2013; define generic function prototype</h3>
+</div>
+
+<div id="outline-container-org6ac2f51" class="outline-3">
+<h3 id="org6ac2f51">(+disp) &#x2013; dispatching function</h3>
+</div>
+</div>
+
+<div id="outline-container-org7b68496" class="outline-2">
+<h2 id="org7b68496">built-in generics</h2>
+<div class="outline-text-2" id="text-org7b68496">
+</div><div id="outline-container-orga170ce2" class="outline-3">
+<h3 id="orga170ce2">p &#x2013; print</h3>
+</div>
+
+<div id="outline-container-orgb83b56b" class="outline-3">
+<h3 id="orgb83b56b">equal?</h3>
+</div>
+</div>
+
+<div id="outline-container-org9681f6b" class="outline-2">
+<h2 id="org9681f6b">print formated string</h2>
+</div>
+
+<div id="outline-container-org8d07b2e" class="outline-2">
+<h2 id="org8d07b2e">macro system</h2>
+<div class="outline-text-2" id="text-org8d07b2e">
+</div><div id="outline-container-org22b1a7" class="outline-3">
+<h3 id="org22b1a7">(quote)</h3>
+</div>
+
+<div id="outline-container-org6a1d858" class="outline-3">
+<h3 id="org6a1d858"><span class="todo _gt__lt_">&gt;&lt;</span> </h3>
+</div>
+</div>
+
+<div id="outline-container-orgb453e56" class="outline-2">
+<h2 id="orgb453e56">module system</h2>
+</div>
+
+<div id="outline-container-orgb1f3b50" class="outline-2">
+<h2 id="orgb1f3b50">testing</h2>
+</div>
+
+<div id="outline-container-org5574ae0" class="outline-2">
+<h2 id="org5574ae0">writing script</h2>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: xieyuheng</p>
+<p class="date">Created: 2017-11-20 Mon 18:53</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
