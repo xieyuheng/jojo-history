@@ -1080,7 +1080,8 @@ def sexp_to_vect(sexp):
         result_vect.append(sexp_to_vect(s))
     return result_vect
 
-Stack = Vect
+class Stack(Vect):
+    pass
 
 prim('Stack')(Stack)
 
@@ -1620,41 +1621,6 @@ def fun_to_positional_default_arg_dict(fun):
     parameters = signature.parameters
     return get_positional_default_arg_dict(parameters)
 
-@prim('prepare-default-arguments')
-def prepare_default_arguments(field_vect, value_vect, fun):
-    default_arg_dict = fun_to_positional_default_arg_dict(fun)
-    if len(field_vect) == 0:
-        normal_value_vect = value_vect
-        field_value_vect = []
-    elif len(field_vect) <= len(value_vect):
-        normal_value_vect = value_vect[:-len(field_vect)]
-        field_value_vect = value_vect[len(value_vect)-len(field_vect):]
-    else:
-        print("- prepare_default_arguments")
-        print("  length of field_vect")
-        print("    must be shorter then length of value_vect")
-        print("  length of field_vect : {}".format(len(field_vect)))
-        print("  length of value_vect : {}".format(len(value_vect)))
-        print("  fun : {}".format(fun))
-        print("  field_vect : {}".format(field_vect))
-        error()
-
-    for k, v in zip(field_vect, field_value_vect):
-        if k in default_arg_dict:
-            default_arg_dict[k] = v
-        else:
-            print("- prepare_default_arguments")
-            print("  a key used in field_vect")
-            print("    is not in default_arg_dict")
-            print("  key : {}".format(k))
-            print("  fun : {}".format(fun))
-            print("  field_vect : {}".format(field_vect))
-            print("  default_arg_dict : {}".format(default_arg_dict))
-            error()
-
-    result_vect = normal_value_vect + Vect(default_arg_dict.values())
-    return VALUES(*result_vect)
-
 @prim('prepare-data-arguments')
 def prepare_data_arguments(field_vect, value_vect, data):
     if not class_p(data):
@@ -1692,6 +1658,11 @@ def prepare_data_arguments(field_vect, value_vect, data):
 
     result_vect = normal_value_vect + ordered_vect
     return VALUES(*result_vect)
+
+@prim('keyword-apply')
+def keyword_apply(field_vect, value_vect, fun):
+    kwargs = dict(zip(field_vect, value_vect))
+    return fun(**kwargs)
 
 keyword_dict = {}
 
@@ -2268,45 +2239,10 @@ def k_call(body):
          ['quote', fields], 'list->vect',
          'mark', new_body, 'collect-vect',
          ['primitive', name],
-         'prepare-default-arguments',
-         name])
+         'keyword-apply'])
 
 @macro('create')
 def k_create(body):
-    name = car(body)
-    if not string_p(name):
-        # the second place in (create)
-        #   can returns a data
-        return k_create_from_data(body)
-    elif dot_data_name_string_p(name):
-        return k_create_from_data(body)
-    else:
-        return k_create_from_class(body)
-
-def dot_data_name_string_p(string):
-    string_vect = string.split('.')
-    return data_name_string_p(string_vect[-1])
-
-def k_create_from_class(body):
-    rest_vect = list_to_vect(cdr(body))
-    name = car(body)
-    fields = []
-    new_body = ['begin']
-    for sexp in rest_vect:
-        if message_string_p(sexp):
-            fields.append(sexp[1:])
-        else:
-            new_body.append(sexp)
-    return vect_to_sexp(
-        ['begin',
-         ['quote', fields], 'list->vect',
-         'mark', new_body, 'collect-vect',
-         ['primitive', name],
-         'prepare-default-arguments',
-         name,
-         'new'])
-
-def k_create_from_data(body):
     rest_vect = list_to_vect(cdr(body))
     name = car(body)
     fields = []

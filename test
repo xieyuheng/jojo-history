@@ -2,9 +2,8 @@
 
 py.test
 
-cd play
+cd tests/jojo
 for testfile in test-*.jo
 do
     jojo $testfile
 done
-cd ..

@@ -4,10 +4,6 @@
 
 * [todo-stack]
 
-*** to make Stack different from Vect
-
-*** fix problem calling python funtion with kwargs
-
 *** (+actor)
 
 *** to use python decorator in jojo
@@ -2567,45 +2563,6 @@
           return get_positional_default_arg_dict(parameters)
       #+end_src
 
-***** prepare_default_arguments
-
-      #+begin_src python
-      @prim('prepare-default-arguments')
-      def prepare_default_arguments(field_vect, value_vect, fun):
-          default_arg_dict = fun_to_positional_default_arg_dict(fun)
-          if len(field_vect) == 0:
-              normal_value_vect = value_vect
-              field_value_vect = []
-          elif len(field_vect) <= len(value_vect):
-              normal_value_vect = value_vect[:-len(field_vect)]
-              field_value_vect = value_vect[len(value_vect)-len(field_vect):]
-          else:
-              print("- prepare_default_arguments")
-              print("  length of field_vect")
-              print("    must be shorter then length of value_vect")
-              print("  length of field_vect : {}".format(len(field_vect)))
-              print("  length of value_vect : {}".format(len(value_vect)))
-              print("  fun : {}".format(fun))
-              print("  field_vect : {}".format(field_vect))
-              error()
-
-          for k, v in zip(field_vect, field_value_vect):
-              if k in default_arg_dict:
-                  default_arg_dict[k] = v
-              else:
-                  print("- prepare_default_arguments")
-                  print("  a key used in field_vect")
-                  print("    is not in default_arg_dict")
-                  print("  key : {}".format(k))
-                  print("  fun : {}".format(fun))
-                  print("  field_vect : {}".format(field_vect))
-                  print("  default_arg_dict : {}".format(default_arg_dict))
-                  error()
-
-          result_vect = normal_value_vect + Vect(default_arg_dict.values())
-          return VALUES(*result_vect)
-      #+end_src
-
 ***** prepare_data_arguments
 
       #+begin_src python
@@ -2646,6 +2603,15 @@
 
           result_vect = normal_value_vect + ordered_vect
           return VALUES(*result_vect)
+      #+end_src
+
+***** keyword_apply
+
+      #+begin_src python
+      @prim('keyword-apply')
+      def keyword_apply(field_vect, value_vect, fun):
+          kwargs = dict(zip(field_vect, value_vect))
+          return fun(**kwargs)
       #+end_src
 
 * keyword_dict
@@ -3462,81 +3428,32 @@
              ['quote', fields], 'list->vect',
              'mark', new_body, 'collect-vect',
              ['primitive', name],
-             'prepare-default-arguments',
-             name])
+             'keyword-apply'])
     #+end_src
 
 *** (create)
 
-***** k_create
-
-      #+begin_src python
-      @macro('create')
-      def k_create(body):
-          name = car(body)
-          if not string_p(name):
-              # the second place in (create)
-              #   can returns a data
-              return k_create_from_data(body)
-          elif dot_data_name_string_p(name):
-              return k_create_from_data(body)
-          else:
-              return k_create_from_class(body)
-      #+end_src
-
-***** dot_data_name_string_p
-
-      #+begin_src python
-      def dot_data_name_string_p(string):
-          string_vect = string.split('.')
-          return data_name_string_p(string_vect[-1])
-      #+end_src
-
-***** k_create_from_class
-
-      #+begin_src python
-      def k_create_from_class(body):
-          rest_vect = list_to_vect(cdr(body))
-          name = car(body)
-          fields = []
-          new_body = ['begin']
-          for sexp in rest_vect:
-              if message_string_p(sexp):
-                  fields.append(sexp[1:])
-              else:
-                  new_body.append(sexp)
-          return vect_to_sexp(
-              ['begin',
-               ['quote', fields], 'list->vect',
-               'mark', new_body, 'collect-vect',
-               ['primitive', name],
-               'prepare-default-arguments',
-               name,
-               'new'])
-      #+end_src
-
-***** k_create_from_data
-
-      #+begin_src python
-      def k_create_from_data(body):
-          rest_vect = list_to_vect(cdr(body))
-          name = car(body)
-          fields = []
-          new_body = ['begin']
-          for sexp in rest_vect:
-              if message_string_p(sexp):
-                  fields.append(sexp[1:])
-              else:
-                  new_body.append(sexp)
-          return vect_to_sexp(
-              ['begin',
-               ['quote', fields], 'list->vect',
-               'mark', new_body, 'collect-vect',
-               name,
-               'prepare-data-arguments',
-               name,
-               'new'])
-      #+end_src
+    #+begin_src python
+    @macro('create')
+    def k_create(body):
+        rest_vect = list_to_vect(cdr(body))
+        name = car(body)
+        fields = []
+        new_body = ['begin']
+        for sexp in rest_vect:
+            if message_string_p(sexp):
+                fields.append(sexp[1:])
+            else:
+                new_body.append(sexp)
+        return vect_to_sexp(
+            ['begin',
+             ['quote', fields], 'list->vect',
+             'mark', new_body, 'collect-vect',
+             name,
+             'prepare-data-arguments',
+             name,
+             'new'])
+    #+end_src
 
 * epilog -- interface
 
