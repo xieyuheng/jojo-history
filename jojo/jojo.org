@@ -4,11 +4,7 @@
 
 * [todo-stack]
 
-*** equal? for Vect
-
 *** to make Stack different from Vect
-
-*** equal? for Stack
 
 *** fix problem calling python funtion with kwargs
 

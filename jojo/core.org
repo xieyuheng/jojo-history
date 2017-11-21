@@ -1,7 +1,8 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+property: tangle core.jo
 #+title: core
-
+- equal? for Vect
+- equal? for Stack
 * [todo-stack]
 
 * Int
