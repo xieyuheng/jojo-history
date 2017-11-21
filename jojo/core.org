@@ -1,8 +1,7 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+property: tangle core.jo
 #+title: core
-- equal? for Vect
-- equal? for Stack
+
 * [todo-stack]
 
 * Int
@@ -81,7 +80,7 @@
           error]))
     #+end_src
 
-* p -- gene
+* p -- print
 
 *** gene
 
@@ -194,13 +193,17 @@
             else [:vl.cdr :tl.cdr case-match?/loop]))
     #+end_src
 
-* equal? -- gene
+* equal?
 
 *** gene
 
     #+begin_src jojo
-    (+gene equal? (-> :x :y -- Bool) :x :y eq?)
+    (+gene equal? (-> :x :y -- Bool) :x :y eqv?)
+    #+end_src
 
+*** List
+
+    #+begin_src jojo
     (+disp equal? (-> :x List :y List -- Bool)
       (case [:x :y]
         [<null> <null>] true
@@ -301,17 +304,6 @@
         <cons> [:list .car swap cons
                 :list .cdr
                 list-reverse-swap-append]))
-    #+end_src
-
-*** list-eqv?
-
-    #+begin_src jojo
-    (+jojo list-eqv? (-> :l1 :l2 :eqv -- Bool)
-      (cond [:l1 null? :l2 null? and] true
-            [:l1 null?] false
-            [:l2 null?] false
-            [:l1 .car :l2 .car :eqv not] false
-            else [:l1 .cdr :l2 .cdr {:eqv} list-eqv?]))
     #+end_src
 
 *** list-foldr

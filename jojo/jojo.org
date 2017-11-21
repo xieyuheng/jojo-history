@@ -1477,14 +1477,24 @@
 
 *** *equivalence*
 
-    #+begin_src python
-    @prim('eq?')
-    def eq_p(a, b):
-        if string_p(a):
-            return a == b
-        else:
-            return a is b
-    #+end_src
+***** eq_p
+
+      #+begin_src python
+      @prim('eq?')
+      def eq_p(a, b):
+          if string_p(a):
+              return a == b
+          else:
+              return a is b
+      #+end_src
+
+***** eqv_p
+
+      #+begin_src python
+      @prim('eqv?')
+      def eqv_p(a, b):
+          return a == b
+      #+end_src
 
 *** *sexp*
 

@@ -965,6 +965,10 @@ def eq_p(a, b):
     else:
         return a is b
 
+@prim('eqv?')
+def eqv_p(a, b):
+    return a == b
+
 prim('null')(null)
 prim('null?')(null_p)
 
@@ -1080,8 +1084,7 @@ def sexp_to_vect(sexp):
         result_vect.append(sexp_to_vect(s))
     return result_vect
 
-class Stack(Vect):
-    pass
+Stack = Vect
 
 prim('Stack')(Stack)
 
