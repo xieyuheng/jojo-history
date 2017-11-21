@@ -4,6 +4,14 @@
 
 * [todo-stack]
 
+*** equal? for Vect
+
+*** to make Stack different from Vect
+
+*** equal? for Stack
+
+*** fix problem calling python funtion with kwargs
+
 *** (+actor)
 
 *** to use python decorator in jojo
@@ -1599,6 +1607,12 @@
         - tuple
         - set
 
+***** Vect
+
+      #+begin_src python
+      prim('Vect')(Vect)
+      #+end_src
+
 ***** vect_p
 
       #+begin_src python
@@ -1693,6 +1707,114 @@
           for s in sexp_vect:
               result_vect.append(sexp_to_vect(s))
           return result_vect
+      #+end_src
+
+*** *stack*
+
+***** stack
+
+      #+begin_src python
+      Stack = Vect
+
+      prim('Stack')(Stack)
+      #+end_src
+
+***** stack_p
+
+      #+begin_src python
+      @prim('stack?')
+      def stack_p(x):
+          return type(x) == Stack
+      #+end_src
+
+***** stack_pop
+
+      #+begin_src python
+      @prim('stack-pop')
+      def stack_pop(stack):
+          return stack.pop()
+      #+end_src
+
+***** stack_push
+
+      #+begin_src python
+      @prim('stack-push')
+      def stack_push(value, stack):
+          stack.append(value)
+          return stack
+      #+end_src
+
+***** stack_drop
+
+      #+begin_src python
+      @prim('stack-drop')
+      def stack_drop(stack):
+          stack.pop()
+          return stack
+      #+end_src
+
+***** stack_dup
+
+      #+begin_src python
+      @prim('stack-dup')
+      def stack_dup(stack):
+          a = stack.pop()
+          stack.append(a)
+          return stack
+      #+end_src
+
+***** stack_over
+
+      #+begin_src python
+      @prim('stack-over')
+      def stack_over(stack):
+          a = stack.pop()
+          b = stack.pop()
+          stack.append(b)
+          stack.append(a)
+          stack.append(b)
+          return stack
+      #+end_src
+
+***** stack_tuck
+
+      #+begin_src python
+      @prim('stack-tuck')
+      def stack_tuck(stack):
+          a = stack.pop()
+          b = stack.pop()
+          stack.append(a)
+          stack.append(b)
+          stack.append(a)
+          return stack
+      #+end_src
+
+***** stack_swap
+
+      #+begin_src python
+      @prim('stack-swap')
+      def stack_swap(stack):
+          a = stack.pop()
+          b = stack.pop()
+          stack.append(a)
+          stack.append(b)
+          return stack
+      #+end_src
+
+***** stack_length
+
+      #+begin_src python
+      @prim('stack-length')
+      def stack_length(stack):
+          return len(stack)
+      #+end_src
+
+***** stack_empty_p
+
+      #+begin_src python
+      @prim('stack-empty?')
+      def stack_empty_p(stack):
+          return len(stack) == 0
       #+end_src
 
 *** *list*
@@ -1792,7 +1914,9 @@
 ***** Dict
 
       #+begin_src python
-      prim('Dict')(dict)
+      Dict = dict
+
+      prim('Dict')(Dict)
       #+end_src
 
 ***** dict_p
@@ -1800,7 +1924,7 @@
       #+begin_src python
       @prim('dict?')
       def dict_p(x):
-          return type(x) == dict
+          return type(x) == Dict
       #+end_src
 
 ***** dict_copy
@@ -2652,6 +2776,14 @@
         jo_vect.extend(sexp_list_emit(module, sexp_list))
         jo_vect.extend([COLLECT_VECT])
         return jo_vect
+    #+end_src
+
+*** (stack)
+
+    #+begin_src python
+    @keyword('stack')
+    def k_stack(module, sexp_list):
+        return k_vect(module, sexp_list)
     #+end_src
 
 *** (dict)

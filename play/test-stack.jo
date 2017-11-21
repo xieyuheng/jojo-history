@@ -1,0 +1,10 @@
+(assert (stack) stack-length 0 eq?)
+
+(assert (stack 1 2 3) stack?)
+
+(assert
+  (stack 1 2 3)
+  stack-drop
+  stack-swap
+  (stack 2 1)
+  equal?)

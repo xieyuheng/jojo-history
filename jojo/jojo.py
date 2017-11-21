@@ -1018,6 +1018,8 @@ def string_to_int(string):
 prim('int-string?')(int_string_p)
 prim('local-string?')(local_string_p)
 
+prim('Vect')(Vect)
+
 prim('vect?')(vect_p)
 
 @prim('vect-copy')
@@ -1078,6 +1080,68 @@ def sexp_to_vect(sexp):
         result_vect.append(sexp_to_vect(s))
     return result_vect
 
+Stack = Vect
+
+prim('Stack')(Stack)
+
+@prim('stack?')
+def stack_p(x):
+    return type(x) == Stack
+
+@prim('stack-pop')
+def stack_pop(stack):
+    return stack.pop()
+
+@prim('stack-push')
+def stack_push(value, stack):
+    stack.append(value)
+    return stack
+
+@prim('stack-drop')
+def stack_drop(stack):
+    stack.pop()
+    return stack
+
+@prim('stack-dup')
+def stack_dup(stack):
+    a = stack.pop()
+    stack.append(a)
+    return stack
+
+@prim('stack-over')
+def stack_over(stack):
+    a = stack.pop()
+    b = stack.pop()
+    stack.append(b)
+    stack.append(a)
+    stack.append(b)
+    return stack
+
+@prim('stack-tuck')
+def stack_tuck(stack):
+    a = stack.pop()
+    b = stack.pop()
+    stack.append(a)
+    stack.append(b)
+    stack.append(a)
+    return stack
+
+@prim('stack-swap')
+def stack_swap(stack):
+    a = stack.pop()
+    b = stack.pop()
+    stack.append(a)
+    stack.append(b)
+    return stack
+
+@prim('stack-length')
+def stack_length(stack):
+    return len(stack)
+
+@prim('stack-empty?')
+def stack_empty_p(stack):
+    return len(stack) == 0
+
 prim('<null>')(Null)
 prim('<cons>')(Cons)
 
@@ -1132,11 +1196,13 @@ def list_zip_dict(l1, l2):
     v2 = list_to_vect(l2)
     return vect_zip_dict(v1, v2)
 
-prim('Dict')(dict)
+Dict = dict
+
+prim('Dict')(Dict)
 
 @prim('dict?')
 def dict_p(x):
-    return type(x) == dict
+    return type(x) == Dict
 
 @prim('dict-copy')
 def dict_copy(d):
@@ -1706,6 +1772,10 @@ def k_vect(module, sexp_list):
     jo_vect.extend(sexp_list_emit(module, sexp_list))
     jo_vect.extend([COLLECT_VECT])
     return jo_vect
+
+@keyword('stack')
+def k_stack(module, sexp_list):
+    return k_vect(module, sexp_list)
 
 @keyword('dict')
 def k_dict(module, sexp_list):
