@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cd jojo
-./tangle
+emacs --script tangle.el
 cd ..
 
-pip install . --upgrade
+pip install . --user --upgrade
