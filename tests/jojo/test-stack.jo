@@ -8,3 +8,16 @@
   stack-swap
   (stack 2 1)
   equal?)
+
+(assert
+  (stack 1 2 3)
+  4 swap stack-push
+  5 swap stack-push
+  (stack 1 2 3 4 5)
+  equal?)
+
+(begin
+  (stack 1 2 3) stack-swap dup stack-pop
+  (-> :stack :value)
+  (assert :stack (stack 1 3) equal?)
+  (assert :value 2 equal?))
