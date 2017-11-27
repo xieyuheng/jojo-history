@@ -821,6 +821,7 @@ def parse_sexp_cons_until_ket(string_vect, i, ket):
 
 def p_print(x):
     print(x, end="")
+    sys.stdout.flush()
 
 def sexp_print(s):
     if null_p(s):
@@ -1563,6 +1564,7 @@ prim('print')(p_print)
 @prim('newline')
 def newline():
     print("")
+    sys.stdout.flush()
 
 prim('nl')(newline)
 
@@ -2575,13 +2577,17 @@ core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
 
 # def p1():
-#     print("- p1p1p1")
+#     print("- p1")
+#     sys.stdout.flush()
+#     return sys.modules[__name__]
 
 # schedule_start(4)
 # ch0 = global_channel_vect[0]
 # mmsg0 = MetaMessage("just-actor", {
 #     'clo' : CLO([
-#         123, 123, add, p_print, p1
+#         123, 123, add,
+#         CALL_FROM_MODULE(sys.modules[__name__], 'print'),
+#         newline,
 #     ])
 # })
 # ch0.meta_in_queue.put(mmsg0)

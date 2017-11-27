@@ -628,21 +628,21 @@
 
 ***** SET_FIELD
 
-       #+begin_src python
-       class SET_FIELD:
-           def __init__(self, field_name):
-               self.field_name = field_name
+      #+begin_src python
+      class SET_FIELD:
+          def __init__(self, field_name):
+              self.field_name = field_name
 
-           def jo_exe(self, rp, vm):
-               o = vm.ds.pop()
-               v = vm.ds.pop()
-               setattr(o, self.field_name, v)
+          def jo_exe(self, rp, vm):
+              o = vm.ds.pop()
+              v = vm.ds.pop()
+              setattr(o, self.field_name, v)
 
-           def jo_print(self):
-               p_print(".")
-               p_print(self.field_name)
-               p_print("!")
-       #+end_src
+          def jo_print(self):
+              p_print(".")
+              p_print(self.field_name)
+              p_print("!")
+      #+end_src
 
 ***** GENE
 
@@ -1303,6 +1303,7 @@
     #+begin_src python
     def p_print(x):
         print(x, end="")
+        sys.stdout.flush()
     #+end_src
 
 *** sexp_print
@@ -2541,6 +2542,7 @@
       @prim('newline')
       def newline():
           print("")
+          sys.stdout.flush()
 
       prim('nl')(newline)
       #+end_src
@@ -3965,17 +3967,21 @@
       core_module = load_core(core_path)
       #+end_src
 
-* ><
+* [test] scheduler
 
   #+begin_src python
   # def p1():
-  #     print("- p1p1p1")
+  #     print("- p1")
+  #     sys.stdout.flush()
+  #     return sys.modules[__name__]
 
   # schedule_start(4)
   # ch0 = global_channel_vect[0]
   # mmsg0 = MetaMessage("just-actor", {
   #     'clo' : CLO([
-  #         123, 123, add, p_print, p1
+  #         123, 123, add,
+  #         CALL_FROM_MODULE(sys.modules[__name__], 'print'),
+  #         newline,
   #     ])
   # })
   # ch0.meta_in_queue.put(mmsg0)
