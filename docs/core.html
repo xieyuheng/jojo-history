@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-10-16 Mon 01:19 -->
+<!-- 2017-11-28 Tue 00:38 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>core</title>
@@ -64,74 +64,79 @@ for the JavaScript code in this tag.
 <h2>overview</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org651cd15">Int</a></li>
-<li><a href="#orge547310">List</a>
+<li><a href="#org55f9c5d"><span class="done _todo_stack_">[todo-stack]</span> </a></li>
+<li><a href="#org67fa613">Int</a></li>
+<li><a href="#orge44194b">List</a>
 <ul>
-<li><a href="#org7b34ad">List</a></li>
-<li><a href="#orge0998af">list-length</a></li>
-<li><a href="#org4c0d48b">list-ref</a></li>
-<li><a href="#org461202b">list-append</a></li>
-<li><a href="#org7fe8c4a">tail-cons</a></li>
+<li><a href="#orgfc715d">List</a></li>
+<li><a href="#org26a7bac">list-length</a></li>
+<li><a href="#org1ea40df">list-ref</a></li>
+<li><a href="#orgf286b13">list-append</a></li>
+<li><a href="#orgddad0c2">tail-cons</a></li>
 </ul>
 </li>
-<li><a href="#orge7fdd78">about test</a>
+<li><a href="#org49b1de1">about test</a>
 <ul>
-<li><a href="#orgff2f28d">(assert) &amp; (assert!)</a></li>
+<li><a href="#orgd557f30">(assert) &amp; (assert!)</a></li>
 </ul>
 </li>
-<li><a href="#orgd7c141f">p &#x2013; gene</a>
+<li><a href="#orgde6ecc4">p &#x2013; print</a>
 <ul>
-<li><a href="#org359a930">gene</a></li>
-<li><a href="#org4fb5f6f">List</a></li>
+<li><a href="#org906dc0">gene</a></li>
+<li><a href="#orgba27d0a">List</a></li>
 </ul>
 </li>
-<li><a href="#org8119214">combinator</a>
+<li><a href="#orgb1a0236">combinator</a>
 <ul>
-<li><a href="#org7f7644a">times</a></li>
+<li><a href="#orgf9c2aff">times</a></li>
 </ul>
 </li>
-<li><a href="#org7c35bab">class</a>
+<li><a href="#org33add87">class</a>
 <ul>
-<li><a href="#org8c0e5f7">class-member?</a></li>
+<li><a href="#org5f7d903">class-member?</a></li>
 </ul>
 </li>
-<li><a href="#org3affa76">(case)</a>
+<li><a href="#org7b30aae">(case)</a>
 <ul>
-<li><a href="#org72f2180"><span class="todo _note_">[note]</span> </a></li>
-<li><a href="#orgb92624f">(case)</a></li>
-<li><a href="#org1e1c713">case-syntax-check</a></li>
-<li><a href="#orgc175948">case-match?</a></li>
+<li><a href="#org3f639b0"><span class="todo _note_">[note]</span> </a></li>
+<li><a href="#orgab6fcc6">(case)</a></li>
+<li><a href="#orgfb9261b">case-syntax-check</a></li>
+<li><a href="#org6e53197">case-match?</a></li>
 </ul>
 </li>
-<li><a href="#org9a16e7b">equal? &#x2013; gene</a>
+<li><a href="#orgae4979b">equal?</a>
 <ul>
-<li><a href="#orgc378865">gene</a></li>
+<li><a href="#org9016050">gene</a></li>
+<li><a href="#org5d904cd">List</a></li>
 </ul>
 </li>
-<li><a href="#org3edafcd">more about List</a>
+<li><a href="#orge9e3952">more about List</a>
 <ul>
-<li><a href="#org32463cd">list-any?</a></li>
-<li><a href="#org5b47feb">list-every?</a></li>
-<li><a href="#orgfbc8d75">list-ante &#x2013; antecedent</a></li>
-<li><a href="#org3b5d301">list-succ &#x2013; succedent</a></li>
-<li><a href="#org37b2528">list-split</a></li>
-<li><a href="#orgfb57c00">list-map</a></li>
-<li><a href="#org749db9">list-for-each</a></li>
-<li><a href="#orgb6903f8">list-filter</a></li>
-<li><a href="#org506a4d0">list-reverse</a></li>
-<li><a href="#orgf831929">list-eqv?</a></li>
-<li><a href="#orgebf4b1d">list-foldr</a></li>
-<li><a href="#org12d1ea8">list-foldl</a></li>
-<li><a href="#org12db578">list-member?</a></li>
+<li><a href="#org29794a3">list-any?</a></li>
+<li><a href="#orgf30addd">list-every?</a></li>
+<li><a href="#orge7d7e4a">list-ante &#x2013; antecedent</a></li>
+<li><a href="#org6d71c3d">list-succ &#x2013; succedent</a></li>
+<li><a href="#org890f5da">list-split</a></li>
+<li><a href="#orgc08130f">list-map</a></li>
+<li><a href="#org88cbcee">list-for-each</a></li>
+<li><a href="#org380e1cd">list-filter</a></li>
+<li><a href="#org2834df3">list-reverse</a></li>
+<li><a href="#org90fce5e">list-foldr</a></li>
+<li><a href="#org6dab8bd">list-foldl</a></li>
+<li><a href="#org2796c17">list-member?</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org651cd15" class="outline-2">
-<h2 id="org651cd15">Int</h2>
-<div class="outline-text-2" id="text-org651cd15">
+<div id="outline-container-org55f9c5d" class="outline-2">
+<h2 id="org55f9c5d"><span class="done _todo_stack_">[todo-stack]</span> </h2>
+</div>
+
+<div id="outline-container-org67fa613" class="outline-2">
+<h2 id="org67fa613">Int</h2>
+<div class="outline-text-2" id="text-org67fa613">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> even? <span style="color: #ae81ff;">2</span> mod <span style="color: #ae81ff;">0</span> eq?<span style="color: #696969;">)</span>
@@ -141,12 +146,12 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-orge547310" class="outline-2">
-<h2 id="orge547310">List</h2>
-<div class="outline-text-2" id="text-orge547310">
-</div><div id="outline-container-org7b34ad" class="outline-3">
-<h3 id="org7b34ad">List</h3>
-<div class="outline-text-3" id="text-org7b34ad">
+<div id="outline-container-orge44194b" class="outline-2">
+<h2 id="orge44194b">List</h2>
+<div class="outline-text-2" id="text-orge44194b">
+</div><div id="outline-container-orgfc715d" class="outline-3">
+<h3 id="orgfc715d">List</h3>
+<div class="outline-text-3" id="text-orgfc715d">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+union</span> <span style="color: #66d9ef; font-weight: bold;">List</span>
@@ -157,9 +162,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-orge0998af" class="outline-3">
-<h3 id="orge0998af">list-length</h3>
-<div class="outline-text-3" id="text-orge0998af">
+<div id="outline-container-org26a7bac" class="outline-3">
+<h3 id="org26a7bac">list-length</h3>
+<div class="outline-text-3" id="text-org26a7bac">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-length <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Int</span><span style="color: #696969;">)</span>
@@ -170,9 +175,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org4c0d48b" class="outline-3">
-<h3 id="org4c0d48b">list-ref</h3>
-<div class="outline-text-3" id="text-org4c0d48b">
+<div id="outline-container-org1ea40df" class="outline-3">
+<h3 id="org1ea40df">list-ref</h3>
+<div class="outline-text-3" id="text-org1ea40df">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-ref <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:index</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Value</span><span style="color: #696969;">)</span>
@@ -189,9 +194,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org461202b" class="outline-3">
-<h3 id="org461202b">list-append</h3>
-<div class="outline-text-3" id="text-org461202b">
+<div id="outline-container-orgf286b13" class="outline-3">
+<h3 id="orgf286b13">list-append</h3>
+<div class="outline-text-3" id="text-orgf286b13">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-append <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:ante</span> <span style="color: #a6e22e;">:succ</span> <span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #66d9ef; font-weight: bold;">List</span><span style="color: #696969;">)</span>
@@ -204,9 +209,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org7fe8c4a" class="outline-3">
-<h3 id="org7fe8c4a">tail-cons</h3>
-<div class="outline-text-3" id="text-org7fe8c4a">
+<div id="outline-container-orgddad0c2" class="outline-3">
+<h3 id="orgddad0c2">tail-cons</h3>
+<div class="outline-text-3" id="text-orgddad0c2">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> tail-cons null cons list-append<span style="color: #696969;">)</span>
@@ -216,12 +221,12 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-orge7fdd78" class="outline-2">
-<h2 id="orge7fdd78">about test</h2>
-<div class="outline-text-2" id="text-orge7fdd78">
-</div><div id="outline-container-orgff2f28d" class="outline-3">
-<h3 id="orgff2f28d">(assert) &amp; (assert!)</h3>
-<div class="outline-text-3" id="text-orgff2f28d">
+<div id="outline-container-org49b1de1" class="outline-2">
+<h2 id="org49b1de1">about test</h2>
+<div class="outline-text-2" id="text-org49b1de1">
+</div><div id="outline-container-orgd557f30" class="outline-3">
+<h3 id="orgd557f30">(assert) &amp; (assert!)</h3>
+<div class="outline-text-3" id="text-orgd557f30">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> assert <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:body</span> <span style="color: #66d9ef; font-weight: bold;">--</span> sexp<span style="color: #696969;">)</span>
@@ -244,12 +249,12 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-orgd7c141f" class="outline-2">
-<h2 id="orgd7c141f">p &#x2013; gene</h2>
-<div class="outline-text-2" id="text-orgd7c141f">
-</div><div id="outline-container-org359a930" class="outline-3">
-<h3 id="org359a930">gene</h3>
-<div class="outline-text-3" id="text-org359a930">
+<div id="outline-container-orgde6ecc4" class="outline-2">
+<h2 id="orgde6ecc4">p &#x2013; print</h2>
+<div class="outline-text-2" id="text-orgde6ecc4">
+</div><div id="outline-container-org906dc0" class="outline-3">
+<h3 id="org906dc0">gene</h3>
+<div class="outline-text-3" id="text-org906dc0">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+gene</span> p <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:x</span> <span style="color: #66d9ef; font-weight: bold;">--</span><span style="color: #696969;">)</span> <span style="color: #a6e22e;">:x</span> print<span style="color: #696969;">)</span>
@@ -258,9 +263,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org4fb5f6f" class="outline-3">
-<h3 id="org4fb5f6f">List</h3>
-<div class="outline-text-3" id="text-org4fb5f6f">
+<div id="outline-container-orgba27d0a" class="outline-3">
+<h3 id="orgba27d0a">List</h3>
+<div class="outline-text-3" id="text-orgba27d0a">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+disp</span> p <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #66d9ef; font-weight: bold;">List</span> <span style="color: #66d9ef; font-weight: bold;">--</span><span style="color: #696969;">)</span>
@@ -279,30 +284,30 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org8119214" class="outline-2">
-<h2 id="org8119214">combinator</h2>
-<div class="outline-text-2" id="text-org8119214">
-</div><div id="outline-container-org7f7644a" class="outline-3">
-<h3 id="org7f7644a">times</h3>
-<div class="outline-text-3" id="text-org7f7644a">
+<div id="outline-container-orgb1a0236" class="outline-2">
+<h2 id="orgb1a0236">combinator</h2>
+<div class="outline-text-2" id="text-orgb1a0236">
+</div><div id="outline-container-orgf9c2aff" class="outline-3">
+<h3 id="orgf9c2aff">times</h3>
+<div class="outline-text-3" id="text-orgf9c2aff">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> <span style="color: #66d9ef; font-weight: bold;">times</span> <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:fun</span> <span style="color: #a6e22e;">:n</span> <span style="color: #66d9ef; font-weight: bold;">--</span><span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:n</span> <span style="color: #ae81ff;">0</span> lteq?<span style="color: #797979;">]</span> <span style="color: #797979;">[]</span>
-        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:fun</span> apply
-              <span style="color: #a6e22e;">:fun</span> <span style="color: #a6e22e;">:n</span> dec <span style="color: #66d9ef; font-weight: bold;">times</span><span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:fun</span>
+              <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:fun</span><span style="color: #B380A8;">}</span> <span style="color: #a6e22e;">:n</span> dec <span style="color: #66d9ef; font-weight: bold;">times</span><span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org7c35bab" class="outline-2">
-<h2 id="org7c35bab">class</h2>
-<div class="outline-text-2" id="text-org7c35bab">
-</div><div id="outline-container-org8c0e5f7" class="outline-3">
-<h3 id="org8c0e5f7">class-member?</h3>
-<div class="outline-text-3" id="text-org8c0e5f7">
+<div id="outline-container-org33add87" class="outline-2">
+<h2 id="org33add87">class</h2>
+<div class="outline-text-2" id="text-org33add87">
+</div><div id="outline-container-org5f7d903" class="outline-3">
+<h3 id="org5f7d903">class-member?</h3>
+<div class="outline-text-3" id="text-org5f7d903">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> class-member? swap value-&gt;class swap subclass?<span style="color: #696969;">)</span>
@@ -312,12 +317,12 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org3affa76" class="outline-2">
-<h2 id="org3affa76">(case)</h2>
-<div class="outline-text-2" id="text-org3affa76">
-</div><div id="outline-container-org72f2180" class="outline-3">
-<h3 id="org72f2180"><span class="todo _note_">[note]</span> </h3>
-<div class="outline-text-3" id="text-org72f2180">
+<div id="outline-container-org7b30aae" class="outline-2">
+<h2 id="org7b30aae">(case)</h2>
+<div class="outline-text-2" id="text-org7b30aae">
+</div><div id="outline-container-org3f639b0" class="outline-3">
+<h3 id="org3f639b0"><span class="todo _note_">[note]</span> </h3>
+<div class="outline-text-3" id="text-org3f639b0">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">note</span>
@@ -335,9 +340,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-orgb92624f" class="outline-3">
-<h3 id="orgb92624f">(case)</h3>
-<div class="outline-text-3" id="text-orgb92624f">
+<div id="outline-container-orgab6fcc6" class="outline-3">
+<h3 id="orgab6fcc6">(case)</h3>
+<div class="outline-text-3" id="text-orgab6fcc6">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> case <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:sexp-list</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Sexp</span><span style="color: #696969;">)</span>
@@ -360,9 +365,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org1e1c713" class="outline-3">
-<h3 id="org1e1c713">case-syntax-check</h3>
-<div class="outline-text-3" id="text-org1e1c713">
+<div id="outline-container-orgfb9261b" class="outline-3">
+<h3 id="orgfb9261b">case-syntax-check</h3>
+<div class="outline-text-3" id="text-orgfb9261b">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> case-syntax-check <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:sexp-list</span> <span style="color: #66d9ef; font-weight: bold;">--</span><span style="color: #696969;">)</span>
@@ -386,9 +391,9 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-orgc175948" class="outline-3">
-<h3 id="orgc175948">case-match?</h3>
-<div class="outline-text-3" id="text-orgc175948">
+<div id="outline-container-org6e53197" class="outline-3">
+<h3 id="org6e53197">case-match?</h3>
+<div class="outline-text-3" id="text-org6e53197">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> case-match? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:vl</span> <span style="color: #a6e22e;">:tl</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span>
@@ -405,17 +410,26 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org9a16e7b" class="outline-2">
-<h2 id="org9a16e7b">equal? &#x2013; gene</h2>
-<div class="outline-text-2" id="text-org9a16e7b">
-</div><div id="outline-container-orgc378865" class="outline-3">
-<h3 id="orgc378865">gene</h3>
-<div class="outline-text-3" id="text-orgc378865">
+<div id="outline-container-orgae4979b" class="outline-2">
+<h2 id="orgae4979b">equal?</h2>
+<div class="outline-text-2" id="text-orgae4979b">
+</div><div id="outline-container-org9016050" class="outline-3">
+<h3 id="org9016050">gene</h3>
+<div class="outline-text-3" id="text-org9016050">
 <div class="org-src-container">
 
-<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+gene</span> equal? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:x</span> <span style="color: #a6e22e;">:y</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span> <span style="color: #a6e22e;">:x</span> <span style="color: #a6e22e;">:y</span> eq?<span style="color: #696969;">)</span>
+<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+gene</span> equal? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:x</span> <span style="color: #a6e22e;">:y</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span> <span style="color: #a6e22e;">:x</span> <span style="color: #a6e22e;">:y</span> eqv?<span style="color: #696969;">)</span>
+</pre>
+</div>
+</div>
+</div>
 
-<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+disp</span> equal? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:x</span> <span style="color: #66d9ef; font-weight: bold;">List</span> <span style="color: #a6e22e;">:y</span> <span style="color: #66d9ef; font-weight: bold;">List</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span>
+<div id="outline-container-org5d904cd" class="outline-3">
+<h3 id="org5d904cd">List</h3>
+<div class="outline-text-3" id="text-org5d904cd">
+<div class="org-src-container">
+
+<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+disp</span> equal? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:x</span> <span style="color: #66d9ef; font-weight: bold;">List</span> <span style="color: #a6e22e;">:y</span> <span style="color: #66d9ef; font-weight: bold;">List</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">case</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:x</span> <span style="color: #a6e22e;">:y</span><span style="color: #797979;">]</span>
     <span style="color: #797979;">[</span><span style="color: #66d9ef; font-weight: bold;">&lt;null&gt;</span> <span style="color: #66d9ef; font-weight: bold;">&lt;null&gt;</span><span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">true</span>
     <span style="color: #797979;">[</span><span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span><span style="color: #797979;">]</span>
@@ -429,129 +443,129 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org3edafcd" class="outline-2">
-<h2 id="org3edafcd">more about List</h2>
-<div class="outline-text-2" id="text-org3edafcd">
-</div><div id="outline-container-org32463cd" class="outline-3">
-<h3 id="org32463cd">list-any?</h3>
-<div class="outline-text-3" id="text-org32463cd">
+<div id="outline-container-orge9e3952" class="outline-2">
+<h2 id="orge9e3952">more about List</h2>
+<div class="outline-text-2" id="text-orge9e3952">
+</div><div id="outline-container-org29794a3" class="outline-3">
+<h3 id="org29794a3">list-any?</h3>
+<div class="outline-text-3" id="text-org29794a3">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-any? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:pred</span> <span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> null?<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">false</span>
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span> apply<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">true</span>
-        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:pred</span> list-any?<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span><span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">true</span>
+        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:pred</span><span style="color: #B380A8;">}</span> list-any?<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org5b47feb" class="outline-3">
-<h3 id="org5b47feb">list-every?</h3>
-<div class="outline-text-3" id="text-org5b47feb">
+<div id="outline-container-orgf30addd" class="outline-3">
+<h3 id="orgf30addd">list-every?</h3>
+<div class="outline-text-3" id="text-orgf30addd">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-every? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:pred</span> <span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> null?<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">true</span>
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span> apply not<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">false</span>
-        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:pred</span> list-every?<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span> not<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">false</span>
+        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:pred</span><span style="color: #B380A8;">}</span> list-every?<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgfbc8d75" class="outline-3">
-<h3 id="orgfbc8d75">list-ante &#x2013; antecedent</h3>
-<div class="outline-text-3" id="text-orgfbc8d75">
+<div id="outline-container-orge7d7e4a" class="outline-3">
+<h3 id="orge7d7e4a">list-ante &#x2013; antecedent</h3>
+<div class="outline-text-3" id="text-orge7d7e4a">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-ante <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:pred</span> <span style="color: #66d9ef; font-weight: bold;">--</span> ante<span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> null?<span style="color: #797979;">]</span> null
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span> apply<span style="color: #797979;">]</span> null
+        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span><span style="color: #797979;">]</span> null
         <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span>
-              <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:pred</span> list-ante
+              <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:pred</span><span style="color: #B380A8;">}</span> list-ante
               cons<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org3b5d301" class="outline-3">
-<h3 id="org3b5d301">list-succ &#x2013; succedent</h3>
-<div class="outline-text-3" id="text-org3b5d301">
+<div id="outline-container-org6d71c3d" class="outline-3">
+<h3 id="org6d71c3d">list-succ &#x2013; succedent</h3>
+<div class="outline-text-3" id="text-org6d71c3d">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-succ <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:pred</span> <span style="color: #66d9ef; font-weight: bold;">--</span> succ<span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> null?<span style="color: #797979;">]</span> null
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span> apply<span style="color: #797979;">]</span> <span style="color: #a6e22e;">:list</span>
-        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:pred</span> list-succ<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span><span style="color: #797979;">]</span> <span style="color: #a6e22e;">:list</span>
+        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:pred</span><span style="color: #B380A8;">}</span> list-succ<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org37b2528" class="outline-3">
-<h3 id="org37b2528">list-split</h3>
-<div class="outline-text-3" id="text-org37b2528">
+<div id="outline-container-org890f5da" class="outline-3">
+<h3 id="org890f5da">list-split</h3>
+<div class="outline-text-3" id="text-org890f5da">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-split <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:pred</span> <span style="color: #66d9ef; font-weight: bold;">--</span> ante succ<span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> null?<span style="color: #797979;">]</span> <span style="color: #797979;">[</span>null null<span style="color: #797979;">]</span>
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span> apply<span style="color: #797979;">]</span> <span style="color: #797979;">[</span>null <span style="color: #a6e22e;">:list</span><span style="color: #797979;">]</span>
+        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span><span style="color: #797979;">]</span> <span style="color: #797979;">[</span>null <span style="color: #a6e22e;">:list</span><span style="color: #797979;">]</span>
         <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span>
-              <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:pred</span> list-split
+              <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:pred</span><span style="color: #B380A8;">}</span> list-split
               <span style="color: #fd971f;">:succ!</span> cons <span style="color: #a6e22e;">:succ</span><span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgfb57c00" class="outline-3">
-<h3 id="orgfb57c00">list-map</h3>
-<div class="outline-text-3" id="text-orgfb57c00">
+<div id="outline-container-orgc08130f" class="outline-3">
+<h3 id="orgc08130f">list-map</h3>
+<div class="outline-text-3" id="text-orgc08130f">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-map <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:fun</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">List</span><span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">case</span> <span style="color: #a6e22e;">:list</span>
     <span style="color: #66d9ef; font-weight: bold;">&lt;null&gt;</span> null
-    <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:fun</span> apply <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:fun</span> list-map cons<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+    <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:fun</span> <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:fun</span><span style="color: #B380A8;">}</span> list-map cons<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org749db9" class="outline-3">
-<h3 id="org749db9">list-for-each</h3>
-<div class="outline-text-3" id="text-org749db9">
+<div id="outline-container-org88cbcee" class="outline-3">
+<h3 id="org88cbcee">list-for-each</h3>
+<div class="outline-text-3" id="text-org88cbcee">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-for-each <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:fun</span> <span style="color: #66d9ef; font-weight: bold;">--</span><span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">case</span> <span style="color: #a6e22e;">:list</span>
     <span style="color: #66d9ef; font-weight: bold;">&lt;null&gt;</span> <span style="color: #797979;">[]</span>
-    <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:fun</span> apply <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:fun</span> list-for-each<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+    <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:fun</span> <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:fun</span><span style="color: #B380A8;">}</span> list-for-each<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgb6903f8" class="outline-3">
-<h3 id="orgb6903f8">list-filter</h3>
-<div class="outline-text-3" id="text-orgb6903f8">
+<div id="outline-container-org380e1cd" class="outline-3">
+<h3 id="org380e1cd">list-filter</h3>
+<div class="outline-text-3" id="text-org380e1cd">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-filter <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:pred</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">List</span><span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> null?<span style="color: #797979;">]</span> null
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span> apply<span style="color: #797979;">]</span>
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:pred</span> list-filter cons<span style="color: #797979;">]</span>
-        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:pred</span> list-filter<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:pred</span><span style="color: #797979;">]</span>
+        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:pred</span><span style="color: #B380A8;">}</span> list-filter cons<span style="color: #797979;">]</span>
+        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:pred</span><span style="color: #B380A8;">}</span> list-filter<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org506a4d0" class="outline-3">
-<h3 id="org506a4d0">list-reverse</h3>
-<div class="outline-text-3" id="text-org506a4d0">
+<div id="outline-container-org2834df3" class="outline-3">
+<h3 id="org2834df3">list-reverse</h3>
+<div class="outline-text-3" id="text-org2834df3">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-reverse null swap list-reverse-swap-append<span style="color: #696969;">)</span>
@@ -567,57 +581,41 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-orgf831929" class="outline-3">
-<h3 id="orgf831929">list-eqv?</h3>
-<div class="outline-text-3" id="text-orgf831929">
-<div class="org-src-container">
-
-<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-eqv? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:l1</span> <span style="color: #a6e22e;">:l2</span> <span style="color: #a6e22e;">:eqv</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span>
-  <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:l1</span> null? <span style="color: #a6e22e;">:l2</span> null? and<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">true</span>
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:l1</span> null?<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">false</span>
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:l2</span> null?<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">false</span>
-        <span style="color: #797979;">[</span><span style="color: #a6e22e;">:l1</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:l2</span> <span style="color: #ae81ff;">.car</span> <span style="color: #a6e22e;">:eqv</span> apply not<span style="color: #797979;">]</span> <span style="color: #66d9ef; font-weight: bold;">false</span>
-        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:l1</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:l2</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:eqv</span> list-eqv?<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-orgebf4b1d" class="outline-3">
-<h3 id="orgebf4b1d">list-foldr</h3>
-<div class="outline-text-3" id="text-orgebf4b1d">
+<div id="outline-container-org90fce5e" class="outline-3">
+<h3 id="org90fce5e">list-foldr</h3>
+<div class="outline-text-3" id="text-org90fce5e">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-foldr <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> a <span style="color: #a6e22e;">:list</span><span style="color: #f92672; font-weight: bold;">,</span> <span style="color: #a6e22e;">:b</span><span style="color: #f92672; font-weight: bold;">,</span> <span style="color: #a6e22e;">:a-b-&gt;b</span> <span style="color: #66d9ef; font-weight: bold;">--</span> b<span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">case</span> <span style="color: #a6e22e;">:list</span>
     <span style="color: #66d9ef; font-weight: bold;">&lt;null&gt;</span> <span style="color: #a6e22e;">:b</span>
     <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span>
-            <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:b</span> <span style="color: #a6e22e;">:a-b-&gt;b</span> list-foldr
-            <span style="color: #a6e22e;">:a-b-&gt;b</span> apply<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+            <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:b</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:a-b-&gt;b</span><span style="color: #B380A8;">}</span> list-foldr
+            <span style="color: #a6e22e;">:a-b-&gt;b</span><span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org12d1ea8" class="outline-3">
-<h3 id="org12d1ea8">list-foldl</h3>
-<div class="outline-text-3" id="text-org12d1ea8">
+<div id="outline-container-org6dab8bd" class="outline-3">
+<h3 id="org6dab8bd">list-foldl</h3>
+<div class="outline-text-3" id="text-org6dab8bd">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-foldl <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> a <span style="color: #a6e22e;">:list</span><span style="color: #f92672; font-weight: bold;">,</span> <span style="color: #a6e22e;">:b</span><span style="color: #f92672; font-weight: bold;">,</span> <span style="color: #a6e22e;">:b-a-&gt;b</span> <span style="color: #66d9ef; font-weight: bold;">--</span> b<span style="color: #696969;">)</span>
   <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">case</span> <span style="color: #a6e22e;">:list</span>
     <span style="color: #66d9ef; font-weight: bold;">&lt;null&gt;</span> <span style="color: #a6e22e;">:b</span>
-    <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:b</span> <span style="color: #a6e22e;">:b-a-&gt;b</span> list-foldl
+    <span style="color: #66d9ef; font-weight: bold;">&lt;cons&gt;</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> <span style="color: #a6e22e;">:b</span> <span style="color: #B380A8;">{</span><span style="color: #a6e22e;">:b-a-&gt;b</span><span style="color: #B380A8;">}</span> list-foldl
             <span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.car</span>
-            <span style="color: #a6e22e;">:b-a-&gt;b</span> apply<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+            <span style="color: #a6e22e;">:b-a-&gt;b</span><span style="color: #797979;">]</span><span style="color: #696969;">))</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org12db578" class="outline-3">
-<h3 id="org12db578">list-member?</h3>
-<div class="outline-text-3" id="text-org12db578">
+<div id="outline-container-org2796c17" class="outline-3">
+<h3 id="org2796c17">list-member?</h3>
+<div class="outline-text-3" id="text-org2796c17">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-member? <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #a6e22e;">:x</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Bool</span><span style="color: #696969;">)</span>
@@ -630,7 +628,7 @@ for the JavaScript code in this tag.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: xieyuheng</p>
-<p class="date">Created: 2017-10-16 Mon 01:19</p>
+<p class="date">Created: 2017-11-28 Tue 00:38</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
