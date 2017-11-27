@@ -8,6 +8,10 @@ import collections
 import operator
 import traceback
 import pprint
+import time
+import multiprocessing as mp
+import queue
+import random
 
 def get_signature(fun):
     try:
@@ -85,31 +89,30 @@ class VM:
         self.rs = rs
 
     def exe(self):
-        return exe(self)
+        length = len(self.rs)
+        while len(self.rs) >= length:
+            self.exe_one_step()
+        return self
 
-def exe(vm):
-    length = len(vm.rs)
-    while len(vm.rs) >= length:
-        exe_one_step(vm)
-    return vm
-
-def exe_one_step(vm):
-    rp = vm.rs.pop()
-    if rp.length == 0:
-        return
-
-    # get current jo
-    jo = rp.body[rp.cursor]
-
-    # handle tail call
-    if rp.cursor >= rp.length - 1:
-       pass
-    else:
-       rp.cursor = rp.cursor + 1
-       vm.rs.append(rp)
-
-    # dispatching
-    exe_jo(jo, rp, vm)
+    def exe_one_step(self):
+        rp = self.rs.pop()
+        # handle empty closure
+        if rp.length == 0:
+            # one rp is finished
+            return
+        # get current jo
+        jo = rp.body[rp.cursor]
+        # handle tail call
+        if rp.cursor >= rp.length - 1:
+            # dispatching
+            exe_jo(jo, rp, self)
+            # one rp is finished
+            return
+        else:
+            rp.cursor = rp.cursor + 1
+            self.rs.append(rp)
+            # dispatching
+            exe_jo(jo, rp, self)
 
 class VALUES:
     def __init__(self, *values):
@@ -232,20 +235,20 @@ class JOJO:
         vm.rs.append(RP(self))
 
 class CLO:
-    def __init__(self, jojo):
-        self.jojo = jojo
+    def __init__(self, body):
+        self.body = body
 
     def jo_exe(self, rp, vm):
-        new_jojo = JOJO(self.jojo)
+        new_jojo = JOJO(self.body)
         new_jojo.lr = rp.lr
         vm.ds.append(new_jojo)
 
     def jo_print(self):
         p_print("(clo ")
-        for jo in self.jojo[:-1]:
+        for jo in self.body[:-1]:
             jo_print(jo)
             space()
-        jo_print(self.jojo[-1])
+        jo_print(self.body[-1])
         p_print(")")
 
 class APPLY:
@@ -461,6 +464,229 @@ class PRIMITIVE:
 
     def jo_print(self):
         p_print(self.fun)
+
+class Actor:
+    def __init__(self, scheduler, vm):
+        self.scheduler = scheduler
+        self.vm = vm
+        self.ds = vm.ds
+        self.rs = vm.rs
+        self.mq = queue.Queue
+        self.aid = generate_aid(scheduler)
+
+    def finished_p(self):
+        return len(self.rs) == 0
+
+    def exe_one_step(self):
+        rp = self.rs.pop()
+        # handle empty closure
+        if rp.length == 0:
+            # one rp is finished
+            return
+        # get current jo
+        jo = rp.body[rp.cursor]
+        # handle tail call
+        if rp.cursor >= rp.length - 1:
+            # dispatching
+            act_jo(jo, rp, self)
+            # one rp is finished
+            return
+        else:
+            rp.cursor = rp.cursor + 1
+            self.rs.append(rp)
+            # dispatching
+            act_jo(jo, rp, self)
+
+class Aid:
+    def __init__(self, sid, key):
+        self.sid = sid # natural number
+        self.key = key
+
+def generate_aid(scheduler):
+    sid = scheduler.sid
+    key = scheduler._actor_counter
+    scheduler._actor_counter = key + 1
+    return Aid(sid, key)
+
+def act_jo(jo, rp, actor):
+    if hasattr(jo, "jo_act"):
+        jo.jo_act(rp, actor)
+    else:
+        exe_jo(jo, rp, actor)
+        actor.scheduler.active_queue.put(actor)
+
+class RECEIVE:
+    @classmethod
+    def jo_act(self, rp, actor):
+        if not actor.mq.empty():
+            value = actor.mq.get()
+            actor.ds.append(value)
+            actor.scheduler.active_queue.put(actor)
+        else:
+            jojo = JOJO([RECEIVE])
+            actor.rs.append(RP(jojo))
+
+    def jo_print(self):
+        p_print("receive")
+
+class SEND:
+    @classmethod
+    def jo_act(self, rp, actor):
+        body = actor.ds.pop()
+        message = Message(actor.aid, body)
+        actor.scheduler.out_queue.put(message)
+        actor.scheduler.active_queue.put(actor)
+
+    def jo_print(self):
+        p_print("send")
+
+class SPAWN:
+    @classmethod
+    def jo_act(self, rp, actor):
+        clo = actor.ds.pop()
+        meta_message = MetaMessage("spawn", {
+            'aid' : actor.aid,
+            'clo' : clo,
+        })
+        actor.scheduler.meta_out_queue.put(meta_message)
+        actor.scheduler.spawning_set.add(actor.aid)
+
+    def jo_print(self):
+        p_print("spawn")
+
+class Channel:
+    def __init__(self):
+        self.in_queue = mp.Queue()
+        self.meta_in_queue = mp.Queue()
+
+class MetaMessage:
+    def __init__(self, head, body):
+        self.head = head
+        self.body = body
+
+class Scheduler:
+    def __init__(self, channel_vect, sid):
+        self.sid = sid
+        self.channel_vect = channel_vect
+        self.number_of_channels = len(channel_vect)
+
+        self.channel = self.channel_vect[sid]
+        self.in_queue = self.channel.in_queue
+        self.meta_in_queue = self.channel.meta_in_queue
+
+        self.out_queue = queue.Queue()
+        self.meta_out_queue = queue.Queue()
+
+        self.active_queue = queue.Queue()
+        self.actor_dict = dict()
+        self.spawning_set = set() # of aid
+
+        self._actor_counter = 0
+
+
+    def start(self):
+        while True:
+            # print("- one round")
+            # print("  ppid : {}".format(os.getppid()))
+            # print("  pid : {}".format(os.getpid()))
+            self.send_meta_out_queue()
+            self.process_meta_in_queue()
+            self.send_out_queue()
+            self.distribute_in_queue()
+            self.schedule()
+
+
+    def send_meta_out_queue(self):
+        while not self.meta_out_queue.empty():
+            meta_message = self.meta_out_queue.get()
+            if meta_message.head == "spawn":
+                meta_request = MetaMessage("spawn-request", {
+                    'aid' : meta_message.aid,
+                    'clo' : meta_message.clo,
+                })
+                random_sid = random.randint(0, self.number_of_channels - 1)
+                random_channel = self.channel_vect[random_sid]
+                random_channel.meta_in_queue.put(meta_request)
+
+
+    def process_meta_in_queue(self):
+        while not self.meta_in_queue.empty():
+            meta_message = self.meta_in_queue.get()
+            if meta_message.head == "spawn-request":
+                old_aid = meta_message.body['aid']
+                clo = meta_message.body['clo']
+                jojo = JOJO(clo.body)
+                rp = RP(jojo)
+                vm = VM([], [rp])
+                actor = Actor(self, vm)
+                self.actor_dict[actor.aid] = actor
+                new_aid = actor.aid
+                meta_response = MetaMessage("spawn-response", {
+                    'old_aid' : old_aid,
+                    'new_aid' : new_aid,
+                })
+                channel = self.channel_vect[old_aid.sid]
+                channel.meta_in_queue.put(meta_response)
+            elif meta_message.head == "spawn-response":
+                old_aid = meta_message.body['old_aid']
+                new_aid = meta_message.body['new_aid']
+                self.spawning_set.remove(old_aid)
+                old_actor = self.actor_dict[old_aid]
+                old_actor.ds.append(new_aid)
+            elif meta_message.head == "just-actor":
+                clo = meta_message.body['clo']
+                jojo = JOJO(clo.body)
+                rp = RP(jojo)
+                vm = VM([], [rp])
+                actor = Actor(self, vm)
+                self.actor_dict[actor.aid] = actor
+                self.active_queue.put(actor)
+                print("- just-actor")
+                print("  aid : {}".format(actor.aid))
+
+
+    def send_out_queue(self):
+        while not self.out_queue.empty():
+            message = self.out_queue.get()
+            channel = self.channel_vect[message.aid.sid]
+            channel.in_queue.put(message)
+
+
+    def distribute_in_queue(self):
+        active_set = set() # to avoid dup
+        while not self.in_queue.empty():
+            actor = self.actor_dict[message.aid.key]
+            self.active_set.add(actor)
+            message = self.in_queue.get()
+            actor.mq.put(message.body)
+        for active in active_set:
+            if active.aid not in self.spawning_set:
+                self.active_queue.put(active)
+
+
+    def schedule(self):
+        while not self.active_queue.empty():
+            actor = self.active_queue.get()
+            if actor.finished_p():
+                del self.actor_dict[actor.aid]
+            else:
+                actor.exe_one_step()
+
+class Message:
+    def __init__(self, aid, body):
+        self.aid = aid
+        self.body = body
+
+global_channel_vect = []
+
+def schedule_start(number_of_schedulers):
+    for i in range(number_of_schedulers):
+        global_channel_vect.append(Channel())
+        scheduler = Scheduler(global_channel_vect, i)
+        mp.Process(
+            target = scheduler.start,
+            daemon = True
+        ).start()
 
 def code_scan(string):
     string_vect = []
@@ -1393,7 +1619,7 @@ def read_doublequoted_string(char_stack):
             break
         else:
             char_vect.append(char)
-    char_vect.append('"')
+            char_vect.append('"')
     return "".join(char_vect)
 
 def read_sexp(char_stack):
@@ -2347,3 +2573,15 @@ current_module = sys.modules[__name__]
 current_module_dir = os.path.dirname(current_module.__file__)
 core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
+
+# def p1():
+#     print("- p1p1p1")
+
+# schedule_start(4)
+# ch0 = global_channel_vect[0]
+# mmsg0 = MetaMessage("just-actor", {
+#     'clo' : CLO([
+#         123, 123, add, p_print, p1
+#     ])
+# })
+# ch0.meta_in_queue.put(mmsg0)
