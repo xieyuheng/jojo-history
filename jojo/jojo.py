@@ -2594,18 +2594,25 @@ def p1():
             ["white" print nl]
             else
             ["I do not understand." print nl])
-      nl
       translate)
 
     (+jojo main
       {translate}  spawn :pid!
-      :pid "casa"   send
-      :pid "blanca" send
-      :pid "loco"   send)
+      {:pid "casa"   send
+       :pid "blanca" send
+       :pid "loco"   send}
+      3 times)
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
     module = compile_module('scheduler-testing-module', sexp_vect)
     clo = CLO([module.main])
+
+
+    import flask
+    d = flask.__dict__
+    clo = CLO([
+        d
+    ])
 
     schedule_start(4)
     ch0 = global_channel_vect[0]
