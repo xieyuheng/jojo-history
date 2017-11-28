@@ -1,16 +1,18 @@
 (+jojo translate
   receive :message!
-  (cond [:message "casa" equal?] ["house" print nl]
-        [:message "blanca" equal?] ["white" print nl]
-        else ["I do not understand." print nl])
+  "translating : " p :message p nl
+  "to : " p
+  (cond [:message "casa" eq?]
+        ["house" print nl]
+        [:message "blanca" eq?]
+        ["white" print nl]
+        else
+        ["I do not understand." print nl])
+  nl
   translate)
 
-(begin
+(+jojo main
   {translate}  spawn :pid!
-  :pid "case"   send
+  :pid "casa"   send
   :pid "blanca" send
   :pid "loco"   send)
-
-(begin
-  {nop}
-  1000000 times)

@@ -4,13 +4,6 @@
 
 * [todo-stack]
 
-*** about active actor in scheduler
-
-    - currently a scheduler does not care about an actor,
-      if there are no message send to it.
-
-    - this should not be the case.
-
 *** main interpreter process as a scheduler
 
 *** repl as an actor
@@ -719,13 +712,8 @@
       2. send out messages in out_queue to queue_vect.
 
       3. distribute messages in in_queue to actors,
-         and add those actors to active_set.
-
-         - this will gerrentee that
-           later each actor in active_queue
-           has some messages to be processed.
-
-      4. put actors in active_set to active_queue
+         if an actor is in waiting_set,
+         awake it.
 
 ***** processing
 
@@ -770,7 +758,7 @@
       about actor-creation
       to current scheduler
       and drop this actor from active_queue,
-      and add it to waiting_set.
+      and add it to spawning_set.
 
     - all actor-creation [all meta-message] will be handled
       in the next round of the scheduler.
@@ -780,7 +768,7 @@
       - thus a scheduler must maintain a fresh_actor_queue
         to receive newly created actors.
 
-      - and a waiting_set of actors,
+      - and a spawning_set of actors,
         actors in it will not be active,
         until the newly created actor is pushed to its data-stack.
 
@@ -826,6 +814,20 @@
 
     - how about IPC and system pid ?
 
+*** Aid -- actor id
+
+    #+begin_src python
+    class Aid:
+        def __init__(self, sid, key):
+            self.sid = sid # natural number
+            self.key = key
+        def __eq__(self, other):
+            return (self.sid == other.sid and
+                    self.key == other.key)
+        def __hash__(self):
+            return hash((self.sid, self.key))
+    #+end_src
+
 *** Actor
 
     #+begin_src python
@@ -837,6 +839,8 @@
             self.rs = vm.rs
             self.mq = queue.Queue()
             self.aid = generate_aid(scheduler)
+            scheduler.actor_dict[self.aid.key] = self
+            scheduler.active_queue.put(self)
 
         def finished_p(self):
             return len(self.rs) == 0
@@ -860,20 +864,6 @@
                 self.rs.append(rp)
                 # dispatching
                 act_jo(jo, rp, self)
-    #+end_src
-
-*** Aid -- actor id
-
-    #+begin_src python
-    class Aid:
-        def __init__(self, sid, key):
-            self.sid = sid # natural number
-            self.key = key
-        def __eq__(self, other):
-            return (self.sid == other.sid and
-                    self.key == other.key)
-        def __hash__(self):
-            return hash((self.sid, self.key))
     #+end_src
 
 *** generate_aid
@@ -910,9 +900,8 @@
                   actor.ds.append(value)
                   actor.scheduler.active_queue.put(actor)
               else:
-                  jojo = JOJO([RECEIVE])
-                  actor.rs.append(RP(jojo))
                   actor.scheduler.waiting_set.add(actor.aid)
+                  # do not put the actor back to active_queue
 
           def jo_print(self):
               p_print("receive")
@@ -946,7 +935,8 @@
                   'clo' : clo,
               })
               actor.scheduler.meta_out_queue.put(meta_message)
-              actor.scheduler.waiting_set.add(actor.aid)
+              actor.scheduler.spawning_set.add(actor.aid)
+              # do not put the actor back to active_queue
 
           def jo_print(self):
               p_print("spawn")
@@ -994,6 +984,7 @@
               self.active_queue = queue.Queue()
               self.actor_dict = dict()
               self.waiting_set = set() # of aid
+              self.spawning_set = set() # of aid
 
               self._actor_counter = 0
       #+end_src
@@ -1040,7 +1031,6 @@
                   rp = RP(jojo)
                   vm = VM([], [rp])
                   actor = Actor(sche, vm)
-                  sche.actor_dict[actor.aid] = actor
                   new_aid = actor.aid
                   meta_response = MetaMessage("spawn-response", {
                       'old_aid' : old_aid,
@@ -1052,9 +1042,14 @@
               elif meta_message.head == "spawn-response":
                   old_aid = meta_message.body['old_aid']
                   new_aid = meta_message.body['new_aid']
-                  sche.waiting_set.remove(old_aid)
-                  old_actor = sche.actor_dict[old_aid]
-                  old_actor.ds.append(new_aid)
+                  old_actor = sche.actor_dict[old_aid.key]
+                  if old_aid in sche.spawning_set:
+                      sche.spawning_set.remove(old_aid)
+                      sche.active_queue.put(old_actor)
+                      old_actor.ds.append(new_aid)
+                  else:
+                      print("- spawn-response sent to wrong actor")
+                      error()
 
               elif meta_message.head == "just-actor":
                   clo = meta_message.body['clo']
@@ -1062,8 +1057,6 @@
                   rp = RP(jojo)
                   vm = VM([], [rp])
                   actor = Actor(sche, vm)
-                  sche.actor_dict[actor.aid] = actor
-                  sche.active_queue.put(actor)
                   print("- just-actor")
                   print("  aid : {}".format(actor.aid))
       #+end_src
@@ -1083,28 +1076,30 @@
 
       #+begin_src python
       def distribute_in_queue(sche):
-          active_set = set() # to avoid dup
           while not sche.in_queue.empty():
-              actor = sche.actor_dict[message.aid.key]
-              sche.active_set.add(actor)
               message = sche.in_queue.get()
-              actor.mq.put(message.body)
-          for active in active_set:
-              if active.aid not in sche.waiting_set:
-                  sche.active_queue.put(active)
-
+              actor = sche.actor_dict[message.aid.key]
+              if actor.aid in sche.waiting_set:
+                  sche.waiting_set.remove(actor.aid)
+                  sche.active_queue.put(actor)
+                  actor.ds.append(message.body)
+              else:
+                  actor.mq.put(message.body)
       #+end_src
 
 ***** schedule
 
       #+begin_src python
       def schedule(sche):
-          while not sche.active_queue.empty():
+          i = 0
+          qsize = sche.active_queue.qsize()
+          while i < qsize:
               actor = sche.active_queue.get()
               if actor.finished_p():
-                  del sche.actor_dict[actor.aid]
+                  del sche.actor_dict[actor.aid.key]
               else:
                   actor.exe_one_step()
+              i = i + 1
       #+end_src
 
 *** Message
@@ -4034,16 +4029,27 @@
   def p1():
       code = '''\
       (+jojo translate
-        "translating" p nl
         receive :message!
-        (cond [:message "casa" equal?] ["house" print nl]
-              [:message "blanca" equal?] ["white" print nl]
-              else ["I do not understand." print nl])
+        "translating : " p :message p nl
+        "to : " p
+        (cond [:message "casa" eq?]
+              ["house" print nl]
+              [:message "blanca" eq?]
+              ["white" print nl]
+              else
+              ["I do not understand." print nl])
+        nl
         translate)
+
+      (+jojo main
+        {translate}  spawn :pid!
+        :pid "casa"   send
+        :pid "blanca" send
+        :pid "loco"   send)
       '''
       sexp_vect = parse_sexp_vect(code_scan(code))
       module = compile_module('scheduler-testing-module', sexp_vect)
-      clo = CLO([module.translate])
+      clo = CLO([module.main])
 
       schedule_start(4)
       ch0 = global_channel_vect[0]
