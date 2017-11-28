@@ -275,12 +275,13 @@ class IFTE:
         p_print("ifte")
 
 class CALL_FROM_MODULE:
-    def __init__(self, module, name):
-        self.module = module
+    def __init__(self, module_name, name):
+        self.module_name = module_name
         self.name = name
 
     def jo_exe(self, rp, vm):
-        jo = getattr(self.module, self.name)
+        module = sys.modules[self.module_name]
+        jo = getattr(module, self.name)
         exe_jo(jo, rp, vm)
 
     def jo_print(self):
@@ -471,7 +472,7 @@ class Actor:
         self.vm = vm
         self.ds = vm.ds
         self.rs = vm.rs
-        self.mq = queue.Queue
+        self.mq = queue.Queue()
         self.aid = generate_aid(scheduler)
 
     def finished_p(self):
@@ -501,6 +502,11 @@ class Aid:
     def __init__(self, sid, key):
         self.sid = sid # natural number
         self.key = key
+    def __eq__(self, other):
+        return (self.sid == other.sid and
+                self.key == other.key)
+    def __hash__(self):
+        return hash((self.sid, self.key))
 
 def generate_aid(scheduler):
     sid = scheduler.sid
@@ -533,7 +539,8 @@ class SEND:
     @classmethod
     def jo_act(self, rp, actor):
         body = actor.ds.pop()
-        message = Message(actor.aid, body)
+        aid = actor.ds.pop()
+        message = Message(aid, body)
         actor.scheduler.out_queue.put(message)
         actor.scheduler.active_queue.put(actor)
 
@@ -586,9 +593,6 @@ class Scheduler:
 
     def start(self):
         while True:
-            # print("- one round")
-            # print("  ppid : {}".format(os.getppid()))
-            # print("  pid : {}".format(os.getpid()))
             self.send_meta_out_queue()
             self.process_meta_in_queue()
             self.send_out_queue()
@@ -601,8 +605,8 @@ class Scheduler:
             meta_message = self.meta_out_queue.get()
             if meta_message.head == "spawn":
                 meta_request = MetaMessage("spawn-request", {
-                    'aid' : meta_message.aid,
-                    'clo' : meta_message.clo,
+                    'aid' : meta_message.body['aid'],
+                    'clo' : meta_message.body['clo'],
                 })
                 random_sid = random.randint(0, self.number_of_channels - 1)
                 random_channel = self.channel_vect[random_sid]
@@ -612,6 +616,7 @@ class Scheduler:
     def process_meta_in_queue(self):
         while not self.meta_in_queue.empty():
             meta_message = self.meta_in_queue.get()
+
             if meta_message.head == "spawn-request":
                 old_aid = meta_message.body['aid']
                 clo = meta_message.body['clo']
@@ -627,12 +632,14 @@ class Scheduler:
                 })
                 channel = self.channel_vect[old_aid.sid]
                 channel.meta_in_queue.put(meta_response)
+
             elif meta_message.head == "spawn-response":
                 old_aid = meta_message.body['old_aid']
                 new_aid = meta_message.body['new_aid']
                 self.spawning_set.remove(old_aid)
                 old_actor = self.actor_dict[old_aid]
                 old_actor.ds.append(new_aid)
+
             elif meta_message.head == "just-actor":
                 clo = meta_message.body['clo']
                 jojo = JOJO(clo.body)
@@ -849,6 +856,7 @@ def new_module(name):
     module.vm = VM([], [])
     # for name can occur before been defined
     module.defined_name_set = set()
+    sys.modules[name] = module
     return module
 
 def jojo_define(module, name, value):
@@ -937,7 +945,7 @@ def string_emit(module, string):
         return key_jo_dict[string]
 
     # normal function call
-    return [CALL_FROM_MODULE(module, string)]
+    return [CALL_FROM_MODULE(module.__name__, string)]
 
 def dot_in_string_emit(module, string):
     jo_vect = []
@@ -2370,6 +2378,10 @@ key_jo('list-spread', [LIST_SPREAD])
 
 key_jo('clear', [CLEAR])
 
+key_jo('receive', [RECEIVE])
+key_jo('send', [SEND])
+key_jo('spawn', [SPAWN])
+
 macro_dict = {}
 
 def macro(name):
@@ -2576,18 +2588,23 @@ current_module_dir = os.path.dirname(current_module.__file__)
 core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
 
-# def p1():
-#     print("- p1")
-#     sys.stdout.flush()
-#     return sys.modules[__name__]
+@prim('p1')
+def p1():
+    code = '''\
+    (+jojo translate
+      receive :message!
+      (cond [:message "casa" equal?] ["house" print nl]
+            [:message "blanca" equal?] ["white" print nl]
+            else ["I do not understand." print nl])
+      translate)
+    '''
+    sexp_vect = parse_sexp_vect(code_scan(code))
+    module = compile_module('scheduler-testing-module', sexp_vect)
+    clo = CLO([module.translate])
 
-# schedule_start(4)
-# ch0 = global_channel_vect[0]
-# mmsg0 = MetaMessage("just-actor", {
-#     'clo' : CLO([
-#         123, 123, add,
-#         CALL_FROM_MODULE(sys.modules[__name__], 'print'),
-#         newline,
-#     ])
-# })
-# ch0.meta_in_queue.put(mmsg0)
+    schedule_start(4)
+    ch0 = global_channel_vect[0]
+    mmsg0 = MetaMessage("just-actor", {
+        'clo' : clo,
+    })
+    ch0.meta_in_queue.put(mmsg0)

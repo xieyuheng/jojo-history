@@ -1,0 +1,12 @@
+(+jojo translate
+  receive :message!
+  (cond [:message "casa" equal?] ["house" print nl]
+        [:message "blanca" equal?] ["white" print nl]
+        else ["I do not understand." print nl])
+  translate)
+
+(begin
+  {translate}  spawn :pid!
+  :pid "case"   send
+  :pid "blanca" send
+  :pid "loco"   send)
