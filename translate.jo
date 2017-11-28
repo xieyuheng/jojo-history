@@ -10,3 +10,7 @@
   :pid "case"   send
   :pid "blanca" send
   :pid "loco"   send)
+
+(begin
+  {nop}
+  1000000 times)

@@ -531,6 +531,7 @@ class RECEIVE:
         else:
             jojo = JOJO([RECEIVE])
             actor.rs.append(RP(jojo))
+            actor.scheduler.waiting_set.add(actor.aid)
 
     def jo_print(self):
         p_print("receive")
@@ -556,7 +557,7 @@ class SPAWN:
             'clo' : clo,
         })
         actor.scheduler.meta_out_queue.put(meta_message)
-        actor.scheduler.spawning_set.add(actor.aid)
+        actor.scheduler.waiting_set.add(actor.aid)
 
     def jo_print(self):
         p_print("spawn")
@@ -586,98 +587,92 @@ class Scheduler:
 
         self.active_queue = queue.Queue()
         self.actor_dict = dict()
-        self.spawning_set = set() # of aid
+        self.waiting_set = set() # of aid
 
         self._actor_counter = 0
 
+def sche_start(sche):
+    while True:
+        send_meta_out_queue(sche)
+        process_meta_in_queue(sche)
+        send_out_queue(sche)
+        distribute_in_queue(sche)
+        schedule(sche)
 
-    def start(self):
-        while True:
-            self.send_meta_out_queue()
-            self.process_meta_in_queue()
-            self.send_out_queue()
-            self.distribute_in_queue()
-            self.schedule()
+def send_meta_out_queue(sche):
+    while not sche.meta_out_queue.empty():
+        meta_message = sche.meta_out_queue.get()
+        if meta_message.head == "spawn":
+            meta_request = MetaMessage("spawn-request", {
+                'aid' : meta_message.body['aid'],
+                'clo' : meta_message.body['clo'],
+            })
+            random_sid = random.randint(0, sche.number_of_channels - 1)
+            random_channel = sche.channel_vect[random_sid]
+            random_channel.meta_in_queue.put(meta_request)
 
+def process_meta_in_queue(sche):
+    while not sche.meta_in_queue.empty():
+        meta_message = sche.meta_in_queue.get()
 
-    def send_meta_out_queue(self):
-        while not self.meta_out_queue.empty():
-            meta_message = self.meta_out_queue.get()
-            if meta_message.head == "spawn":
-                meta_request = MetaMessage("spawn-request", {
-                    'aid' : meta_message.body['aid'],
-                    'clo' : meta_message.body['clo'],
-                })
-                random_sid = random.randint(0, self.number_of_channels - 1)
-                random_channel = self.channel_vect[random_sid]
-                random_channel.meta_in_queue.put(meta_request)
+        if meta_message.head == "spawn-request":
+            old_aid = meta_message.body['aid']
+            clo = meta_message.body['clo']
+            jojo = JOJO(clo.body)
+            rp = RP(jojo)
+            vm = VM([], [rp])
+            actor = Actor(sche, vm)
+            sche.actor_dict[actor.aid] = actor
+            new_aid = actor.aid
+            meta_response = MetaMessage("spawn-response", {
+                'old_aid' : old_aid,
+                'new_aid' : new_aid,
+            })
+            channel = sche.channel_vect[old_aid.sid]
+            channel.meta_in_queue.put(meta_response)
 
+        elif meta_message.head == "spawn-response":
+            old_aid = meta_message.body['old_aid']
+            new_aid = meta_message.body['new_aid']
+            sche.waiting_set.remove(old_aid)
+            old_actor = sche.actor_dict[old_aid]
+            old_actor.ds.append(new_aid)
 
-    def process_meta_in_queue(self):
-        while not self.meta_in_queue.empty():
-            meta_message = self.meta_in_queue.get()
+        elif meta_message.head == "just-actor":
+            clo = meta_message.body['clo']
+            jojo = JOJO(clo.body)
+            rp = RP(jojo)
+            vm = VM([], [rp])
+            actor = Actor(sche, vm)
+            sche.actor_dict[actor.aid] = actor
+            sche.active_queue.put(actor)
+            print("- just-actor")
+            print("  aid : {}".format(actor.aid))
 
-            if meta_message.head == "spawn-request":
-                old_aid = meta_message.body['aid']
-                clo = meta_message.body['clo']
-                jojo = JOJO(clo.body)
-                rp = RP(jojo)
-                vm = VM([], [rp])
-                actor = Actor(self, vm)
-                self.actor_dict[actor.aid] = actor
-                new_aid = actor.aid
-                meta_response = MetaMessage("spawn-response", {
-                    'old_aid' : old_aid,
-                    'new_aid' : new_aid,
-                })
-                channel = self.channel_vect[old_aid.sid]
-                channel.meta_in_queue.put(meta_response)
+def send_out_queue(sche):
+    while not sche.out_queue.empty():
+        message = sche.out_queue.get()
+        channel = sche.channel_vect[message.aid.sid]
+        channel.in_queue.put(message)
 
-            elif meta_message.head == "spawn-response":
-                old_aid = meta_message.body['old_aid']
-                new_aid = meta_message.body['new_aid']
-                self.spawning_set.remove(old_aid)
-                old_actor = self.actor_dict[old_aid]
-                old_actor.ds.append(new_aid)
+def distribute_in_queue(sche):
+    active_set = set() # to avoid dup
+    while not sche.in_queue.empty():
+        actor = sche.actor_dict[message.aid.key]
+        sche.active_set.add(actor)
+        message = sche.in_queue.get()
+        actor.mq.put(message.body)
+    for active in active_set:
+        if active.aid not in sche.waiting_set:
+            sche.active_queue.put(active)
 
-            elif meta_message.head == "just-actor":
-                clo = meta_message.body['clo']
-                jojo = JOJO(clo.body)
-                rp = RP(jojo)
-                vm = VM([], [rp])
-                actor = Actor(self, vm)
-                self.actor_dict[actor.aid] = actor
-                self.active_queue.put(actor)
-                print("- just-actor")
-                print("  aid : {}".format(actor.aid))
-
-
-    def send_out_queue(self):
-        while not self.out_queue.empty():
-            message = self.out_queue.get()
-            channel = self.channel_vect[message.aid.sid]
-            channel.in_queue.put(message)
-
-
-    def distribute_in_queue(self):
-        active_set = set() # to avoid dup
-        while not self.in_queue.empty():
-            actor = self.actor_dict[message.aid.key]
-            self.active_set.add(actor)
-            message = self.in_queue.get()
-            actor.mq.put(message.body)
-        for active in active_set:
-            if active.aid not in self.spawning_set:
-                self.active_queue.put(active)
-
-
-    def schedule(self):
-        while not self.active_queue.empty():
-            actor = self.active_queue.get()
-            if actor.finished_p():
-                del self.actor_dict[actor.aid]
-            else:
-                actor.exe_one_step()
+def schedule(sche):
+    while not sche.active_queue.empty():
+        actor = sche.active_queue.get()
+        if actor.finished_p():
+            del sche.actor_dict[actor.aid]
+        else:
+            actor.exe_one_step()
 
 class Message:
     def __init__(self, aid, body):
@@ -691,7 +686,8 @@ def schedule_start(number_of_schedulers):
         global_channel_vect.append(Channel())
         scheduler = Scheduler(global_channel_vect, i)
         mp.Process(
-            target = scheduler.start,
+            target = sche_start,
+            args = [scheduler],
             daemon = True
         ).start()
 
@@ -2548,17 +2544,6 @@ def load(name, path):
 
     return module
 
-def run(data_stack, jojo_vect):
-    data_stack = vect_copy(data_stack)
-    for jojo in jojo_vect:
-        run_one(data_stack, jojo)
-    return data_stack
-
-def run_one(data_stack, jojo):
-    vm = VM(data_stack,
-            [RP(jojo)])
-    vm.exe()
-
 def load_core(path):
     path = os.path.abspath(path)
 
@@ -2592,6 +2577,7 @@ core_module = load_core(core_path)
 def p1():
     code = '''\
     (+jojo translate
+      "translating" p nl
       receive :message!
       (cond [:message "casa" equal?] ["house" print nl]
             [:message "blanca" equal?] ["white" print nl]
