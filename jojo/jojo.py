@@ -257,6 +257,7 @@ class APPLY:
         clo = vm.ds.pop()
         clo.jo_exe(rp, vm)
 
+    @classmethod
     def jo_print(self):
         p_print("apply")
 
@@ -271,6 +272,7 @@ class IFTE:
         else:
             vm.rs.append(RP(clo2))
 
+    @classmethod
     def jo_print(self):
         p_print("ifte")
 
@@ -316,6 +318,7 @@ class MARK:
     def jo_exe(self, rp, vm):
         vm.ds.append(self)
 
+    @classmethod
     def jo_print(self):
         p_print("mark")
 
@@ -332,6 +335,7 @@ class COLLECT_VECT:
         vect.reverse()
         vm.ds.append(vect)
 
+    @classmethod
     def jo_print(self):
         p_print("collect-vect")
 
@@ -342,6 +346,7 @@ class VECT_SPREAD:
         for value in vect:
             vm.ds.append(value)
 
+    @classmethod
     def jo_print(self):
         p_print("vect-spread")
 
@@ -356,6 +361,7 @@ class COLLECT_LIST:
                 return recur(cons(value, rest))
         vm.ds.append(recur(null))
 
+    @classmethod
     def jo_print(self):
         p_print("collect-list")
 
@@ -370,6 +376,7 @@ class LIST_SPREAD:
                 recur(cdr(l))
         recur(vm.ds.pop())
 
+    @classmethod
     def jo_print(self):
         p_print("list-spread")
 
@@ -396,6 +403,7 @@ class NEW:
         else:
             exe_fun(x, vm)
 
+    @classmethod
     def jo_print(self):
         p_print("new")
 
@@ -453,6 +461,7 @@ class CLEAR:
     def jo_exe(self, rp, vm):
         vm.ds = []
 
+    @classmethod
     def jo_print(self):
         p_print("clear")
 
@@ -475,6 +484,9 @@ class Aid:
                 self.key == other.key)
     def __hash__(self):
         return hash((self.sid, self.key))
+    def __repr__(self):
+        return "<aid:(sid:{}, key:{})>" \
+            .format(self.sid, self.key)
 
 class Actor:
     def __init__(self, scheduler, vm):
@@ -534,6 +546,13 @@ class RECEIVE:
             actor.scheduler.waiting_set.add(actor.aid)
             # do not put the actor back to active_queue
 
+    @classmethod
+    def jo_exe(self, rp, vm):
+        print("- receive fail")
+        print("  can not use 'receive' in sequential code")
+        error()
+
+    @classmethod
     def jo_print(self):
         p_print("receive")
 
@@ -543,9 +562,17 @@ class SEND:
         body = actor.ds.pop()
         aid = actor.ds.pop()
         message = Message(aid, body)
-        actor.scheduler.out_queue.put(message)
-        actor.scheduler.active_queue.put(actor)
+        sche = actor.scheduler
+        sche.out_queue.put(message)
+        sche.active_queue.put(actor)
 
+    @classmethod
+    def jo_exe(self, rp, vm):
+        print("- send fail")
+        print("  can not use 'send' in sequential code")
+        error()
+
+    @classmethod
     def jo_print(self):
         p_print("send")
 
@@ -561,8 +588,30 @@ class SPAWN:
         actor.scheduler.spawning_set.add(actor.aid)
         # do not put the actor back to active_queue
 
+    @classmethod
+    def jo_exe(self, rp, vm):
+        print("- spawn fail")
+        print("  can not use 'spawn' in sequential code")
+        error()
+
+    @classmethod
     def jo_print(self):
         p_print("spawn")
+
+class ACTION:
+    @classmethod
+    def jo_exe(self, rp, vm):
+        clo = vm.ds.pop()
+        random_sid = generate_random_sid()
+        channel = global_channel_vect[random_sid]
+        meta_message = MetaMessage("action", {
+            'clo'  : clo,
+        })
+        channel.meta_in_queue.put(meta_message)
+
+    @classmethod
+    def jo_print(self):
+        p_print("action")
 
 class Channel:
     def __init__(self):
@@ -578,7 +627,6 @@ class Scheduler:
     def __init__(self, channel_vect, sid):
         self.sid = sid
         self.channel_vect = channel_vect
-        self.number_of_channels = len(channel_vect)
 
         self.channel = self.channel_vect[sid]
         self.in_queue = self.channel.in_queue
@@ -610,7 +658,7 @@ def send_meta_out_queue(sche):
                 'aid' : meta_message.body['aid'],
                 'clo' : meta_message.body['clo'],
             })
-            random_sid = random.randint(0, sche.number_of_channels - 1)
+            random_sid = generate_random_sid()
             random_channel = sche.channel_vect[random_sid]
             random_channel.meta_in_queue.put(meta_request)
 
@@ -645,14 +693,12 @@ def process_meta_in_queue(sche):
                 print("- spawn-response sent to wrong actor")
                 error()
 
-        elif meta_message.head == "just-actor":
+        elif meta_message.head == "action":
             clo = meta_message.body['clo']
             jojo = JOJO(clo.body)
             rp = RP(jojo)
             vm = VM([], [rp])
             actor = Actor(sche, vm)
-            print("- just-actor")
-            print("  aid : {}".format(actor.aid))
 
 def send_out_queue(sche):
     while not sche.out_queue.empty():
@@ -687,17 +733,32 @@ class Message:
         self.aid = aid
         self.body = body
 
-global_channel_vect = []
+SCHE_NUMBER = 4
 
-def schedule_start(number_of_schedulers):
-    for i in range(number_of_schedulers):
-        global_channel_vect.append(Channel())
-        scheduler = Scheduler(global_channel_vect, i)
-        mp.Process(
-            target = sche_start,
-            args = [scheduler],
-            daemon = True
-        ).start()
+def generate_random_sid():
+    return random.randint(0, SCHE_NUMBER - 1)
+
+global_channel_vect = []
+for i in range(SCHE_NUMBER):
+    global_channel_vect.append(Channel())
+
+global_scheduler_vect = []
+for i in range(SCHE_NUMBER):
+    scheduler = Scheduler(global_channel_vect, i)
+    global_scheduler_vect.append(scheduler)
+
+global_process_vect = []
+for scheduler in global_scheduler_vect:
+    process = mp.Process(
+        target = sche_start,
+        args = [scheduler],
+        daemon = True
+    )
+    global_process_vect.append(process)
+
+def schedule_start():
+    for process in global_process_vect:
+        process.start()
 
 def code_scan(string):
     string_vect = []
@@ -1230,7 +1291,7 @@ prim('string?')(string_p)
 def string_print(string):
     p_print(string)
 
-@prim('string_length')
+@prim('string-length')
 def string_length(string):
     return len(string)
 
@@ -1626,15 +1687,13 @@ def read_string(char_stack):
 
 def read_doublequoted_string(char_stack):
     char_vect = []
-    char_vect.append('"')
     while True:
         char = read_char(char_stack)
         if char == '"':
             break
         else:
             char_vect.append(char)
-            char_vect.append('"')
-    return "".join(char_vect)
+    return "".join(['"'] + char_vect + ['"'])
 
 def read_sexp(char_stack):
     string = read_string(char_stack)
@@ -1845,6 +1904,8 @@ def subclass_p(c1, c2):
        return c1 in c2.get_type_vect()
     else:
        return issubclass(c1, c2)
+
+prim('schedule-start')(schedule_start)
 
 @prim('nop')
 def nop():
@@ -2385,6 +2446,7 @@ key_jo('clear', [CLEAR])
 key_jo('receive', [RECEIVE])
 key_jo('send', [SEND])
 key_jo('spawn', [SPAWN])
+key_jo('action', [ACTION])
 
 macro_dict = {}
 
@@ -2508,6 +2570,15 @@ def k_create(body):
          name,
          'new'])
 
+@macro('main-act')
+def k_main_act(body):
+    body_vect = list_to_vect(body)
+    return vect_to_sexp(
+        ['begin',
+         'schedule-start',
+         (['clo'] + body_vect),
+         'action'])
+
 def maybe_drop_shebang(code):
     length = len(code)
     if length < 3:
@@ -2581,42 +2652,10 @@ current_module_dir = os.path.dirname(current_module.__file__)
 core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
 
-@prim('p1')
-def p1():
-    code = '''\
-    (+jojo translate
-      receive :message!
-      "translating : " p :message p nl
-      "to : " p
-      (cond [:message "casa" eq?]
-            ["house" print nl]
-            [:message "blanca" eq?]
-            ["white" print nl]
-            else
-            ["I do not understand." print nl])
-      translate)
-
-    (+jojo main
-      {translate}  spawn :pid!
-      {:pid "casa"   send
-       :pid "blanca" send
-       :pid "loco"   send}
-      3 times)
-    '''
-    sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('scheduler-testing-module', sexp_vect)
-    clo = CLO([module.main])
-
-
-    import flask
-    d = flask.__dict__
-    clo = CLO([
-        d
-    ])
-
-    schedule_start(4)
-    ch0 = global_channel_vect[0]
-    mmsg0 = MetaMessage("just-actor", {
-        'clo' : clo,
-    })
-    ch0.meta_in_queue.put(mmsg0)
+@prim('repl')
+def repl():
+    module = new_module('jojo-repl')
+    merge_prim_dict(module)
+    merge_module(module, core_module)
+    print ("welcome to jojo's programming adventure in python ^-^/")
+    module_repl(module)

@@ -8,11 +8,12 @@
         ["white" print nl]
         else
         ["I do not understand." print nl])
-  nl
   translate)
 
-(+jojo main
+(main-act
   {translate}  spawn :pid!
   :pid "casa"   send
   :pid "blanca" send
   :pid "loco"   send)
+
+repl

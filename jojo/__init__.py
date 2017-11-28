@@ -22,4 +22,6 @@ from . jojo import (
     load,
 
     schedule_start,
+
+    repl,
 )
