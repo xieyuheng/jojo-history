@@ -4,6 +4,12 @@
 
 * [todo-stack]
 
+*** docs of basic jojo
+
+*** compare actor-model to celery
+
+*** (+class)
+
 *** actor monitor
 
 *** a proxy to use module, to be able to pickle modules
@@ -1167,7 +1173,7 @@
 *** SCHE_NUMBER
 
     #+begin_src python
-    SCHE_NUMBER = 4
+    SCHE_NUMBER = mp.cpu_count()
     #+end_src
 
 *** generate_random_sid

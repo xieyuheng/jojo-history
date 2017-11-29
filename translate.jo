@@ -2,12 +2,9 @@
   receive :message!
   "translating : " p :message p nl
   "to : " p
-  (cond [:message "casa" eq?]
-        ["house" print nl]
-        [:message "blanca" eq?]
-        ["white" print nl]
-        else
-        ["I do not understand." print nl])
+  (cond [:message "casa" eq?]   ["house" print nl]
+        [:message "blanca" eq?] ["white" print nl]
+        else ["I do not understand." print nl])
   translate)
 
 (main-act

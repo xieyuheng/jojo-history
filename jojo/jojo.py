@@ -733,7 +733,7 @@ class Message:
         self.aid = aid
         self.body = body
 
-SCHE_NUMBER = 4
+SCHE_NUMBER = mp.cpu_count()
 
 def generate_random_sid():
     return random.randint(0, SCHE_NUMBER - 1)
