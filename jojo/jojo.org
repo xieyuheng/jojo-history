@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+*** fix welcome message
+
 *** better print_data_stack
 
 *** import hook
@@ -2538,6 +2540,22 @@
               return VALUES(d[k], True)
           except KeyError:
               return False
+      #+end_src
+
+***** dict_get
+
+      #+begin_src python
+      @prim('dict-get')
+      def dict_get(d, k):
+          return d[k]
+      #+end_src
+
+***** dict_set
+
+      #+begin_src python
+      @prim('dict-set')
+      def dict_set(d, k, v):
+          d[k] = v
       #+end_src
 
 ***** dict_update -- no-side-effect

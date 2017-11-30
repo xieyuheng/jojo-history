@@ -1551,6 +1551,14 @@ def dict_find(d, k):
     except KeyError:
         return False
 
+@prim('dict-get')
+def dict_get(d, k):
+    return d[k]
+
+@prim('dict-set')
+def dict_set(d, k, v):
+    d[k] = v
+
 @prim('dict-update')
 def dict_update(d1, d2):
     d1 = dict_copy(d1)
