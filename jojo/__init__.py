@@ -1,4 +1,4 @@
-from jojo.jojo import (
+from . jojo import (
     VM, RP,
     GET, SET,
     JOJO, MSG, CLO,
@@ -20,5 +20,8 @@ from jojo.jojo import (
     core_module,
 
     load,
-    run,
+
+    schedule_start,
+
+    repl,
 )

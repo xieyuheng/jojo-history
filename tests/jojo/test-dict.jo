@@ -1,1 +1,14 @@
 (dict 1 2, 3 4) print
+
+(begin
+  (dict 'a 1 'b 2) :dict!
+  (assert :dict 'a dict-get 1 eq?)
+  (assert :dict 'b dict-get 2 eq?)
+  (assert :dict 'c 3 dict-set
+    :dict 'c dict-get 3 eq?)
+  (assert :dict 'a 0 dict-set
+    :dict 'a dict-get 0 eq?)
+  (assert
+    :dict 'd dict-find not)
+  (assert
+    :dict 'b dict-find swap 2 eq? and))

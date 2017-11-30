@@ -1,50 +1,84 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+title: jojo-in-python reference
 
-* [todo-stack]
-
-  - doc the core
+- doc the core
 
 * getting start
 
-  #+begin_src sh
-  pip install jojo
-  #+end_src
+*** install
+
+***** pip
+
+      #+begin_src sh
+      pip install jojo --user
+      #+end_src
 
 * data stack
 
-  #+begin_src jojo
-
-  #+end_src
-
-* postfix notation calculator
+  - you can put data into the data-stack,
+    and use jojo as an postfix notation calculator.
 
   #+begin_src jojo
-
+    * 0 *  []
+  1
+    * 1 *  [1]
+  2
+    * 2 *  [1, 2]
+  add
+    * 1 *  [3]
+  dup
+    * 2 *  [3, 3]
+  mul
+    * 1 *  [9]
   #+end_src
 
 * stack operation
 
   #+begin_src jojo
-  drop
+    * 0 *  []
+  1 2 3
+    * 1 *  [1]
+    * 2 *  [1, 2]
+    * 3 *  [1, 2, 3]
   dup
+    * 4 *  [1, 2, 3, 3]
+  drop
+    * 3 *  [1, 2, 3]
   over
+    * 4 *  [1, 2, 3, 2]
+  drop
+    * 3 *  [1, 2, 3]
   tuck
+    * 4 *  [1, 3, 2, 3]
+  drop
+    * 3 *  [1, 3, 2]
   swap
-  #+end_src
-
-* list processing
-
-* comments
-
-  #+begin_src jojo
-
+    * 3 *  [1, 2, 3]
   #+end_src
 
 * (+jojo) -- define function
 
   #+begin_src jojo
-  (+jojo)
+    * 0 *  []
+  (+jojo square dup mul)
+    * 0 *  []
+  3
+  ;1> [3]
+  square
+  ;=> * 1 * [9]
+  #+end_src
+
+* comments
+
+  #+begin_src jojo
+  (note
+    )
+  #+end_src
+
+* list processing
+
+  #+begin_src jojo
+  1 null cons
   #+end_src
 
 * local variable

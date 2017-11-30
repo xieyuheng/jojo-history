@@ -4,7 +4,25 @@
 
 * [todo-stack]
 
-*** (+actor)
+*** fix welcome message
+
+*** better print_data_stack
+
+*** import hook
+
+*** an actor as a generator
+
+*** docs of basic jojo
+
+*** compare actor-model to celery
+
+*** (+class)
+
+*** actor monitor
+
+*** a proxy to use module, to be able to pickle modules
+
+*** bind aid to address
 
 *** to use python decorator in jojo
 
@@ -40,6 +58,10 @@
     import operator
     import traceback
     import pprint
+    import time
+    import multiprocessing as mp
+    import queue
+    import random
     #+end_src
 
 *** utility
@@ -175,39 +197,30 @@
             self.rs = rs
 
         def exe(self):
-            return exe(self)
-    #+end_src
+            length = len(self.rs)
+            while len(self.rs) >= length:
+                self.exe_one_step()
+            return self
 
-*** exe
-
-    #+begin_src python
-    def exe(vm):
-        length = len(vm.rs)
-        while len(vm.rs) >= length:
-            exe_one_step(vm)
-        return vm
-    #+end_src
-
-*** exe_one_step
-
-    #+begin_src python
-    def exe_one_step(vm):
-        rp = vm.rs.pop()
-        if rp.length == 0:
-            return
-
-        # get current jo
-        jo = rp.body[rp.cursor]
-
-        # handle tail call
-        if rp.cursor >= rp.length - 1:
-           pass
-        else:
-           rp.cursor = rp.cursor + 1
-           vm.rs.append(rp)
-
-        # dispatching
-        exe_jo(jo, rp, vm)
+        def exe_one_step(self):
+            rp = self.rs.pop()
+            # handle empty closure
+            if rp.length == 0:
+                # one rp is finished
+                return
+            # get current jo
+            jo = rp.body[rp.cursor]
+            # handle tail call
+            if rp.cursor >= rp.length - 1:
+                # dispatching
+                exe_jo(jo, rp, self)
+                # one rp is finished
+                return
+            else:
+                rp.cursor = rp.cursor + 1
+                self.rs.append(rp)
+                # dispatching
+                exe_jo(jo, rp, self)
     #+end_src
 
 *** VALUES
@@ -399,20 +412,20 @@
 
       #+begin_src python
       class CLO:
-          def __init__(self, jojo):
-              self.jojo = jojo
+          def __init__(self, body):
+              self.body = body
 
           def jo_exe(self, rp, vm):
-              new_jojo = JOJO(self.jojo)
+              new_jojo = JOJO(self.body)
               new_jojo.lr = rp.lr
               vm.ds.append(new_jojo)
 
           def jo_print(self):
               p_print("(clo ")
-              for jo in self.jojo[:-1]:
+              for jo in self.body[:-1]:
                   jo_print(jo)
                   space()
-              jo_print(self.jojo[-1])
+              jo_print(self.body[-1])
               p_print(")")
       #+end_src
 
@@ -425,6 +438,7 @@
               clo = vm.ds.pop()
               clo.jo_exe(rp, vm)
 
+          @classmethod
           def jo_print(self):
               p_print("apply")
       #+end_src
@@ -443,6 +457,7 @@
               else:
                   vm.rs.append(RP(clo2))
 
+          @classmethod
           def jo_print(self):
               p_print("ifte")
       #+end_src
@@ -451,12 +466,13 @@
 
       #+begin_src python
       class CALL_FROM_MODULE:
-          def __init__(self, module, name):
-              self.module = module
+          def __init__(self, module_name, name):
+              self.module_name = module_name
               self.name = name
 
           def jo_exe(self, rp, vm):
-              jo = getattr(self.module, self.name)
+              module = sys.modules[self.module_name]
+              jo = getattr(module, self.name)
               exe_jo(jo, rp, vm)
 
           def jo_print(self):
@@ -503,6 +519,7 @@
           def jo_exe(self, rp, vm):
               vm.ds.append(self)
 
+          @classmethod
           def jo_print(self):
               p_print("mark")
       #+end_src
@@ -523,6 +540,7 @@
               vect.reverse()
               vm.ds.append(vect)
 
+          @classmethod
           def jo_print(self):
               p_print("collect-vect")
       #+end_src
@@ -537,6 +555,7 @@
               for value in vect:
                   vm.ds.append(value)
 
+          @classmethod
           def jo_print(self):
               p_print("vect-spread")
       #+end_src
@@ -555,6 +574,7 @@
                       return recur(cons(value, rest))
               vm.ds.append(recur(null))
 
+          @classmethod
           def jo_print(self):
               p_print("collect-list")
       #+end_src
@@ -573,6 +593,7 @@
                       recur(cdr(l))
               recur(vm.ds.pop())
 
+          @classmethod
           def jo_print(self):
               p_print("list-spread")
       #+end_src
@@ -607,6 +628,7 @@
               else:
                   exe_fun(x, vm)
 
+          @classmethod
           def jo_print(self):
               p_print("new")
       #+end_src
@@ -633,21 +655,21 @@
 
 ***** SET_FIELD
 
-       #+begin_src python
-       class SET_FIELD:
-           def __init__(self, field_name):
-               self.field_name = field_name
+      #+begin_src python
+      class SET_FIELD:
+          def __init__(self, field_name):
+              self.field_name = field_name
 
-           def jo_exe(self, rp, vm):
-               o = vm.ds.pop()
-               v = vm.ds.pop()
-               setattr(o, self.field_name, v)
+          def jo_exe(self, rp, vm):
+              o = vm.ds.pop()
+              v = vm.ds.pop()
+              setattr(o, self.field_name, v)
 
-           def jo_print(self):
-               p_print(".")
-               p_print(self.field_name)
-               p_print("!")
-       #+end_src
+          def jo_print(self):
+              p_print(".")
+              p_print(self.field_name)
+              p_print("!")
+      #+end_src
 
 ***** GENE
 
@@ -680,6 +702,7 @@
           def jo_exe(self, rp, vm):
               vm.ds = []
 
+          @classmethod
           def jo_print(self):
               p_print("clear")
       #+end_src
@@ -698,11 +721,521 @@
               p_print(self.fun)
       #+end_src
 
+* >< actor
+
+*** [note] scheduler loop
+
+***** preparing
+
+      1. handle meta-message
+         about actor creation and linking.
+
+      2. send out messages in out_queue to queue_vect.
+
+      3. distribute messages in in_queue to actors,
+         if an actor is in waiting_set,
+         awake it.
+
+***** processing
+
+      1. process the active_queue in a round-robin manner,
+         until it has only one actor.
+
+         - when there is only one actor,
+           no scheduling is needed.
+
+      2. process the last actor,
+         and loop back.
+
+*** [note] process_actors -- the round-robin working horse
+
+    1. if an actor exits,
+       the scheduler delet it from the actor_dict.
+
+    2. if an actor want to receive a message,
+       but its message queue is empty,
+       it will be droped from the active_queue.
+
+       - it is still in the actor_dict,
+         and in next round,
+         if there are messages sent to it,
+         it will eventually be added to
+         the active_queue again.
+
+    3. if an actor want to send a message,
+       the scheduler put the message in the out_queue.
+
+    4. if an actor want to create a new actor,
+       a meta-message will be sent to its scheduler.
+
+*** [note] actor-creation & meta-message
+
+    - note that, actor-creation returns actor-id.
+      since the newly created actor
+      will be allocated to schedulers randomly,
+      actor-creation might blocks.
+
+    - thus, we send a meta-message
+      about actor-creation
+      to current scheduler
+      and drop this actor from active_queue,
+      and add it to spawning_set.
+
+    - all actor-creation [all meta-message] will be handled
+      in the next round of the scheduler.
+
+    - but the scheduler still has to wait for actor-creation,
+
+      - thus a scheduler must maintain a fresh_actor_queue
+        to receive newly created actors.
+
+      - and a spawning_set of actors,
+        actors in it will not be active,
+        until the newly created actor is pushed to its data-stack.
+
+    - meta-message can be used
+      to achieve more then actor-creation.
+
+      - linking actors ><><><
+
+      - ><><>< more
+
+*** [note] scheduling
+
+    - round-robin
+
+    - pre-emptive by execution steps
+
+    - interrupt on special cases :
+      1. message sending
+      2. actor-creation
+
+*** [note] message & actor-id
+
+    - a message contains two fields,
+      actor-id and message-body.
+
+    - actor-id
+      sid uni-id
+
+*** [note] actor address security
+
+    - when embedded in python
+      I can not prevent an evil actor
+      to create actor-id dynamicly and send messages to them.
+
+      how is erlang coping with this ?
+      erlang can use c but, is it really safe on this ?
+
+    - if actor-id (erlang pid) is not safe,
+      we might use something which is
+      more close to actor model's notion of address,
+      we can separate public address
+      from non-public address.
+
+    - how about IPC and system pid ?
+
+*** Aid -- actor id
+
+    #+begin_src python
+    class Aid:
+        def __init__(self, sid, key):
+            self.sid = sid # natural number
+            self.key = key
+        def __eq__(self, other):
+            return (self.sid == other.sid and
+                    self.key == other.key)
+        def __hash__(self):
+            return hash((self.sid, self.key))
+        def __repr__(self):
+            return "<aid:(sid:{}, key:{})>" \
+                .format(self.sid, self.key)
+    #+end_src
+
+*** Actor
+
+    #+begin_src python
+    class Actor:
+        def __init__(self, scheduler, vm):
+            self.scheduler = scheduler
+            self.vm = vm
+            self.ds = vm.ds
+            self.rs = vm.rs
+            self.mq = queue.Queue()
+            self.aid = generate_aid(scheduler)
+            scheduler.actor_dict[self.aid.key] = self
+            scheduler.active_queue.put(self)
+
+        def finished_p(self):
+            return len(self.rs) == 0
+
+        def exe_one_step(self):
+            rp = self.rs.pop()
+            # handle empty closure
+            if rp.length == 0:
+                # one rp is finished
+                return
+            # get current jo
+            jo = rp.body[rp.cursor]
+            # handle tail call
+            if rp.cursor >= rp.length - 1:
+                # dispatching
+                act_jo(jo, rp, self)
+                # one rp is finished
+                return
+            else:
+                rp.cursor = rp.cursor + 1
+                self.rs.append(rp)
+                # dispatching
+                act_jo(jo, rp, self)
+    #+end_src
+
+*** generate_aid
+
+    #+begin_src python
+    def generate_aid(scheduler):
+        sid = scheduler.sid
+        key = scheduler._actor_counter
+        scheduler._actor_counter = key + 1
+        return Aid(sid, key)
+    #+end_src
+
+*** act_jo
+
+    #+begin_src python
+    def act_jo(jo, rp, actor):
+        if hasattr(jo, "jo_act"):
+            jo.jo_act(rp, actor)
+        else:
+            exe_jo(jo, rp, actor)
+            actor.scheduler.active_queue.put(actor)
+    #+end_src
+
+*** jo for actor
+
+***** [note]
+
+      - 'jo_act' for exe in scheduler
+      - 'jo_exe' for sequential exe
+
+***** RECEIVE
+
+      #+begin_src python
+      class RECEIVE:
+          @classmethod
+          def jo_act(self, rp, actor):
+              if not actor.mq.empty():
+                  value = actor.mq.get()
+                  actor.ds.append(value)
+                  actor.scheduler.active_queue.put(actor)
+              else:
+                  actor.scheduler.waiting_set.add(actor.aid)
+                  # do not put the actor back to active_queue
+
+          @classmethod
+          def jo_exe(self, rp, vm):
+              print("- receive fail")
+              print("  can not use 'receive' in sequential code")
+              error()
+
+          @classmethod
+          def jo_print(self):
+              p_print("receive")
+      #+end_src
+
+***** SEND
+
+      #+begin_src python
+      class SEND:
+          @classmethod
+          def jo_act(self, rp, actor):
+              body = actor.ds.pop()
+              aid = actor.ds.pop()
+              message = Message(aid, body)
+              sche = actor.scheduler
+              sche.out_queue.put(message)
+              sche.active_queue.put(actor)
+
+          @classmethod
+          def jo_exe(self, rp, vm):
+              print("- send fail")
+              print("  can not use 'send' in sequential code")
+              error()
+
+          @classmethod
+          def jo_print(self):
+              p_print("send")
+      #+end_src
+
+***** SPAWN
+
+      #+begin_src python
+      class SPAWN:
+          @classmethod
+          def jo_act(self, rp, actor):
+              clo = actor.ds.pop()
+              meta_message = MetaMessage("spawn", {
+                  'aid' : actor.aid,
+                  'clo' : clo,
+              })
+              actor.scheduler.meta_out_queue.put(meta_message)
+              actor.scheduler.spawning_set.add(actor.aid)
+              # do not put the actor back to active_queue
+
+          @classmethod
+          def jo_exe(self, rp, vm):
+              print("- spawn fail")
+              print("  can not use 'spawn' in sequential code")
+              error()
+
+          @classmethod
+          def jo_print(self):
+              p_print("spawn")
+      #+end_src
+
+***** ACTION
+
+      #+begin_src python
+      class ACTION:
+          @classmethod
+          def jo_exe(self, rp, vm):
+              clo = vm.ds.pop()
+              random_sid = generate_random_sid()
+              channel = global_channel_vect[random_sid]
+              meta_message = MetaMessage("action", {
+                  'clo'  : clo,
+              })
+              channel.meta_in_queue.put(meta_message)
+
+          @classmethod
+          def jo_print(self):
+              p_print("action")
+      #+end_src
+
+*** Channel
+
+    #+begin_src python
+    class Channel:
+        def __init__(self):
+            self.in_queue = mp.Queue()
+            self.meta_in_queue = mp.Queue()
+    #+end_src
+
+*** MetaMessage
+
+    - an actor can send MetaMessage
+      to its own scheduler.
+
+    #+begin_src python
+    class MetaMessage:
+        def __init__(self, head, body):
+            self.head = head
+            self.body = body
+    #+end_src
+
+*** Scheduler
+
+***** Scheduler
+
+      #+begin_src python
+      class Scheduler:
+          def __init__(self, channel_vect, sid):
+              self.sid = sid
+              self.channel_vect = channel_vect
+
+              self.channel = self.channel_vect[sid]
+              self.in_queue = self.channel.in_queue
+              self.meta_in_queue = self.channel.meta_in_queue
+
+              self.out_queue = queue.Queue()
+              self.meta_out_queue = queue.Queue()
+
+              self.active_queue = queue.Queue()
+              self.actor_dict = dict()
+              self.waiting_set = set() # of aid
+              self.spawning_set = set() # of aid
+
+              self._actor_counter = 0
+      #+end_src
+
+***** sche_start
+
+      #+begin_src python
+      def sche_start(sche):
+          while True:
+              send_meta_out_queue(sche)
+              process_meta_in_queue(sche)
+              send_out_queue(sche)
+              distribute_in_queue(sche)
+              schedule(sche)
+      #+end_src
+
+***** send_meta_out_queue
+
+      #+begin_src python
+      def send_meta_out_queue(sche):
+          while not sche.meta_out_queue.empty():
+              meta_message = sche.meta_out_queue.get()
+              if meta_message.head == "spawn":
+                  meta_request = MetaMessage("spawn-request", {
+                      'aid' : meta_message.body['aid'],
+                      'clo' : meta_message.body['clo'],
+                  })
+                  random_sid = generate_random_sid()
+                  random_channel = sche.channel_vect[random_sid]
+                  random_channel.meta_in_queue.put(meta_request)
+      #+end_src
+
+***** process_meta_in_queue
+
+      #+begin_src python
+      def process_meta_in_queue(sche):
+          while not sche.meta_in_queue.empty():
+              meta_message = sche.meta_in_queue.get()
+
+              if meta_message.head == "spawn-request":
+                  old_aid = meta_message.body['aid']
+                  clo = meta_message.body['clo']
+                  jojo = JOJO(clo.body)
+                  rp = RP(jojo)
+                  vm = VM([], [rp])
+                  actor = Actor(sche, vm)
+                  new_aid = actor.aid
+                  meta_response = MetaMessage("spawn-response", {
+                      'old_aid' : old_aid,
+                      'new_aid' : new_aid,
+                  })
+                  channel = sche.channel_vect[old_aid.sid]
+                  channel.meta_in_queue.put(meta_response)
+
+              elif meta_message.head == "spawn-response":
+                  old_aid = meta_message.body['old_aid']
+                  new_aid = meta_message.body['new_aid']
+                  old_actor = sche.actor_dict[old_aid.key]
+                  if old_aid in sche.spawning_set:
+                      sche.spawning_set.remove(old_aid)
+                      sche.active_queue.put(old_actor)
+                      old_actor.ds.append(new_aid)
+                  else:
+                      print("- spawn-response sent to wrong actor")
+                      error()
+
+              elif meta_message.head == "action":
+                  clo = meta_message.body['clo']
+                  jojo = JOJO(clo.body)
+                  rp = RP(jojo)
+                  vm = VM([], [rp])
+                  actor = Actor(sche, vm)
+      #+end_src
+
+***** send_out_queue
+
+      #+begin_src python
+      def send_out_queue(sche):
+          while not sche.out_queue.empty():
+              message = sche.out_queue.get()
+              channel = sche.channel_vect[message.aid.sid]
+              channel.in_queue.put(message)
+
+      #+end_src
+
+***** distribute_in_queue
+
+      #+begin_src python
+      def distribute_in_queue(sche):
+          while not sche.in_queue.empty():
+              message = sche.in_queue.get()
+              actor = sche.actor_dict[message.aid.key]
+              if actor.aid in sche.waiting_set:
+                  sche.waiting_set.remove(actor.aid)
+                  sche.active_queue.put(actor)
+                  actor.ds.append(message.body)
+              else:
+                  actor.mq.put(message.body)
+      #+end_src
+
+***** schedule
+
+      #+begin_src python
+      def schedule(sche):
+          i = 0
+          qsize = sche.active_queue.qsize()
+          while i < qsize:
+              actor = sche.active_queue.get()
+              if actor.finished_p():
+                  del sche.actor_dict[actor.aid.key]
+              else:
+                  actor.exe_one_step()
+              i = i + 1
+      #+end_src
+
+*** Message
+
+    #+begin_src python
+    class Message:
+        def __init__(self, aid, body):
+            self.aid = aid
+            self.body = body
+    #+end_src
+
+*** SCHE_NUMBER
+
+    #+begin_src python
+    SCHE_NUMBER = mp.cpu_count()
+    #+end_src
+
+*** generate_random_sid
+
+    #+begin_src python
+    def generate_random_sid():
+        return random.randint(0, SCHE_NUMBER - 1)
+    #+end_src
+
+*** global_channel_vect
+
+    #+begin_src python
+    global_channel_vect = []
+    for i in range(SCHE_NUMBER):
+        global_channel_vect.append(Channel())
+    #+end_src
+
+*** global_scheduler_vect
+
+    #+begin_src python
+    global_scheduler_vect = []
+    for i in range(SCHE_NUMBER):
+        scheduler = Scheduler(global_channel_vect, i)
+        global_scheduler_vect.append(scheduler)
+    #+end_src
+
+*** global_process_vect
+
+    #+begin_src python
+    global_process_vect = []
+    for scheduler in global_scheduler_vect:
+        process = mp.Process(
+            target = sche_start,
+            args = [scheduler],
+            daemon = True
+        )
+        global_process_vect.append(process)
+    #+end_src
+
+*** schedule_start
+
+    #+begin_src python
+    def schedule_start():
+        for process in global_process_vect:
+            process.start()
+    #+end_src
+
 * sexp -- string expression
 
 *** scan -- lexer for sexp
 
 ***** code_scan
+
+      - ';' as line comment
 
       #+begin_src python
       def code_scan(string):
@@ -715,6 +1248,13 @@
               if space_p(char):
                   i = i + 1
 
+              elif char == ';':
+                  newline_index = string.find('\n', i+1)
+                  if newline_index == -1:
+                      break
+                  end = newline_index + 1
+                  i = end
+
               elif delimiter_p(char):
                   string_vect.append(char)
                   i = i + 1
@@ -722,7 +1262,7 @@
               elif doublequote_p(char):
                   doublequote_end_index = string.find('"', i+1)
                   if doublequote_end_index == -1:
-                      print("- code_scan (fail")
+                      print("- code_scan fail")
                       print("  doublequote mismatch")
                       print("  string : {}".format(string))
                       error()
@@ -773,6 +1313,7 @@
                   char == '{' or
                   char == '}' or
                   char == ',' or
+                  char == ';' or
                   char == '`' or
                   char == "'")
       #+end_src
@@ -913,6 +1454,7 @@
     #+begin_src python
     def p_print(x):
         print(x, end="")
+        sys.stdout.flush()
     #+end_src
 
 *** sexp_print
@@ -945,6 +1487,22 @@
 
 * compiler
 
+*** [note]
+
+    - 'new_module'
+      - create new module
+      - setup required attrs
+      - register the module to sys.modules
+      called by 'compile_module' and 'compile_core_module'
+
+    - 'merge_module'
+      - merge 'jojo_define'-d name in .defined_name_set
+        to another module
+
+    - 'merge_sexp_vect'
+      - merge a vect of sexp to module
+      called by compilers and repls
+
 *** new_module
 
     #+begin_src python
@@ -954,6 +1512,7 @@
         module.vm = VM([], [])
         # for name can occur before been defined
         module.defined_name_set = set()
+        sys.modules[name] = module
         return module
     #+end_src
 
@@ -983,6 +1542,9 @@
     #+end_src
 
 *** merge_sexp_vect
+
+    - a module has its vm,
+      which is used to eval top level sexps.
 
     #+begin_src python
     def merge_sexp_vect(module, sexp_vect):
@@ -1091,7 +1653,7 @@
               return key_jo_dict[string]
 
           # normal function call
-          return [CALL_FROM_MODULE(module, string)]
+          return [CALL_FROM_MODULE(module.__name__, string)]
       #+end_src
 
 ***** dot_in_string_emit
@@ -1539,7 +2101,7 @@
 ***** string_length
 
       #+begin_src python
-      @prim('string_length')
+      @prim('string-length')
       def string_length(string):
           return len(string)
       #+end_src
@@ -1980,6 +2542,22 @@
               return False
       #+end_src
 
+***** dict_get
+
+      #+begin_src python
+      @prim('dict-get')
+      def dict_get(d, k):
+          return d[k]
+      #+end_src
+
+***** dict_set
+
+      #+begin_src python
+      @prim('dict-set')
+      def dict_set(d, k, v):
+          d[k] = v
+      #+end_src
+
 ***** dict_update -- no-side-effect
 
       #+begin_src python
@@ -2151,6 +2729,7 @@
       @prim('newline')
       def newline():
           print("")
+          sys.stdout.flush()
 
       prim('nl')(newline)
       #+end_src
@@ -2190,6 +2769,8 @@
 
 ******* read_string
 
+        - ';' as line comment
+
         #+begin_src python
         def read_string(char_stack):
             char_vect = []
@@ -2197,7 +2778,10 @@
 
             while True:
                 char = read_char(char_stack)
-                if not collecting_bytes_p:
+                if char == ';':
+                    read_drop_comment(char_stack)
+
+                elif not collecting_bytes_p:
                     if space_p(char):
                         pass
                     elif doublequote_p(char):
@@ -2221,20 +2805,28 @@
             return "".join(char_vect)
         #+end_src
 
+******* read_drop_comment
+
+        #+begin_src python
+        def read_drop_comment(char_stack):
+            while True:
+                char = read_char(char_stack)
+                if char == '\n':
+                    return
+        #+end_src
+
 ******* read_doublequoted_string
 
         #+begin_src python
         def read_doublequoted_string(char_stack):
             char_vect = []
-            char_vect.append('"')
             while True:
                 char = read_char(char_stack)
                 if char == '"':
                     break
                 else:
                     char_vect.append(char)
-            char_vect.append('"')
-            return "".join(char_vect)
+            return "".join(['"'] + char_vect + ['"'])
         #+end_src
 
 ******* read_sexp
@@ -2286,7 +2878,7 @@
 
       #+begin_src python
       def print_data_stack(ds):
-          p_print("  * {} *  ".format(len(ds)))
+          p_print(";{}> ".format(len(ds)))
           print(ds)
       #+end_src
 
@@ -2541,6 +3133,12 @@
              return issubclass(c1, c2)
       #+end_src
 
+*** *actor*
+
+    #+begin_src python
+    prim('schedule-start')(schedule_start)
+    #+end_src
+
 *** *misc*
 
 ***** nop
@@ -2557,6 +3155,15 @@
       @prim('none')
       def none():
           return VALUES(None)
+      #+end_src
+
+***** sleep
+
+      #+begin_src python
+      @prim('sleep')
+      def sleep(secs):
+          time.sleep(secs)
+          return
       #+end_src
 
 ***** fun_to_positional_default_arg_dict
@@ -3304,6 +3911,15 @@
     key_jo('clear', [CLEAR])
     #+end_src
 
+*** key_jo for actor
+
+    #+begin_src python
+    key_jo('receive', [RECEIVE])
+    key_jo('send', [SEND])
+    key_jo('spawn', [SPAWN])
+    key_jo('action', [ACTION])
+    #+end_src
+
 * macro_dict
 
 *** [note] type
@@ -3465,6 +4081,19 @@
              'new'])
     #+end_src
 
+*** (main-act)
+
+    #+begin_src python
+    @macro('main-act')
+    def k_main_act(body):
+        body_vect = list_to_vect(body)
+        return vect_to_sexp(
+            ['begin',
+             'schedule-start',
+             (['clo'] + body_vect),
+             'action'])
+    #+end_src
+
 * epilog -- interface
 
 *** maybe_drop_shebang
@@ -3521,21 +4150,6 @@
         return module
     #+end_src
 
-*** run
-
-    #+begin_src python
-    def run(data_stack, jojo_vect):
-        data_stack = vect_copy(data_stack)
-        for jojo in jojo_vect:
-            run_one(data_stack, jojo)
-        return data_stack
-
-    def run_one(data_stack, jojo):
-        vm = VM(data_stack,
-                [RP(jojo)])
-        vm.exe()
-    #+end_src
-
 *** core_module
 
 ***** load_core
@@ -3574,3 +4188,15 @@
       core_path = "/".join([current_module_dir, "core.jo"])
       core_module = load_core(core_path)
       #+end_src
+
+*** repl
+
+    #+begin_src python
+    @prim('repl')
+    def repl():
+        module = new_module('jojo-repl')
+        merge_prim_dict(module)
+        merge_module(module, core_module)
+        print ("welcome to jojo's programming adventure in python ^-^/")
+        module_repl(module)
+    #+end_src
