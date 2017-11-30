@@ -1730,7 +1730,7 @@ def read_sexp_list_until_ket(char_stack, ket):
         return cons(sexp, recur)
 
 def print_data_stack(ds):
-    p_print("  * {} *  ".format(len(ds)))
+    p_print(";{}> ".format(len(ds)))
     print(ds)
 
 def print_return_stack(rs):
@@ -1914,6 +1914,11 @@ def nop():
 @prim('none')
 def none():
     return VALUES(None)
+
+@prim('sleep')
+def sleep(secs):
+    time.sleep(secs)
+    return
 
 def fun_to_positional_default_arg_dict(fun):
     signature = get_signature(fun)

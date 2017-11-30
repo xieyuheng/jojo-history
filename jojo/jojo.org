@@ -4,6 +4,12 @@
 
 * [todo-stack]
 
+*** ';' as line comment
+
+*** better print_data_stack
+
+*** an actor as a generator
+
 *** docs of basic jojo
 
 *** compare actor-model to celery
@@ -2829,7 +2835,7 @@
 
       #+begin_src python
       def print_data_stack(ds):
-          p_print("  * {} *  ".format(len(ds)))
+          p_print(";{}> ".format(len(ds)))
           print(ds)
       #+end_src
 
@@ -3106,6 +3112,15 @@
       @prim('none')
       def none():
           return VALUES(None)
+      #+end_src
+
+***** sleep
+
+      #+begin_src python
+      @prim('sleep')
+      def sleep(secs):
+          time.sleep(secs)
+          return
       #+end_src
 
 ***** fun_to_positional_default_arg_dict
