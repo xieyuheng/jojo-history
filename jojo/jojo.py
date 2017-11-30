@@ -770,6 +770,13 @@ def code_scan(string):
         if space_p(char):
             i = i + 1
 
+        elif char == ';':
+            newline_index = string.find('\n', i+1)
+            if newline_index == -1:
+                break
+            end = newline_index + 1
+            i = end
+
         elif delimiter_p(char):
             string_vect.append(char)
             i = i + 1
@@ -777,7 +784,7 @@ def code_scan(string):
         elif doublequote_p(char):
             doublequote_end_index = string.find('"', i+1)
             if doublequote_end_index == -1:
-                print("- code_scan (fail")
+                print("- code_scan fail")
                 print("  doublequote mismatch")
                 print("  string : {}".format(string))
                 error()
@@ -816,6 +823,7 @@ def delimiter_p(char):
             char == '{' or
             char == '}' or
             char == ',' or
+            char == ';' or
             char == '`' or
             char == "'")
 
@@ -1662,7 +1670,10 @@ def read_string(char_stack):
 
     while True:
         char = read_char(char_stack)
-        if not collecting_bytes_p:
+        if char == ';':
+            read_drop_comment(char_stack)
+
+        elif not collecting_bytes_p:
             if space_p(char):
                 pass
             elif doublequote_p(char):
@@ -1684,6 +1695,12 @@ def read_string(char_stack):
                 char_vect.append(char)
 
     return "".join(char_vect)
+
+def read_drop_comment(char_stack):
+    while True:
+        char = read_char(char_stack)
+        if char == '\n':
+            return
 
 def read_doublequoted_string(char_stack):
     char_vect = []
