@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+*** (clone)
+
 *** fix welcome message
 
 *** better print_data_stack
