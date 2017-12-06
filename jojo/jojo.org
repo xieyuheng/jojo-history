@@ -4,11 +4,20 @@
 
 * [todo-stack]
 
+*** fix CLO
+
+*** better print_module_data_stack
+
+*** (+generator) -- python like generator and yield
+
+    - for scrapy
+
+    - (+generator k1 1 give k1)
+      k1 next
+
 *** (clone)
 
 *** fix welcome message
-
-*** better print_data_stack
 
 *** import hook
 
@@ -29,13 +38,6 @@
 *** to use python decorator in jojo
 
     - for flask and celery
-
-*** (+generator) -- python like generator and yield
-
-    - for scrapy
-
-    - (+generator k1 1 give k1)
-      k1 next
 
 *** parse_sexp_vect -- error handling
 
@@ -2876,12 +2878,22 @@
                 return cons(sexp, recur)
         #+end_src
 
-***** print_data_stack
+***** print_module_data_stack
 
       #+begin_src python
-      def print_data_stack(ds):
+      def print_module_data_stack(module):
+          newline()
+          ds = module.vm.ds
           p_print(";{}> ".format(len(ds)))
           print(ds)
+          # for data in ds:
+          #     jo = getattr(module, 'p')
+          #     jojo = JOJO([jo])
+          #     rp = RP(jojo)
+          #     vm = VM([data], [rp])
+          #     vm.exe()
+          #     space()
+          # newline()
       #+end_src
 
 ***** print_return_stack
@@ -2964,7 +2976,7 @@
         #+begin_src python
         def module_repl(module):
             module.repl_char_stack = []
-            print_data_stack(module.vm.ds)
+            print_module_data_stack(module)
             try:
                 while True:
                     module_repl_one_step(module)
@@ -2991,7 +3003,7 @@
 
             try:
                 merge_sexp_vect(module, [sexp])
-                print_data_stack(module.vm.ds)
+                print_module_data_stack(module)
             except SystemExit:
                 sys.exit()
             except:
@@ -3023,7 +3035,7 @@
             print("- enter debug-repl [level : {}]".format(level))
             module.debug_repl_char_stack = []
             print_return_stack(module.vm.rs)
-            print_data_stack(module.vm.ds)
+            print_module_data_stack(module)
             try:
                 while True:
                     module_debug_one_step(module, level)
@@ -3033,7 +3045,7 @@
                 print("- leave debug-repl [level : {}]".format(level))
                 print("  return-stack is cleared")
                 print("  for module : {}".format(module.__name__))
-                print_data_stack(module.vm.ds)
+                print_module_data_stack(module)
                 return
             except EXIT_MODULE_DEBUG_REPL:
                 module.vm.ds = []
@@ -3042,14 +3054,14 @@
                 print("  return-stack is cleared")
                 print("  data-stack is cleared")
                 print("  for module : {}".format(module.__name__))
-                print_data_stack(module.vm.ds)
+                print_module_data_stack(module)
                 return
             except LEAVE_MODULE_DEBUG_REPL:
                 module.vm.rs = []
                 print("- leave debug-repl [level : {}]".format(level))
                 print("  return-stack is cleared")
                 print("  for module : {}".format(module.__name__))
-                print_data_stack(module.vm.ds)
+                print_module_data_stack(module)
                 return
         #+end_src
 
@@ -3081,7 +3093,7 @@
 
             try:
                 merge_sexp_vect(module, [sexp])
-                print_data_stack(module.vm.ds)
+                print_module_data_stack(module)
             except SystemExit:
                 sys.exit()
             except:

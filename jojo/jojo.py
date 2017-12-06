@@ -1754,9 +1754,19 @@ def read_sexp_list_until_ket(char_stack, ket):
         recur = read_sexp_list_until_ket(char_stack, ket)
         return cons(sexp, recur)
 
-def print_data_stack(ds):
+def print_module_data_stack(module):
+    newline()
+    ds = module.vm.ds
     p_print(";{}> ".format(len(ds)))
     print(ds)
+    # for data in ds:
+    #     jo = getattr(module, 'p')
+    #     jojo = JOJO([jo])
+    #     rp = RP(jojo)
+    #     vm = VM([data], [rp])
+    #     vm.exe()
+    #     space()
+    # newline()
 
 def print_return_stack(rs):
     print("- return-stack * {} *".format(len(rs)))
@@ -1814,7 +1824,7 @@ def jo_print(jo):
 
 def module_repl(module):
     module.repl_char_stack = []
-    print_data_stack(module.vm.ds)
+    print_module_data_stack(module)
     try:
         while True:
             module_repl_one_step(module)
@@ -1833,7 +1843,7 @@ def module_repl_one_step(module):
 
     try:
         merge_sexp_vect(module, [sexp])
-        print_data_stack(module.vm.ds)
+        print_module_data_stack(module)
     except SystemExit:
         sys.exit()
     except:
@@ -1853,7 +1863,7 @@ def module_debug(module, level):
     print("- enter debug-repl [level : {}]".format(level))
     module.debug_repl_char_stack = []
     print_return_stack(module.vm.rs)
-    print_data_stack(module.vm.ds)
+    print_module_data_stack(module)
     try:
         while True:
             module_debug_one_step(module, level)
@@ -1863,7 +1873,7 @@ def module_debug(module, level):
         print("- leave debug-repl [level : {}]".format(level))
         print("  return-stack is cleared")
         print("  for module : {}".format(module.__name__))
-        print_data_stack(module.vm.ds)
+        print_module_data_stack(module)
         return
     except EXIT_MODULE_DEBUG_REPL:
         module.vm.ds = []
@@ -1872,14 +1882,14 @@ def module_debug(module, level):
         print("  return-stack is cleared")
         print("  data-stack is cleared")
         print("  for module : {}".format(module.__name__))
-        print_data_stack(module.vm.ds)
+        print_module_data_stack(module)
         return
     except LEAVE_MODULE_DEBUG_REPL:
         module.vm.rs = []
         print("- leave debug-repl [level : {}]".format(level))
         print("  return-stack is cleared")
         print("  for module : {}".format(module.__name__))
-        print_data_stack(module.vm.ds)
+        print_module_data_stack(module)
         return
 
 class EXIT_MODULE_DEBUG_REPL(Exception):
@@ -1899,7 +1909,7 @@ def module_debug_one_step(module, level):
 
     try:
         merge_sexp_vect(module, [sexp])
-        print_data_stack(module.vm.ds)
+        print_module_data_stack(module)
     except SystemExit:
         sys.exit()
     except:
