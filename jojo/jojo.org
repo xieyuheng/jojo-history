@@ -4,9 +4,21 @@
 
 * [todo-stack]
 
+*** to use postfix apply [again]
+
+*** (+class)
+
+*** the use of :local
+
+***** good about consistent :local
+
+***** bad about consistent :local
+
 *** fix CLO
 
 *** better print_module_data_stack
+
+*** docs
 
 *** (+generator) -- python like generator and yield
 
@@ -26,8 +38,6 @@
 *** docs of basic jojo
 
 *** compare actor-model to celery
-
-*** (+class)
 
 *** actor monitor
 

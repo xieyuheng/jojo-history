@@ -1,0 +1,17 @@
+#+title: specification
+
+* [todo-stack]
+
+*** Den
+
+*** Exp
+
+*** Obj
+
+* Den
+
+  - macro
+
+* Exp -- JO
+
+* Obj
