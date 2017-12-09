@@ -110,8 +110,8 @@
     #+begin_src jojo
     (+jojo times (-> :fun :n --)
       (cond [:n 0 lteq?] []
-            else [:fun
-                  {:fun} :n dec times]))
+            else [:fun apply
+                  :fun :n dec times]))
     #+end_src
 
 * class
@@ -221,8 +221,8 @@
     #+begin_src jojo
     (+jojo list-any? (-> :list :pred -> Bool)
       (cond [:list null?] false
-            [:list .car :pred] true
-            else [:list .cdr {:pred} list-any?]))
+            [:list .car :pred apply] true
+            else [:list .cdr :pred list-any?]))
     #+end_src
 
 *** list-every?
@@ -230,8 +230,8 @@
     #+begin_src jojo
     (+jojo list-every? (-> :list :pred -> Bool)
       (cond [:list null?] true
-            [:list .car :pred not] false
-            else [:list .cdr {:pred} list-every?]))
+            [:list .car :pred apply not] false
+            else [:list .cdr :pred list-every?]))
     #+end_src
 
 *** list-ante -- antecedent
@@ -239,9 +239,9 @@
     #+begin_src jojo
     (+jojo list-ante (-> :list :pred -- ante)
       (cond [:list null?] null
-            [:list .car :pred] null
+            [:list .car :pred apply] null
             else [:list .car
-                  :list .cdr {:pred} list-ante
+                  :list .cdr :pred list-ante
                   cons]))
     #+end_src
 
@@ -250,8 +250,8 @@
     #+begin_src jojo
     (+jojo list-succ (-> :list :pred -- succ)
       (cond [:list null?] null
-            [:list .car :pred] :list
-            else [:list .cdr {:pred} list-succ]))
+            [:list .car :pred apply] :list
+            else [:list .cdr :pred list-succ]))
     #+end_src
 
 *** list-split
@@ -259,9 +259,9 @@
     #+begin_src jojo
     (+jojo list-split (-> :list :pred -- ante succ)
       (cond [:list null?] [null null]
-            [:list .car :pred] [null :list]
+            [:list .car :pred apply] [null :list]
             else [:list .car
-                  :list .cdr {:pred} list-split
+                  :list .cdr :pred list-split
                   :succ! cons :succ]))
     #+end_src
 
@@ -271,7 +271,7 @@
     (+jojo list-map (-> :list :fun -- List)
       (case :list
         <null> null
-        <cons> [:list .car :fun :list .cdr {:fun} list-map cons]))
+        <cons> [:list .car :fun apply :list .cdr :fun list-map cons]))
     #+end_src
 
 *** list-for-each
@@ -280,7 +280,7 @@
     (+jojo list-for-each (-> :list :fun --)
       (case :list
         <null> []
-        <cons> [:list .car :fun :list .cdr {:fun} list-for-each]))
+        <cons> [:list .car :fun apply :list .cdr :fun list-for-each]))
     #+end_src
 
 *** list-filter
@@ -288,9 +288,9 @@
     #+begin_src jojo
     (+jojo list-filter (-> :list :pred -- List)
       (cond [:list null?] null
-            [:list .car :pred]
-            [:list .car :list .cdr {:pred} list-filter cons]
-            else [:list .cdr {:pred} list-filter]))
+            [:list .car :pred apply]
+            [:list .car :list .cdr :pred list-filter cons]
+            else [:list .cdr :pred list-filter]))
     #+end_src
 
 *** list-reverse
@@ -313,8 +313,8 @@
       (case :list
         <null> :b
         <cons> [:list .car
-                :list .cdr :b {:a-b->b} list-foldr
-                :a-b->b]))
+                :list .cdr :b :a-b->b list-foldr
+                :a-b->b apply]))
     #+end_src
 
 *** list-foldl
@@ -323,9 +323,9 @@
     (+jojo list-foldl (-> a :list, :b, :b-a->b -- b)
       (case :list
         <null> :b
-        <cons> [:list .cdr :b {:b-a->b} list-foldl
+        <cons> [:list .cdr :b :b-a->b list-foldl
                 :list .car
-                :b-a->b]))
+                :b-a->b apply]))
     #+end_src
 
 *** list-member?

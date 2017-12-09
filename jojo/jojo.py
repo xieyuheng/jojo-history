@@ -295,8 +295,8 @@ class GET:
         self.name = name
 
     def jo_exe(self, rp, vm):
-        jo = rp.lr[self.name]
-        exe_jo(jo, rp, vm)
+        data = rp.lr[self.name]
+        vm.ds.append(data)
 
     def jo_print(self):
         p_print(self.name)
@@ -1758,15 +1758,15 @@ def print_module_data_stack(module):
     newline()
     ds = module.vm.ds
     p_print(";{}> ".format(len(ds)))
-    print(ds)
-    # for data in ds:
-    #     jo = getattr(module, 'p')
-    #     jojo = JOJO([jo])
-    #     rp = RP(jojo)
-    #     vm = VM([data], [rp])
-    #     vm.exe()
-    #     space()
-    # newline()
+    # print(ds)
+    for data in ds:
+        jo = getattr(module, 'p')
+        jojo = JOJO([jo])
+        rp = RP(jojo)
+        vm = VM([data], [rp])
+        vm.exe()
+        space()
+    newline()
 
 def print_return_stack(rs):
     print("- return-stack * {} *".format(len(rs)))

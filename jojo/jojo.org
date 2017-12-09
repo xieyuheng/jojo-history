@@ -4,21 +4,15 @@
 
 * [todo-stack]
 
-*** to use postfix apply [again]
+*** better print_module_data_stack
+
+*** import hook
+
+*** docs
 
 *** (+class)
 
-*** the use of :local
-
-***** good about consistent :local
-
-***** bad about consistent :local
-
-*** fix CLO
-
-*** better print_module_data_stack
-
-*** docs
+*** >< why do not handle '-' to '_' transformation ?
 
 *** (+generator) -- python like generator and yield
 
@@ -30,8 +24,6 @@
 *** (clone)
 
 *** fix welcome message
-
-*** import hook
 
 *** an actor as a generator
 
@@ -502,8 +494,8 @@
               self.name = name
 
           def jo_exe(self, rp, vm):
-              jo = rp.lr[self.name]
-              exe_jo(jo, rp, vm)
+              data = rp.lr[self.name]
+              vm.ds.append(data)
 
           def jo_print(self):
               p_print(self.name)
@@ -2895,15 +2887,14 @@
           newline()
           ds = module.vm.ds
           p_print(";{}> ".format(len(ds)))
-          print(ds)
-          # for data in ds:
-          #     jo = getattr(module, 'p')
-          #     jojo = JOJO([jo])
-          #     rp = RP(jojo)
-          #     vm = VM([data], [rp])
-          #     vm.exe()
-          #     space()
-          # newline()
+          for data in ds:
+              jo = getattr(module, 'p')
+              jojo = JOJO([jo])
+              rp = RP(jojo)
+              vm = VM([data], [rp])
+              vm.exe()
+              space()
+          newline()
       #+end_src
 
 ***** print_return_stack
