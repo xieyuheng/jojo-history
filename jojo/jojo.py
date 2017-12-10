@@ -235,7 +235,17 @@ class JOJO:
         vm.rs.append(RP(self))
 
     def __repr__(self):
-        return "><><><"
+        if self.length == 0:
+            return "{}"
+        rep_vect = []
+        rep_vect.append("{")
+        for jo in self.body[:-1]:
+            rep_vect.append(jo.__repr__())
+            rep_vect.append(" ")
+        jo = self.body[-1]
+        rep_vect.append(jo.__repr__())
+        rep_vect.append("}")
+        return "".join(rep_vect)
 
 class CLO:
     def __init__(self, body):
@@ -246,14 +256,16 @@ class CLO:
         new_jojo.lr = rp.lr
         vm.ds.append(new_jojo)
 
-    def jo_rep(self):
+    def __repr__(self):
+        if len(self.body) == 0:
+            return "(clo)"
         rep_vect = []
         rep_vect.append("(clo ")
         for jo in self.body[:-1]:
-            rep_vect.append(jo.jo_rep)
+            rep_vect.append(jo.__repr__())
             rep_vect.append(" ")
         jo = self.body[-1]
-        rep_vect.append(jo.jo_rep)
+        rep_vect.append(jo.__repr__())
         rep_vect.append(")")
         return "".join(rep_vect)
 
@@ -264,7 +276,7 @@ class APPLY:
         clo.jo_exe(rp, vm)
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "apply"
 
 class IFTE:
@@ -279,7 +291,7 @@ class IFTE:
             vm.rs.append(RP(clo2))
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "ifte"
 
 class CALL_FROM_MODULE:
@@ -292,7 +304,7 @@ class CALL_FROM_MODULE:
         jo = getattr(module, self.name)
         exe_jo(jo, rp, vm)
 
-    def jo_rep(self):
+    def __repr__(self):
         # "(call {} from {})".format(self.name, self.module.__name__)
         return self.name
 
@@ -304,7 +316,7 @@ class GET:
         data = rp.lr[self.name]
         vm.ds.append(data)
 
-    def jo_rep(self):
+    def __repr__(self):
         return self.name
 
 class SET:
@@ -315,7 +327,7 @@ class SET:
         value = vm.ds.pop()
         rp.lr[self.name] = value
 
-    def jo_rep(self):
+    def __repr__(self):
         return self.name + '!'
 
 class MARK:
@@ -324,7 +336,7 @@ class MARK:
         vm.ds.append(self)
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "mark"
 
 class COLLECT_VECT:
@@ -341,7 +353,7 @@ class COLLECT_VECT:
         vm.ds.append(vect)
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "collect-vect"
 
 class VECT_SPREAD:
@@ -352,7 +364,7 @@ class VECT_SPREAD:
             vm.ds.append(value)
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "vect-spread"
 
 class COLLECT_LIST:
@@ -367,7 +379,7 @@ class COLLECT_LIST:
         vm.ds.append(recur(null))
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "collect-list"
 
 class LIST_SPREAD:
@@ -382,7 +394,7 @@ class LIST_SPREAD:
         recur(vm.ds.pop())
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "list-spread"
 
 class DATA_PRED:
@@ -393,7 +405,7 @@ class DATA_PRED:
         x = vm.ds.pop()
         vm.ds.append(type(x) == self.data_class)
 
-    def jo_rep(self):
+    def __repr__(self):
         return data_class.__name__ + '?'
 
 class NEW:
@@ -408,7 +420,7 @@ class NEW:
             exe_fun(x, vm)
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "new"
 
 class MSG:
@@ -423,7 +435,7 @@ class MSG:
         else:
             exe_jo(v, rp, vm)
 
-    def jo_rep(self):
+    def __repr__(self):
         return "." + self.message
 
 class SET_FIELD:
@@ -435,7 +447,7 @@ class SET_FIELD:
         v = vm.ds.pop()
         setattr(o, self.field_name, v)
 
-    def jo_rep(self):
+    def __repr__(self):
         return "." + self.field_name + "!"
 
 class GENE:
@@ -463,7 +475,7 @@ class CLEAR:
         vm.ds = []
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "clear"
 
 class PRIMITIVE:
@@ -473,7 +485,7 @@ class PRIMITIVE:
     def jo_exe(self, rp, vm):
         vm.ds.append(self.fun)
 
-    def jo_rep(self):
+    def __repr__(self):
         return self.fun
 
 class Aid:
@@ -554,7 +566,7 @@ class RECEIVE:
         error()
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "receive"
 
 class SEND:
@@ -574,7 +586,7 @@ class SEND:
         error()
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "send"
 
 class SPAWN:
@@ -596,7 +608,7 @@ class SPAWN:
         error()
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "spawn"
 
 class ACTION:
@@ -611,7 +623,7 @@ class ACTION:
         channel.meta_in_queue.put(meta_message)
 
     @classmethod
-    def jo_rep(self):
+    def __repr__(self):
         return "action"
 
 class Channel:
@@ -1818,8 +1830,6 @@ def jo_print(jo):
         p_print(jo.__module__)
         p_print(".")
         p_print(jo.__name__)
-    elif hasattr(jo, "jo_rep"):
-        p_print(jo.jo_rep())
     else:
         p_print(jo)
 
