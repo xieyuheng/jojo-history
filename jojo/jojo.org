@@ -4,7 +4,7 @@
 
 * [todo-stack]
 
-*** 'w' & write_module_data_stack
+*** fix the use of doublequote
 
 *** import hook
 
@@ -2740,6 +2740,14 @@
       prim('print')(p_print)
       #+end_src
 
+***** representation
+
+      #+begin_src python
+      @prim('representation')
+      def representation(x):
+          return x.__repr__()
+      #+end_src
+
 ***** nl -- newline
 
       #+begin_src python
@@ -2891,15 +2899,15 @@
                 return cons(sexp, recur)
         #+end_src
 
-***** print_module_data_stack
+***** write_module_data_stack
 
       #+begin_src python
-      def print_module_data_stack(module):
+      def write_module_data_stack(module):
           newline()
           ds = module.vm.ds
           p_print(";{}> ".format(len(ds)))
           for data in ds:
-              jo = getattr(module, 'p')
+              jo = getattr(module, 'w')
               jojo = JOJO([jo])
               rp = RP(jojo)
               vm = VM([data], [rp])
@@ -2987,7 +2995,7 @@
         #+begin_src python
         def module_repl(module):
             module.repl_char_stack = []
-            print_module_data_stack(module)
+            write_module_data_stack(module)
             try:
                 while True:
                     module_repl_one_step(module)
@@ -3014,7 +3022,7 @@
 
             try:
                 merge_sexp_vect(module, [sexp])
-                print_module_data_stack(module)
+                write_module_data_stack(module)
             except SystemExit:
                 sys.exit()
             except:
@@ -3046,7 +3054,7 @@
             print("- enter debug-repl [level : {}]".format(level))
             module.debug_repl_char_stack = []
             print_module_return_stack(module)
-            print_module_data_stack(module)
+            write_module_data_stack(module)
             try:
                 while True:
                     module_debug_one_step(module, level)
@@ -3056,7 +3064,7 @@
                 print("- leave debug-repl [level : {}]".format(level))
                 print("  return-stack is cleared")
                 print("  for module : {}".format(module.__name__))
-                print_module_data_stack(module)
+                write_module_data_stack(module)
                 return
             except EXIT_MODULE_DEBUG_REPL:
                 module.vm.ds = []
@@ -3065,14 +3073,14 @@
                 print("  return-stack is cleared")
                 print("  data-stack is cleared")
                 print("  for module : {}".format(module.__name__))
-                print_module_data_stack(module)
+                write_module_data_stack(module)
                 return
             except LEAVE_MODULE_DEBUG_REPL:
                 module.vm.rs = []
                 print("- leave debug-repl [level : {}]".format(level))
                 print("  return-stack is cleared")
                 print("  for module : {}".format(module.__name__))
-                print_module_data_stack(module)
+                write_module_data_stack(module)
                 return
         #+end_src
 
@@ -3104,7 +3112,7 @@
 
             try:
                 merge_sexp_vect(module, [sexp])
-                print_module_data_stack(module)
+                write_module_data_stack(module)
             except SystemExit:
                 sys.exit()
             except:
@@ -3180,6 +3188,14 @@
       @prim('none')
       def none():
           return VALUES(None)
+      #+end_src
+
+***** doublequote
+
+      #+begin_src python
+      @prim('doublequote')
+      def doublequote():
+          return '"'
       #+end_src
 
 ***** sleep

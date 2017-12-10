@@ -80,35 +80,77 @@
           error]))
     #+end_src
 
-* p -- print
+* *io*
+*** p -- print
 
-*** gene
+***** p
 
-    #+begin_src jojo
-    (+gene p (-> :x --) :x print)
-    #+end_src
+      #+begin_src jojo
+      (+gene p (-> :x) :x print)
+      #+end_src
 
-*** List
+***** List
 
-    #+begin_src jojo
-    (+disp p (-> :list List --)
-      (cond [:list null?] ["()" p]
-            [:list cons?] ["(" p :list list-print/loop ")" p]))
+      #+begin_src jojo
+      (+disp p (-> :list List)
+        (cond [:list null?] ["()" p]
+              [:list cons?] ["(" p :list list-print/loop ")" p]))
 
-    (+jojo list-print/loop (-> :list --)
-      (cond
-        [:list null?] []
-        [:list .cdr null?] [:list .car p]
-        else [:list .car p space
-              :list .cdr list-print/loop]))
-    #+end_src
+      (+jojo list-print/loop (-> :list)
+        (cond
+          [:list null?] []
+          [:list.cdr null?] [:list.car p]
+          else [:list.car p space
+                :list.cdr list-print/loop]))
+      #+end_src
+
+*** repr
+
+***** repr
+
+      #+begin_src jojo
+      (+gene repr (-> :x -- String) :x representation)
+      #+end_src
+
+***** String
+
+      #+begin_src jojo
+      (+disp repr (-> String -- String)
+        doublequote string-append
+        doublequote swap string-append)
+      #+end_src
+
+***** List
+
+      #+begin_src jojo
+      (+disp repr (-> :list List -- String)
+        (cond [:list null?] ["(list)"]
+              [:list cons?] [:list list-repr/recur
+                             "(list " swap string-append
+                             ")" string-append]))
+
+      (+jojo list-repr/recur (-> :list List -- String)
+        (cond
+          [:list null?] [""]
+          [:list.cdr null?] [:list.car repr]
+          else [:list.car repr " " string-append
+                :list.cdr list-repr/recur string-append]))
+      #+end_src
+
+*** w -- write
+
+***** w
+
+      #+begin_src jojo
+      (+gene w (-> :x) :x repr p)
+      #+end_src
 
 * combinator
 
 *** times
 
     #+begin_src jojo
-    (+jojo times (-> :fun :n --)
+    (+jojo times (-> :fun :n)
       (cond [:n 0 lteq?] []
             else [:fun apply
                   :fun :n dec times]))
@@ -162,7 +204,7 @@
 *** case-syntax-check
 
     #+begin_src jojo
-    (+jojo case-syntax-check (-> :sexp-list --)
+    (+jojo case-syntax-check (-> :sexp-list)
       (cond [:sexp-list list-length 1 lteq?]
             ["- (case) syntax error" p nl
              "  length of body of (case) must be greater then 1" p nl
@@ -195,7 +237,7 @@
 
 * equal?
 
-*** gene
+*** equal?
 
     #+begin_src jojo
     (+gene equal? (-> :x :y -- Bool) :x :y eqv?)
@@ -277,7 +319,7 @@
 *** list-for-each
 
     #+begin_src jojo
-    (+jojo list-for-each (-> :list :fun --)
+    (+jojo list-for-each (-> :list :fun)
       (case :list
         <null> []
         <cons> [:list .car :fun apply :list .cdr :fun list-for-each]))

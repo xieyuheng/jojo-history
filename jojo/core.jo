@@ -42,20 +42,41 @@
       (quote (@ :body)) sexp-list-print newline
       error]))
 
-(+gene p (-> :x --) :x print)
+(+gene p (-> :x) :x print)
 
-(+disp p (-> :list List --)
+(+disp p (-> :list List)
   (cond [:list null?] ["()" p]
         [:list cons?] ["(" p :list list-print/loop ")" p]))
 
-(+jojo list-print/loop (-> :list --)
+(+jojo list-print/loop (-> :list)
   (cond
     [:list null?] []
-    [:list .cdr null?] [:list .car p]
-    else [:list .car p space
-          :list .cdr list-print/loop]))
+    [:list.cdr null?] [:list.car p]
+    else [:list.car p space
+          :list.cdr list-print/loop]))
 
-(+jojo times (-> :fun :n --)
+(+gene repr (-> :x -- String) :x representation)
+
+(+disp repr (-> String -- String)
+  doublequote string-append
+  doublequote swap string-append)
+
+(+disp repr (-> :list List -- String)
+  (cond [:list null?] ["(list)"]
+        [:list cons?] [:list list-repr/recur
+                       "(list " swap string-append
+                       ")" string-append]))
+
+(+jojo list-repr/recur (-> :list List -- String)
+  (cond
+    [:list null?] [""]
+    [:list.cdr null?] [:list.car repr]
+    else [:list.car repr " " string-append
+          :list.cdr list-repr/recur string-append]))
+
+(+gene w (-> :x) :x repr p)
+
+(+jojo times (-> :fun :n)
   (cond [:n 0 lteq?] []
         else [:fun apply
               :fun :n dec times]))
@@ -89,7 +110,7 @@
   (cond [:value 'else eq?] 'else
         else `[(list (@ :value)) (list (@ :case)) case-match?]))
 
-(+jojo case-syntax-check (-> :sexp-list --)
+(+jojo case-syntax-check (-> :sexp-list)
   (cond [:sexp-list list-length 1 lteq?]
         ["- (case) syntax error" p nl
          "  length of body of (case) must be greater then 1" p nl
@@ -160,7 +181,7 @@
     <null> null
     <cons> [:list .car :fun apply :list .cdr :fun list-map cons]))
 
-(+jojo list-for-each (-> :list :fun --)
+(+jojo list-for-each (-> :list :fun)
   (case :list
     <null> []
     <cons> [:list .car :fun apply :list .cdr :fun list-for-each]))
