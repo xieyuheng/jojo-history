@@ -942,6 +942,13 @@ def new_module(name):
     module.vm = VM([], [])
     # for name can occur before been defined
     module.defined_name_set = set()
+    # do not override import cache
+    if name in sys.modules:
+        print('- new_module fail')
+        print('  can not override import cache')
+        print('  [import cache is sys.modules]')
+        print('  name : {}'.format(name))
+        error()
     sys.modules[name] = module
     return module
 
@@ -2654,7 +2661,8 @@ def maybe_drop_shebang(code):
 def load(name, path):
     current_module = sys.modules[inspect.stack()[1].frame.f_globals['__name__']]
     if ((current_module.__name__ == '__main__') or
-        (not hasattr(current_module, '__file__'))):
+        (not hasattr(current_module, '__file__')) or
+        (path[0] == '/')):
         path = os.path.abspath(path)
     else:
         current_module_dir = os.path.dirname(current_module.__file__)
@@ -2711,9 +2719,48 @@ current_module_dir = os.path.dirname(current_module.__file__)
 core_path = "/".join([current_module_dir, "core.jo"])
 core_module = load_core(core_path)
 
+repl_counter = 0
 @prim('repl')
 def repl():
-    module = new_module('jojo-repl')
+    global repl_counter
+    module = new_module('jojo-repl-' + str(repl_counter))
+    repl_counter = repl_counter + 1
     merge_prim_dict(module)
     merge_module(module, core_module)
     module_repl(module)
+
+class MetaLoader:
+    def __init__(self, path):
+        self.path = path
+
+    def load_module(self, fullname):
+        if fullname in sys.modules:
+            return sys.modules[fullname]
+        if not self.path:
+            return
+        return load(fullname, self.path)
+
+
+class MetaImporter:
+    def find_on_path(self, fullname):
+        fls = ["%s/__init__.jo", "%s.jo"]
+        dirpath = "/".join(fullname.split("."))
+        for pth in sys.path:
+            pth = os.path.abspath(pth)
+            for fp in fls:
+                composed_path = fp % ("%s/%s" % (pth, dirpath))
+                if os.path.exists(composed_path):
+                    return composed_path
+
+    def find_module(self, fullname, path=None):
+        path = self.find_on_path(fullname)
+        # print("- find_module")
+        # print("  fullname : {}".format(fullname))
+        # print("  path : {}".format(path))
+        if path:
+            return MetaLoader(path)
+
+sys.meta_path.insert(0, MetaImporter())
+
+if "" not in sys.path:
+    sys.path.insert(0, "")

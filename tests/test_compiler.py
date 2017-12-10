@@ -14,7 +14,7 @@ def test_1():
     (+jojo six 1 2 add 3 add)
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('module', sexp_vect)
+    module = compile_module(__name__ + 'test_1', sexp_vect)
     vm = VM([],
             [RP(module.six)])
     vm = vm.exe()
@@ -29,7 +29,7 @@ def test_2():
     (+jojo times os .times)
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('module', sexp_vect)
+    module = compile_module(__name__ + 'test_2', sexp_vect)
     vm = VM([],
             [RP(module.times)])
     vm = vm.exe()
@@ -41,7 +41,7 @@ def test_3():
     (+jojo t 1 2 eq? {"true"} {"false"} ifte)
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('module', sexp_vect)
+    module = compile_module(__name__ + 'test_3', sexp_vect)
     vm = VM([],
             [RP(module.t)])
     vm = vm.exe()
@@ -53,7 +53,7 @@ def test_4():
     (+jojo t (if [1 2 eq?] ["true"] ["false"]))
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('module', sexp_vect)
+    module = compile_module(__name__ + 'test_4', sexp_vect)
     vm = VM([],
             [RP(module.t)])
     vm = vm.exe()
@@ -65,7 +65,7 @@ def test_5():
     (+jojo t null 1 swap cons 2 swap cons cdr car)
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('module', sexp_vect)
+    module = compile_module(__name__ + 'test_5', sexp_vect)
     vm = VM([],
             [RP(module.t)])
     vm = vm.exe()
@@ -77,7 +77,7 @@ def test_6():
     (+jojo t :body! [:body [:body]])
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('module', sexp_vect)
+    module = compile_module(__name__ + 'test_6', sexp_vect)
     vm = VM([1],
             [RP(module.t)])
     vm = vm.exe()
@@ -95,7 +95,7 @@ def test_7():
       drop)
     '''
     sexp_vect = parse_sexp_vect(code_scan(code))
-    module = compile_module('module', sexp_vect)
+    module = compile_module(__name__ + 'test_7', sexp_vect)
     vm = VM([],
             [RP(module.t)])
     vm = vm.exe()
@@ -108,7 +108,7 @@ def test_7():
 #       null 0 cons)
 #     '''
 #     sexp_vect = parse_sexp_vect(code_scan(code))
-#     module = compile_module('module', sexp_vect)
+#     module = compile_module(__name__ + 'test_8', sexp_vect)
 #     vm = VM([],
 #             [RP(module.t)])
 #     vm = vm.exe()
