@@ -8,11 +8,17 @@
 
 *** import hook
 
-*** docs
+*** docs of basic jojo
 
-*** (+class)
+*** (+data) with init function
 
-*** >< why do not handle '-' to '_' transformation ?
+    - be able to (+method) to (+data) -- single dispatching
+
+*** '-' to '_' transformation
+
+*** (clone)
+
+*** fix the use of welcome message in repl
 
 *** (+generator) -- python like generator and yield
 
@@ -21,13 +27,7 @@
     - (+generator k1 1 give k1)
       k1 next
 
-*** (clone)
-
-*** fix welcome message
-
 *** an actor as a generator
-
-*** docs of basic jojo
 
 *** compare actor-model to celery
 
@@ -412,6 +412,9 @@
 
           def jo_exe(self, rp, vm):
               vm.rs.append(RP(self))
+
+          def __repr__(self):
+              return "><><><"
       #+end_src
 
 ***** CLO
@@ -426,13 +429,16 @@
               new_jojo.lr = rp.lr
               vm.ds.append(new_jojo)
 
-          def jo_print(self):
-              p_print("(clo ")
+          def jo_rep(self):
+              rep_vect = []
+              rep_vect.append("(clo ")
               for jo in self.body[:-1]:
-                  jo_print(jo)
-                  space()
-              jo_print(self.body[-1])
-              p_print(")")
+                  rep_vect.append(jo.jo_rep)
+                  rep_vect.append(" ")
+              jo = self.body[-1]
+              rep_vect.append(jo.jo_rep)
+              rep_vect.append(")")
+              return "".join(rep_vect)
       #+end_src
 
 ***** APPLY
@@ -445,8 +451,8 @@
               clo.jo_exe(rp, vm)
 
           @classmethod
-          def jo_print(self):
-              p_print("apply")
+          def jo_rep(self):
+              return "apply"
       #+end_src
 
 ***** IFTE
@@ -464,8 +470,8 @@
                   vm.rs.append(RP(clo2))
 
           @classmethod
-          def jo_print(self):
-              p_print("ifte")
+          def jo_rep(self):
+              return "ifte"
       #+end_src
 
 ***** CALL_FROM_MODULE
@@ -481,9 +487,9 @@
               jo = getattr(module, self.name)
               exe_jo(jo, rp, vm)
 
-          def jo_print(self):
-              # p_print("(call {} from {})".format(self.name, self.module.__name__))
-              p_print(self.name)
+          def jo_rep(self):
+              # "(call {} from {})".format(self.name, self.module.__name__)
+              return self.name
       #+end_src
 
 ***** GET
@@ -497,8 +503,8 @@
               data = rp.lr[self.name]
               vm.ds.append(data)
 
-          def jo_print(self):
-              p_print(self.name)
+          def jo_rep(self):
+              return self.name
       #+end_src
 
 ***** SET
@@ -512,9 +518,8 @@
               value = vm.ds.pop()
               rp.lr[self.name] = value
 
-          def jo_print(self):
-              p_print(self.name)
-              p_print('!')
+          def jo_rep(self):
+              return self.name + '!'
       #+end_src
 
 ***** MARK -- for collectors
@@ -526,8 +531,8 @@
               vm.ds.append(self)
 
           @classmethod
-          def jo_print(self):
-              p_print("mark")
+          def jo_rep(self):
+              return "mark"
       #+end_src
 
 ***** COLLECT_VECT -- collect values before mark to vect
@@ -547,8 +552,8 @@
               vm.ds.append(vect)
 
           @classmethod
-          def jo_print(self):
-              p_print("collect-vect")
+          def jo_rep(self):
+              return "collect-vect"
       #+end_src
 
 ***** VECT_SPREAD -- spread values to data stack
@@ -562,8 +567,8 @@
                   vm.ds.append(value)
 
           @classmethod
-          def jo_print(self):
-              p_print("vect-spread")
+          def jo_rep(self):
+              return "vect-spread"
       #+end_src
 
 ***** COLLECT_LIST -- collect values before mark to list
@@ -581,8 +586,8 @@
               vm.ds.append(recur(null))
 
           @classmethod
-          def jo_print(self):
-              p_print("collect-list")
+          def jo_rep(self):
+              return "collect-list"
       #+end_src
 
 ***** LIST_SPREAD -- spread values to data stack
@@ -600,8 +605,8 @@
               recur(vm.ds.pop())
 
           @classmethod
-          def jo_print(self):
-              p_print("list-spread")
+          def jo_rep(self):
+              return "list-spread"
       #+end_src
 
 ***** DATA_PRED -- for data predicate
@@ -615,9 +620,8 @@
               x = vm.ds.pop()
               vm.ds.append(type(x) == self.data_class)
 
-          def jo_print(self):
-              p_print(data_class.__name__)
-              p_print('?')
+          def jo_rep(self):
+              return data_class.__name__ + '?'
       #+end_src
 
 ***** NEW -- create object from data and class
@@ -635,8 +639,8 @@
                   exe_fun(x, vm)
 
           @classmethod
-          def jo_print(self):
-              p_print("new")
+          def jo_rep(self):
+              return "new"
       #+end_src
 
 ***** MSG -- message to object
@@ -654,9 +658,8 @@
               else:
                   exe_jo(v, rp, vm)
 
-          def jo_print(self):
-              p_print(".")
-              p_print(self.message)
+          def jo_rep(self):
+              return "." + self.message
       #+end_src
 
 ***** SET_FIELD
@@ -671,10 +674,8 @@
               v = vm.ds.pop()
               setattr(o, self.field_name, v)
 
-          def jo_print(self):
-              p_print(".")
-              p_print(self.field_name)
-              p_print("!")
+          def jo_rep(self):
+              return "." + self.field_name + "!"
       #+end_src
 
 ***** GENE
@@ -709,8 +710,8 @@
               vm.ds = []
 
           @classmethod
-          def jo_print(self):
-              p_print("clear")
+          def jo_rep(self):
+              return "clear"
       #+end_src
 
 ***** PRIMITIVE
@@ -723,8 +724,8 @@
           def jo_exe(self, rp, vm):
               vm.ds.append(self.fun)
 
-          def jo_print(self):
-              p_print(self.fun)
+          def jo_rep(self):
+              return self.fun
       #+end_src
 
 * >< actor
@@ -945,8 +946,8 @@
               error()
 
           @classmethod
-          def jo_print(self):
-              p_print("receive")
+          def jo_rep(self):
+              return "receive"
       #+end_src
 
 ***** SEND
@@ -969,8 +970,8 @@
               error()
 
           @classmethod
-          def jo_print(self):
-              p_print("send")
+          def jo_rep(self):
+              return "send"
       #+end_src
 
 ***** SPAWN
@@ -995,8 +996,8 @@
               error()
 
           @classmethod
-          def jo_print(self):
-              p_print("spawn")
+          def jo_rep(self):
+              return "spawn"
       #+end_src
 
 ***** ACTION
@@ -1014,8 +1015,8 @@
               channel.meta_in_queue.put(meta_message)
 
           @classmethod
-          def jo_print(self):
-              p_print("action")
+          def jo_rep(self):
+              return "action"
       #+end_src
 
 *** Channel
@@ -2897,12 +2898,13 @@
           newline()
       #+end_src
 
-***** print_return_stack
+***** print_module_return_stack
 
-******* print_return_stack
+******* print_module_return_stack
 
         #+begin_src python
-        def print_return_stack(rs):
+        def print_module_return_stack(module):
+            rs = module.vm.rs
             print("- return-stack * {} *".format(len(rs)))
             for rp in rs:
                 return_point_print(rp)
@@ -2959,8 +2961,8 @@
                 p_print(jo.__module__)
                 p_print(".")
                 p_print(jo.__name__)
-            elif hasattr(jo, "jo_print"):
-                jo.jo_print()
+            elif hasattr(jo, "jo_rep"):
+                p_print(jo.jo_rep())
             else:
                 p_print(jo)
         #+end_src
@@ -3035,7 +3037,7 @@
         def module_debug(module, level):
             print("- enter debug-repl [level : {}]".format(level))
             module.debug_repl_char_stack = []
-            print_return_stack(module.vm.rs)
+            print_module_return_stack(module)
             print_module_data_stack(module)
             try:
                 while True:

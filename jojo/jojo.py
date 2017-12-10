@@ -234,6 +234,9 @@ class JOJO:
     def jo_exe(self, rp, vm):
         vm.rs.append(RP(self))
 
+    def __repr__(self):
+        return "><><><"
+
 class CLO:
     def __init__(self, body):
         self.body = body
@@ -243,13 +246,16 @@ class CLO:
         new_jojo.lr = rp.lr
         vm.ds.append(new_jojo)
 
-    def jo_print(self):
-        p_print("(clo ")
+    def jo_rep(self):
+        rep_vect = []
+        rep_vect.append("(clo ")
         for jo in self.body[:-1]:
-            jo_print(jo)
-            space()
-        jo_print(self.body[-1])
-        p_print(")")
+            rep_vect.append(jo.jo_rep)
+            rep_vect.append(" ")
+        jo = self.body[-1]
+        rep_vect.append(jo.jo_rep)
+        rep_vect.append(")")
+        return "".join(rep_vect)
 
 class APPLY:
     @classmethod
@@ -258,8 +264,8 @@ class APPLY:
         clo.jo_exe(rp, vm)
 
     @classmethod
-    def jo_print(self):
-        p_print("apply")
+    def jo_rep(self):
+        return "apply"
 
 class IFTE:
     @classmethod
@@ -273,8 +279,8 @@ class IFTE:
             vm.rs.append(RP(clo2))
 
     @classmethod
-    def jo_print(self):
-        p_print("ifte")
+    def jo_rep(self):
+        return "ifte"
 
 class CALL_FROM_MODULE:
     def __init__(self, module_name, name):
@@ -286,9 +292,9 @@ class CALL_FROM_MODULE:
         jo = getattr(module, self.name)
         exe_jo(jo, rp, vm)
 
-    def jo_print(self):
-        # p_print("(call {} from {})".format(self.name, self.module.__name__))
-        p_print(self.name)
+    def jo_rep(self):
+        # "(call {} from {})".format(self.name, self.module.__name__)
+        return self.name
 
 class GET:
     def __init__(self, name):
@@ -298,8 +304,8 @@ class GET:
         data = rp.lr[self.name]
         vm.ds.append(data)
 
-    def jo_print(self):
-        p_print(self.name)
+    def jo_rep(self):
+        return self.name
 
 class SET:
     def __init__(self, name):
@@ -309,9 +315,8 @@ class SET:
         value = vm.ds.pop()
         rp.lr[self.name] = value
 
-    def jo_print(self):
-        p_print(self.name)
-        p_print('!')
+    def jo_rep(self):
+        return self.name + '!'
 
 class MARK:
     @classmethod
@@ -319,8 +324,8 @@ class MARK:
         vm.ds.append(self)
 
     @classmethod
-    def jo_print(self):
-        p_print("mark")
+    def jo_rep(self):
+        return "mark"
 
 class COLLECT_VECT:
     @classmethod
@@ -336,8 +341,8 @@ class COLLECT_VECT:
         vm.ds.append(vect)
 
     @classmethod
-    def jo_print(self):
-        p_print("collect-vect")
+    def jo_rep(self):
+        return "collect-vect"
 
 class VECT_SPREAD:
     @classmethod
@@ -347,8 +352,8 @@ class VECT_SPREAD:
             vm.ds.append(value)
 
     @classmethod
-    def jo_print(self):
-        p_print("vect-spread")
+    def jo_rep(self):
+        return "vect-spread"
 
 class COLLECT_LIST:
     @classmethod
@@ -362,8 +367,8 @@ class COLLECT_LIST:
         vm.ds.append(recur(null))
 
     @classmethod
-    def jo_print(self):
-        p_print("collect-list")
+    def jo_rep(self):
+        return "collect-list"
 
 class LIST_SPREAD:
     @classmethod
@@ -377,8 +382,8 @@ class LIST_SPREAD:
         recur(vm.ds.pop())
 
     @classmethod
-    def jo_print(self):
-        p_print("list-spread")
+    def jo_rep(self):
+        return "list-spread"
 
 class DATA_PRED:
     def __init__(self, data_class):
@@ -388,9 +393,8 @@ class DATA_PRED:
         x = vm.ds.pop()
         vm.ds.append(type(x) == self.data_class)
 
-    def jo_print(self):
-        p_print(data_class.__name__)
-        p_print('?')
+    def jo_rep(self):
+        return data_class.__name__ + '?'
 
 class NEW:
     @classmethod
@@ -404,8 +408,8 @@ class NEW:
             exe_fun(x, vm)
 
     @classmethod
-    def jo_print(self):
-        p_print("new")
+    def jo_rep(self):
+        return "new"
 
 class MSG:
     def __init__(self, message):
@@ -419,9 +423,8 @@ class MSG:
         else:
             exe_jo(v, rp, vm)
 
-    def jo_print(self):
-        p_print(".")
-        p_print(self.message)
+    def jo_rep(self):
+        return "." + self.message
 
 class SET_FIELD:
     def __init__(self, field_name):
@@ -432,10 +435,8 @@ class SET_FIELD:
         v = vm.ds.pop()
         setattr(o, self.field_name, v)
 
-    def jo_print(self):
-        p_print(".")
-        p_print(self.field_name)
-        p_print("!")
+    def jo_rep(self):
+        return "." + self.field_name + "!"
 
 class GENE:
     def __init__(self, arity, default_jojo):
@@ -462,8 +463,8 @@ class CLEAR:
         vm.ds = []
 
     @classmethod
-    def jo_print(self):
-        p_print("clear")
+    def jo_rep(self):
+        return "clear"
 
 class PRIMITIVE:
     def __init__(self, fun):
@@ -472,8 +473,8 @@ class PRIMITIVE:
     def jo_exe(self, rp, vm):
         vm.ds.append(self.fun)
 
-    def jo_print(self):
-        p_print(self.fun)
+    def jo_rep(self):
+        return self.fun
 
 class Aid:
     def __init__(self, sid, key):
@@ -553,8 +554,8 @@ class RECEIVE:
         error()
 
     @classmethod
-    def jo_print(self):
-        p_print("receive")
+    def jo_rep(self):
+        return "receive"
 
 class SEND:
     @classmethod
@@ -573,8 +574,8 @@ class SEND:
         error()
 
     @classmethod
-    def jo_print(self):
-        p_print("send")
+    def jo_rep(self):
+        return "send"
 
 class SPAWN:
     @classmethod
@@ -595,8 +596,8 @@ class SPAWN:
         error()
 
     @classmethod
-    def jo_print(self):
-        p_print("spawn")
+    def jo_rep(self):
+        return "spawn"
 
 class ACTION:
     @classmethod
@@ -610,8 +611,8 @@ class ACTION:
         channel.meta_in_queue.put(meta_message)
 
     @classmethod
-    def jo_print(self):
-        p_print("action")
+    def jo_rep(self):
+        return "action"
 
 class Channel:
     def __init__(self):
@@ -1758,7 +1759,6 @@ def print_module_data_stack(module):
     newline()
     ds = module.vm.ds
     p_print(";{}> ".format(len(ds)))
-    # print(ds)
     for data in ds:
         jo = getattr(module, 'p')
         jojo = JOJO([jo])
@@ -1768,7 +1768,8 @@ def print_module_data_stack(module):
         space()
     newline()
 
-def print_return_stack(rs):
+def print_module_return_stack(module):
+    rs = module.vm.rs
     print("- return-stack * {} *".format(len(rs)))
     for rp in rs:
         return_point_print(rp)
@@ -1817,8 +1818,8 @@ def jo_print(jo):
         p_print(jo.__module__)
         p_print(".")
         p_print(jo.__name__)
-    elif hasattr(jo, "jo_print"):
-        jo.jo_print()
+    elif hasattr(jo, "jo_rep"):
+        p_print(jo.jo_rep())
     else:
         p_print(jo)
 
@@ -1862,7 +1863,7 @@ prim('error')(error)
 def module_debug(module, level):
     print("- enter debug-repl [level : {}]".format(level))
     module.debug_repl_char_stack = []
-    print_return_stack(module.vm.rs)
+    print_module_return_stack(module)
     print_module_data_stack(module)
     try:
         while True:
