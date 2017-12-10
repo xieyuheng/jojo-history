@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+*** repr
+
 * Int
 
   #+begin_src jojo
@@ -136,6 +138,16 @@
           else [:list.car repr " " string-append
                 :list.cdr list-repr/recur string-append]))
       #+end_src
+
+***** >< Vect
+
+***** >< Stack
+
+***** >< Dict
+
+***** >< Tuple
+
+***** >< Set
 
 *** w -- write
 

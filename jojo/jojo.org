@@ -4,48 +4,48 @@
 
 * [todo-stack]
 
-*** fix the use of doublequote
-
-*** import hook
-
 *** docs of basic jojo
+
+***** import hook
+
+*** (clone)
 
 *** (+data) with init function
 
     - be able to (+method) to (+data) -- single dispatching
 
-*** '-' to '_' transformation
+*** fix the use of doublequote
 
-*** (clone)
+*** actor
 
-*** (+generator) -- python like generator and yield
+***** an actor as a generator
 
-    - for scrapy
+***** (+generator) -- python like generator and yield
 
-    - (+generator k1 1 give k1)
-      k1 next
+      - for scrapy
 
-*** an actor as a generator
+      - (+generator k1 1 give k1)
+        k1 next
 
-*** compare actor-model to celery
+***** actor monitor
 
-*** actor monitor
-
-*** a proxy to use module, to be able to pickle modules
-
-*** bind aid to address
+***** bind aid to address
 
 *** to use python decorator in jojo
 
     - for flask and celery
 
-*** parse_sexp_vect -- error handling
+*** error handling
 
-    - to be able to use it in jojo
+***** parse_sexp_vect -- error handling
 
-*** inline module_debug_one_step and module_repl_one_step
+      - to be able to use it in jojo
 
-    - to avoid the use of 'try & except'
+*** improvement
+
+***** inline module_debug_one_step and module_repl_one_step
+
+      - to avoid the use of 'try & except'
 
 * prolog
 
@@ -397,7 +397,7 @@
           return default_dict
       #+end_src
 
-*** jo
+*** jo -- in rp of return-stack
 
 ***** JOJO
 
@@ -739,6 +739,10 @@
       #+end_src
 
 * >< actor
+
+*** [note] limitation
+
+    - can not send module as message
 
 *** [note] scheduler loop
 
