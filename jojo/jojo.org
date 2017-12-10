@@ -4,8 +4,6 @@
 
 * [todo-stack]
 
-*** docs of basic jojo
-
 *** (clone)
 
 *** (+data) with init function

@@ -44,6 +44,11 @@
 
 (+gene p (-> :x) :x print)
 
+(+disp p (-> :bool Bool)
+  (if :bool
+    ["true" p]
+    ["false" p]))
+
 (+disp p (-> :list List)
   (cond [:list null?] ["()" p]
         [:list cons?] ["(" p :list list-print/loop ")" p]))
@@ -56,6 +61,11 @@
           :list.cdr list-print/loop]))
 
 (+gene repr (-> :x -- String) :x representation)
+
+(+disp repr (-> :bool Bool -- String)
+  (if :bool
+    "true"
+    "false"))
 
 (+disp repr (-> String -- String)
   doublequote string-append

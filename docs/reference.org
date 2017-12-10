@@ -1,17 +1,28 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
 #+title: jojo-in-python reference
 
-- doc the core
-
 * getting start
 
-*** install
+*** install form pip package
 
-***** pip
+    #+begin_src sh
+    pip install jojo --user
+    #+end_src
 
-      #+begin_src sh
-      pip install jojo --user
-      #+end_src
+*** install from github
+
+    #+begin_src sh
+    git clone git@github.com:xieyuheng/jojo-in-python.git
+    cd jojo-in-python
+    pip install . --user
+    #+end_src
+
+*** start the interpreter
+
+    - make sure the interpreter is in your PATH,
+      and type 'jojo' to start the interpreter.
+
+    - in the interpreter, type 'bye' to leave it.
 
 * data stack
 
@@ -19,85 +30,181 @@
     and use jojo as an postfix notation calculator.
 
   #+begin_src jojo
-    * 0 *  []
+  ;0>
   1
-    * 1 *  [1]
+
+  ;1> 1
   2
-    * 2 *  [1, 2]
+
+  ;2> 1 2
   add
-    * 1 *  [3]
+
+  ;1> 3
   dup
-    * 2 *  [3, 3]
+
+  ;2> 3 3
   mul
-    * 1 *  [9]
+
+  ;1> 9
+  #+end_src
+
+* comment
+
+  #+begin_src jojo
+  ;; line comment
+
+  (note
+    comment in sexp)
   #+end_src
 
 * stack operation
 
   #+begin_src jojo
-    * 0 *  []
+  ;0>
   1 2 3
-    * 1 *  [1]
-    * 2 *  [1, 2]
-    * 3 *  [1, 2, 3]
+
+  ;1> 1
+
+  ;2> 1 2
+
+  ;3> 1 2 3
   dup
-    * 4 *  [1, 2, 3, 3]
+
+  ;4> 1 2 3 3
   drop
-    * 3 *  [1, 2, 3]
+
+  ;3> 1 2 3
   over
-    * 4 *  [1, 2, 3, 2]
+
+  ;4> 1 2 3 2
   drop
-    * 3 *  [1, 2, 3]
+
+  ;3> 1 2 3
   tuck
-    * 4 *  [1, 3, 2, 3]
+
+  ;4> 1 3 2 3
   drop
-    * 3 *  [1, 3, 2]
+
+  ;3> 1 3 2
   swap
-    * 3 *  [1, 2, 3]
+
+  ;3> 1 2 3
   #+end_src
 
 * (+jojo) -- define function
 
   #+begin_src jojo
-    * 0 *  []
+  ;0>
   (+jojo square dup mul)
-    * 0 *  []
+
+  ;0>
   3
-  ;1> [3]
+
+  ;1> 3
   square
-  ;=> * 1 * [9]
-  #+end_src
 
-* comments
-
-  #+begin_src jojo
-  (note
-    )
+  ;1> 9
   #+end_src
 
 * list processing
 
   #+begin_src jojo
-  1 null cons
+  ;0>
+  1 2 null cons cons
+
+  ;1> 1
+
+  ;2> 1 2
+
+  ;3> 1 2 (list)
+
+  ;2> 1 (list 2)
+
+  ;1> (list 1 2)
+  dup list-append
+
+  ;2> (list 1 2) (list 1 2)
+
+  ;1> (list 1 2 1 2)
+  dup
+
+  ;2> (list 1 2 1 2) (list 1 2 1 2)
+  car
+
+  ;2> (list 1 2 1 2) 1
+  over
+
+  ;3> (list 1 2 1 2) 1 (list 1 2 1 2)
+  cdr
+
+  ;3> (list 1 2 1 2) 1 (list 2 1 2)
+  cons
+
+  ;2> (list 1 2 1 2) (list 1 2 1 2)
+  equal?
+
+  ;1> true
   #+end_src
 
 * local variable
 
+  #+begin_src jojo
+  (+jojo dup
+    :x! ;; put the object at the top of data-stack to local-name :x
+    :x  ;; get an object out of the local-name :x
+    :x)
+
+  ;0>
+  2 dup dup
+
+  ;1> 2
+
+  ;2> 2 2
+
+  ;3> 2 2 2
+  #+end_src
+
 * (begin) -- sequential
 
   #+begin_src jojo
+  ;0>
+  (begin
+    1 2 add dup mul)
 
+  ;1> 9
+  [1 2 add dup mul] ;; [...] is syntax sugar of (begin ...)
+
+  ;2> 9 9
+  equal?
+
+  ;1> true
   #+end_src
 
 * (clo) -- closure
 
   #+begin_src jojo
+  ;0>
+  3 (clo dup mul) apply
 
+  ;1> 3
+
+  ;2> 3 {dup mul} ;; {...} is syntax sugar of (clo ...)
+
+  ;1> 9
+  {dup mul} apply
+
+  ;2> 9 {dup mul}
+
+  ;1> 81
   #+end_src
 
-* condition
+* >< condition
 
 *** ifte
+
+    #+begin_src jojo
+
+    #+end_src
 
 *** (if)
 
@@ -107,51 +214,67 @@
 
 *** (when)
 
+    #+begin_src jojo
+
+    #+end_src
+
 *** (cond)
+
+    #+begin_src jojo
+
+    #+end_src
 
 *** (case)
 
-* tail call recursion as loop
+    #+begin_src jojo
 
-* built-in datatypes
+    #+end_src
+
+* >< tail call recursion as loop
+
+  #+begin_src jojo
+
+  #+end_src
+
+* >< built-in datatypes
 
 *** (list)
 
 *** ><
 
-* (+data) -- define new datatype
+* >< (+data) -- define new datatype
 
   #+begin_src jojo
   (+data)
   #+end_src
 
-* multiple dispatching
+* >< multiple dispatching
 
 *** (+gene) -- define generic function prototype
 
 *** (+disp) -- dispatching function
 
-* built-in generics
+* >< built-in generics
 
 *** p -- print
 
 *** equal?
 
-* print formated string
+* >< print formated string
 
-* macro system
+* >< macro system
 
 *** (quote)
 
 *** ><
 
-* import python module
+* >< import python module
 
   #+begin_src jojo
 
   #+end_src
 
-* create jojo module
+* >< create jojo module
 
   - I use module system of python.
 
@@ -159,8 +282,8 @@
 
   #+end_src
 
-* testing
+* >< testing
 
-* command line interface
+* >< command line interface
 
-* writing script
+* >< writing script
