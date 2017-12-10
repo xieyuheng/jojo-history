@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+
+
 *** 'w' & write_module_data_stack
 
 *** import hook
@@ -17,8 +19,6 @@
 *** '-' to '_' transformation
 
 *** (clone)
-
-*** fix the use of welcome message in repl
 
 *** (+generator) -- python like generator and yield
 
@@ -4224,6 +4224,5 @@
         module = new_module('jojo-repl')
         merge_prim_dict(module)
         merge_module(module, core_module)
-        print ("welcome to jojo's programming adventure in python ^-^/")
         module_repl(module)
     #+end_src

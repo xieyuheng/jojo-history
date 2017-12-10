@@ -2708,5 +2708,4 @@ def repl():
     module = new_module('jojo-repl')
     merge_prim_dict(module)
     merge_module(module, core_module)
-    print ("welcome to jojo's programming adventure in python ^-^/")
     module_repl(module)
