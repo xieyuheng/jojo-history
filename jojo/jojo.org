@@ -4,6 +4,10 @@
 
 * [todo-stack]
 
+*** socket in core
+
+*** stdlib in core
+
 *** (clone)
 
 *** (+data) with init function
@@ -2767,6 +2771,22 @@
       @prim('space')
       def space():
           p_print(" ")
+      #+end_src
+
+*** >< *file*
+
+*** >< *socket*
+
+***** ><
+
+      #+begin_src jojo
+
+      #+end_src
+
+***** ><
+
+      #+begin_src jojo
+
       #+end_src
 
 *** *sys*
