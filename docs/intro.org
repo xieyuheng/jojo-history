@@ -1,5 +1,5 @@
 #+html_head: <link rel="stylesheet" href="css/org-page.css"/>
-#+title: jojo-in-python reference
+#+title: intro of jojo-in-python
 
 * getting start
 
