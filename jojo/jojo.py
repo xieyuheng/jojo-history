@@ -1,3 +1,7 @@
+
+
+
+
 import inspect
 import types
 import importlib
@@ -913,7 +917,24 @@ def parse_sexp_cons_until_ket(string_vect, i, ket):
         return (cons(s, s_cons), i2)
 
 def p_print(x):
-    print(x, end="")
+    def p(x):
+        print(x, end="")
+    if x == Bool:
+        p("Bool")
+    elif x == Int:
+        p("Int")
+    elif x == String:
+        p("String")
+    elif x == Vect:
+        p("Vect")
+    elif x == Dict:
+        p("Dict")
+    elif x == Tuple:
+        p("Tuple")
+    elif x == Set:
+        p("Set")
+    else:
+        p(x)
     sys.stdout.flush()
 
 def sexp_print(s):
@@ -1206,7 +1227,8 @@ def tuck(a, b):
 def swap(a, b):
     return VALUES(b, a)
 
-prim('Int')(int)
+Int = int
+prim('Int')(Int)
 
 @prim('int?')
 def int_p(x):
@@ -1264,7 +1286,8 @@ def gteq_p(a, b):
 def int_print(i):
     p_print(i)
 
-prim('Bool')(bool)
+Bool = bool
+prim('Bool')(Bool)
 
 @prim('true')
 def true():
@@ -1311,7 +1334,8 @@ prim('sexp-list-print')(sexp_list_print)
 
 prim('code-scan')(code_scan)
 
-prim('String')(str)
+String = str
+prim('String')(String)
 
 prim('string?')(string_p)
 
@@ -1413,7 +1437,6 @@ def sexp_to_vect(sexp):
     return result_vect
 
 Stack = Vect
-
 prim('Stack')(Stack)
 
 @prim('stack?')
@@ -1529,7 +1552,6 @@ def list_zip_dict(l1, l2):
     return vect_zip_dict(v1, v2)
 
 Dict = dict
-
 prim('Dict')(Dict)
 
 @prim('dict?')
@@ -1590,7 +1612,8 @@ def dict_delete(d, k):
     del d[k]
     return d
 
-prim('Tuple')(tuple)
+Tuple = tuple
+prim('Tuple')(Tuple)
 
 @prim('tuple?')
 def tuple_p(x):
@@ -1618,7 +1641,8 @@ def tuple_append(tu1, tu2):
     vect1.extend(tu2)
     return tuple(vect1)
 
-prim('Set')(set)
+Set = set
+prim('Set')(Set)
 
 @prim('set?')
 def set_p(x):
@@ -1672,7 +1696,22 @@ prim('print')(p_print)
 
 @prim('representation')
 def representation(x):
-    return x.__repr__()
+    if x == Bool:
+        return "Bool"
+    elif x == Int:
+        return "Int"
+    elif x == String:
+        return "String"
+    elif x == Vect:
+        return "Vect"
+    elif x == Dict:
+        return "Dict"
+    elif x == Tuple:
+        return "Tuple"
+    elif x == Set:
+        return "Set"
+    else:
+        return repr(x)
 
 @prim('newline')
 def newline():

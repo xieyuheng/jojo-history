@@ -4,9 +4,11 @@
 
 * [todo-stack]
 
-*** socket in core
-
 *** stdlib in core
+
+***** file io in core
+
+***** socket io in core
 
 *** (clone)
 
@@ -1469,7 +1471,24 @@
 
     #+begin_src python
     def p_print(x):
-        print(x, end="")
+        def p(x):
+            print(x, end="")
+        if x == Bool:
+            p("Bool")
+        elif x == Int:
+            p("Int")
+        elif x == String:
+            p("String")
+        elif x == Vect:
+            p("Vect")
+        elif x == Dict:
+            p("Dict")
+        elif x == Tuple:
+            p("Tuple")
+        elif x == Set:
+            p("Set")
+        else:
+            p(x)
         sys.stdout.flush()
     #+end_src
 
@@ -1939,7 +1958,8 @@
 ***** Int
 
       #+begin_src python
-      prim('Int')(int)
+      Int = int
+      prim('Int')(Int)
       #+end_src
 
 ***** int_p
@@ -2033,7 +2053,8 @@
 ***** Bool
 
       #+begin_src python
-      prim('Bool')(bool)
+      Bool = bool
+      prim('Bool')(Bool)
       #+end_src
 
 ***** basic
@@ -2104,7 +2125,8 @@
 ***** String
 
       #+begin_src python
-      prim('String')(str)
+      String = str
+      prim('String')(String)
       #+end_src
 
 ***** string_p
@@ -2302,7 +2324,6 @@
 
       #+begin_src python
       Stack = Vect
-
       prim('Stack')(Stack)
       #+end_src
 
@@ -2502,7 +2523,6 @@
 
       #+begin_src python
       Dict = dict
-
       prim('Dict')(Dict)
       #+end_src
 
@@ -2605,7 +2625,8 @@
 ***** Tuple
 
       #+begin_src python
-      prim('Tuple')(tuple)
+      Tuple = tuple
+      prim('Tuple')(Tuple)
       #+end_src
 
 ***** tuple_p
@@ -2663,7 +2684,8 @@
 ***** Set
 
       #+begin_src python
-      prim('Set')(set)
+      Set = set
+      prim('Set')(Set)
       #+end_src
 
 ***** set_p
@@ -2751,7 +2773,22 @@
       #+begin_src python
       @prim('representation')
       def representation(x):
-          return x.__repr__()
+          if x == Bool:
+              return "Bool"
+          elif x == Int:
+              return "Int"
+          elif x == String:
+              return "String"
+          elif x == Vect:
+              return "Vect"
+          elif x == Dict:
+              return "Dict"
+          elif x == Tuple:
+              return "Tuple"
+          elif x == Set:
+              return "Set"
+          else:
+              return repr(x)
       #+end_src
 
 ***** nl -- newline
