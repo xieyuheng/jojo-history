@@ -159,13 +159,33 @@
 
 ***** >< Vect
 
+      #+begin_src jojo
+
+      #+end_src
+
 ***** >< Stack
+
+      #+begin_src jojo
+
+      #+end_src
 
 ***** >< Dict
 
+      #+begin_src jojo
+
+      #+end_src
+
 ***** >< Tuple
 
+      #+begin_src jojo
+
+      #+end_src
+
 ***** >< Set
+
+      #+begin_src jojo
+
+      #+end_src
 
 *** w -- write
 

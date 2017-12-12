@@ -319,21 +319,49 @@
 
 *** (+gene) -- define generic function prototype
 
+    #+begin_src jojo
+
+    #+end_src
+
 *** (+disp) -- dispatching function
+
+    #+begin_src jojo
+
+    #+end_src
 
 * >< built-in generics
 
 *** p -- print
 
+    #+begin_src jojo
+
+    #+end_src
+
 *** equal?
 
+    #+begin_src jojo
+
+    #+end_src
+
 *** repr
+
+    #+begin_src jojo
+
+    #+end_src
 
 * >< macro system
 
 *** (quote)
 
+    #+begin_src jojo
+
+    #+end_src
+
 *** ><
+
+    #+begin_src jojo
+
+    #+end_src
 
 * >< testing
 
