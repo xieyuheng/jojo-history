@@ -1,7 +1,3 @@
-
-
-
-
 import inspect
 import types
 import importlib
@@ -1723,6 +1719,51 @@ prim('nl')(newline)
 @prim('space')
 def space():
     p_print(" ")
+
+@prim('string->bytes')
+def string_to_bytes(string, encoding):
+    return string.encode(encoding)
+
+@prim('bytes->string')
+def bytes_to_string(bs, encoding):
+    return bs.decode(encoding)
+
+import socket
+
+@prim('socket')
+def p_socket():
+    return socket.socket()
+
+@prim('gethostname')
+def gethostname():
+    return socket.gethostname()
+
+@prim('socket-connect')
+def socket_connect(sock, address):
+    sock.connect(address)
+
+@prim('socket-bind')
+def socket_bind(sock, address):
+    sock.bind(address)
+
+@prim('socket-listen')
+def socket_listen(sock):
+    sock.listen(64)
+
+@prim('socket-accept')
+def socket_accept(sock):
+    clientsocket, address = sock.accept()
+    return VALUES(clientsocket, address)
+
+@prim('socket-recv')
+def socket_recv(sock, length):
+    message_bytes = sock.recv(length)
+    return message_bytes
+
+@prim('socket-send')
+def socket_send(sock, message_bytes):
+    return_code = sock.send(message_bytes)
+    return return_code
 
 @prim('bye')
 def bye():

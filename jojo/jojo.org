@@ -2810,20 +2810,99 @@
           p_print(" ")
       #+end_src
 
+*** *bytes*
+
+***** string_to_bytes -- encode
+
+      #+begin_src python
+      @prim('string->bytes')
+      def string_to_bytes(string, encoding):
+          return string.encode(encoding)
+      #+end_src
+
+***** bytes_to_string -- decode
+
+      #+begin_src python
+      @prim('bytes->string')
+      def bytes_to_string(bs, encoding):
+          return bs.decode(encoding)
+      #+end_src
+
 *** >< *file*
 
 *** >< *socket*
 
-***** ><
+***** import
 
-      #+begin_src jojo
-
+      #+begin_src python
+      import socket
       #+end_src
 
-***** ><
+***** socket
 
-      #+begin_src jojo
+      #+begin_src python
+      @prim('socket')
+      def p_socket():
+          return socket.socket()
+      #+end_src
 
+***** gethostname
+
+      #+begin_src python
+      @prim('gethostname')
+      def gethostname():
+          return socket.gethostname()
+      #+end_src
+
+***** socket_connect
+
+      #+begin_src python
+      @prim('socket-connect')
+      def socket_connect(sock, address):
+          sock.connect(address)
+      #+end_src
+
+***** socket_bind
+
+      #+begin_src python
+      @prim('socket-bind')
+      def socket_bind(sock, address):
+          sock.bind(address)
+      #+end_src
+
+***** socket_listen
+
+      #+begin_src python
+      @prim('socket-listen')
+      def socket_listen(sock):
+          sock.listen(64)
+      #+end_src
+
+***** socket_accpet
+
+      #+begin_src python
+      @prim('socket-accept')
+      def socket_accept(sock):
+          clientsocket, address = sock.accept()
+          return VALUES(clientsocket, address)
+      #+end_src
+
+***** socket_recv
+
+      #+begin_src python
+      @prim('socket-recv')
+      def socket_recv(sock, length):
+          message_bytes = sock.recv(length)
+          return message_bytes
+      #+end_src
+
+***** socket_send
+
+      #+begin_src python
+      @prim('socket-send')
+      def socket_send(sock, message_bytes):
+          return_code = sock.send(message_bytes)
+          return return_code
       #+end_src
 
 *** *sys*

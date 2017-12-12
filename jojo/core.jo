@@ -84,6 +84,16 @@
     else [:list.car repr " " string-append
           :list.cdr list-repr/recur string-append]))
 
+
+
+
+
+
+
+
+
+
+
 (+gene w (-> :x) :x repr p)
 
 (+jojo times (-> :fun :n)

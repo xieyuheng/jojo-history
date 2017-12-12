@@ -1,0 +1,11 @@
+(+jojo server (-> :sock)
+  :sock socket-accept (-> :client-sock :address)
+  :client-sock "hi" "UTF-8" string->bytes socket-send
+  "- return-code : " p p nl
+  :sock server)
+
+(begin
+  socket :sock!
+  :sock (tuple gethostname 9001) socket-bind
+  :sock socket-listen
+  :sock server)
