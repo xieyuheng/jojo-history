@@ -5,7 +5,7 @@ with open('README') as f:
 
 setup(
     name='jojo',
-    version='0.0.25',
+    version='0.0.26',
     description="jojo's programming adventure in python",
     url='http://github.com/xieyuheng/jojo-on-python',
 
