@@ -6,6 +6,6 @@
 
 (begin
   socket :sock!
-  :sock (tuple gethostname 9001) socket-bind
+  :sock (tuple gethostname 9000) socket-bind
   :sock socket-listen
   :sock server)

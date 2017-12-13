@@ -1,6 +1,6 @@
 (+jojo client (-> :count)
   socket :sock!
-  :sock (tuple gethostname 9001) socket-connect
+  :sock (tuple gethostname 9000) socket-connect
   :sock 1024 socket-recv "UTF-8" bytes->string p nl
   :count p nl
   :count inc client)
