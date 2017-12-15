@@ -289,7 +289,7 @@
 
     #+end_src
 
-*** Dict -- dictory
+*** Dict -- dictionary
 
     #+begin_src jojo
 
