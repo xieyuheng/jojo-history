@@ -2252,6 +2252,14 @@
           return len(vect)
       #+end_src
 
+***** vect_empty_p
+
+      #+begin_src python
+      @prim('vect-empty?')
+      def vect_empty_p(vect):
+          return len(vect) == 0
+      #+end_src
+
 ***** vect_ref
 
       #+begin_src python

@@ -84,7 +84,11 @@
     else [:list.car repr " " string-append
           :list.cdr list-repr/recur string-append]))
 
-
+(+disp repr (-> :vect Vect -- String)
+  (cond [:vect vect-empty?] ["(vect)"]
+        else [:vect vect->list list-repr/recur
+              "(vect " swap string-append
+              ")" string-append]))
 
 
 

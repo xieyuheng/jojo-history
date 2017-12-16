@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-12-11 Mon 13:31 -->
+<!-- 2017-12-16 Sat 17:22 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>J💛J💛 in python</title>
@@ -64,34 +64,644 @@ for the JavaScript code in this tag.
 <h2>overview</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org352ed86">docs</a></li>
-<li><a href="#org983af0">source code</a></li>
-<li><a href="#org84819eb">license</a></li>
+<li><a href="#org1436c02">getting start</a>
+<ul>
+<li><a href="#org6f9326b">install form pip package</a></li>
+<li><a href="#org98e9472">install from github</a></li>
+<li><a href="#org6a5db62">start the interpreter</a></li>
+</ul>
+</li>
+<li><a href="#org7147478">data stack</a></li>
+<li><a href="#orga89dfa8">comment</a></li>
+<li><a href="#orgca9f668">stack operation</a></li>
+<li><a href="#org3085a38">(+jojo) &#x2013; define function</a></li>
+<li><a href="#org88df1ed">list processing</a></li>
+<li><a href="#org1c926e">local variable</a>
+<ul>
+<li><a href="#orgff7d53c">:local-name! &amp; :local-name</a></li>
+<li><a href="#orgbab83">(-&gt; :local-name &#x2026;)</a></li>
+</ul>
+</li>
+<li><a href="#org86dd160">(begin) &#x2013; sequential</a></li>
+<li><a href="#org447d127">(clo) &#x2013; closure</a></li>
+<li><a href="#orgc29d8c3">condition</a>
+<ul>
+<li><a href="#org90f7c3a">ifte</a></li>
+<li><a href="#orgd970682">(if)</a></li>
+<li><a href="#orgf86ad76">(when)</a></li>
+<li><a href="#orgb19aea2">(cond)</a></li>
+</ul>
+</li>
+<li><a href="#org9fb16dd"><span class="todo _gt__lt_">&gt;&lt;</span> built-in datatypes</a>
+<ul>
+<li><a href="#org43ce560">List</a></li>
+<li><a href="#org6c4beb4">Vect &#x2013; vector</a></li>
+<li><a href="#org6cb96c7">Dict &#x2013; dictionary</a></li>
+<li><a href="#org2de1b79">Tuple</a></li>
+<li><a href="#orgaa4b4f1">Set</a></li>
+</ul>
+</li>
+<li><a href="#orgc23c91d"><span class="todo _gt__lt_">&gt;&lt;</span> (+data) &#x2013; define new datatype</a></li>
+<li><a href="#org79c4975">(+union)</a></li>
+<li><a href="#orgd4a2a7b"><span class="todo _gt__lt_">&gt;&lt;</span> multiple dispatching</a>
+<ul>
+<li><a href="#orgb2b314e">(+gene) &#x2013; define generic function prototype</a></li>
+<li><a href="#orgf52b65f">(+disp) &#x2013; dispatching function</a></li>
+</ul>
+</li>
+<li><a href="#org36c0b92"><span class="todo _gt__lt_">&gt;&lt;</span> built-in generics</a>
+<ul>
+<li><a href="#org2cb492">p &#x2013; print</a></li>
+<li><a href="#org1b0f47c">equal?</a></li>
+<li><a href="#orgb77e2fa">repr</a></li>
+</ul>
+</li>
+<li><a href="#org7b7991b"><span class="todo _gt__lt_">&gt;&lt;</span> macro system</a>
+<ul>
+<li><a href="#org9629486">(quote)</a></li>
+<li><a href="#org25d3d5c"><span class="todo _gt__lt_">&gt;&lt;</span> </a></li>
+</ul>
+</li>
+<li><a href="#orgcb8c9b6"><span class="todo _gt__lt_">&gt;&lt;</span> testing</a>
+<ul>
+<li><a href="#orgafc8b87">(assert) &amp; (assert!)</a></li>
+</ul>
+</li>
+<li><a href="#org9418e03"><span class="todo _gt__lt_">&gt;&lt;</span> import python module</a></li>
+<li><a href="#org9a884cf"><span class="todo _gt__lt_">&gt;&lt;</span> create jojo module</a></li>
+<li><a href="#org1c8cfe5"><span class="todo _gt__lt_">&gt;&lt;</span> command line interface</a></li>
+<li><a href="#org1f282a2"><span class="todo _gt__lt_">&gt;&lt;</span> writing script</a></li>
+<li><a href="#orgd5dbe07">license</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org352ed86" class="outline-2">
-<h2 id="org352ed86">docs</h2>
-<div class="outline-text-2" id="text-org352ed86">
+<div id="outline-container-org1436c02" class="outline-2">
+<h2 id="org1436c02">getting start</h2>
+<div class="outline-text-2" id="text-org1436c02">
+</div><div id="outline-container-org6f9326b" class="outline-3">
+<h3 id="org6f9326b">install form pip package</h3>
+<div class="outline-text-3" id="text-org6f9326b">
+<div class="org-src-container">
+
+<pre class="src src-sh">pip install jojo --user
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org98e9472" class="outline-3">
+<h3 id="org98e9472">install from github</h3>
+<div class="outline-text-3" id="text-org98e9472">
+<div class="org-src-container">
+
+<pre class="src src-sh">git clone git@github.com:xieyuheng/jojo-in-python.git
+<span style="color: #a6e22e;">cd</span> jojo-in-python
+pip install . --user
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6a5db62" class="outline-3">
+<h3 id="org6a5db62">start the interpreter</h3>
+<div class="outline-text-3" id="text-org6a5db62">
 <ul class="org-ul">
-<li><p><a href="./intro.html">intro</a></p></li></ul>
+<li><p>make sure the interpreter is in your PATH,</p><p>and type 'jojo' to start the interpreter.</p></li>
+
+<li><p>in the interpreter, type 'bye' to leave it.</p></li></ul>
+</div>
 </div>
 </div>
 
-<div id="outline-container-org983af0" class="outline-2">
-<h2 id="org983af0">source code</h2>
-<div class="outline-text-2" id="text-org983af0">
+<div id="outline-container-org7147478" class="outline-2">
+<h2 id="org7147478">data stack</h2>
+<div class="outline-text-2" id="text-org7147478">
 <ul class="org-ul">
-<li><p>repo at :</p><p><ul class="org-ul"></p><p><li><p><a href="https://github.com/xieyuheng/jojo-in-python">https://github.com/xieyuheng/jojo-in-python</a></p></li></ul></p></li>
+<li><p>you can put data into the data-stack,</p><p>and use jojo as an postfix notation calculator.</p></li></ul>
 
-<li><p>to view the code :</p><p><ul class="org-ul"></p><p><li><p><a href="./jojo.html">jojo in python</a></p></li></p><p><li><p><a href="./core.html">jojo core</a></p></li></ul></p></li></ul>
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #ae81ff;">1</span>
+
+;1&gt; <span style="color: #ae81ff;">1</span>
+<span style="color: #ae81ff;">2</span>
+
+;2&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span>
+add
+
+;1&gt; <span style="color: #ae81ff;">3</span>
+dup
+
+;2&gt; <span style="color: #ae81ff;">3</span> <span style="color: #ae81ff;">3</span>
+mul
+
+;1&gt; <span style="color: #ae81ff;">9</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga89dfa8" class="outline-2">
+<h2 id="orga89dfa8">comment</h2>
+<div class="outline-text-2" id="text-orga89dfa8">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;; line comment
+
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">note</span>
+  comment in sexp<span style="color: #696969;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgca9f668" class="outline-2">
+<h2 id="orgca9f668">stack operation</h2>
+<div class="outline-text-2" id="text-orgca9f668">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span>
+
+;1&gt; <span style="color: #ae81ff;">1</span>
+
+;2&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span>
+
+;3&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span>
+dup
+
+;4&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span> <span style="color: #ae81ff;">3</span>
+drop
+
+;3&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span>
+over
+
+;4&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span> <span style="color: #ae81ff;">2</span>
+drop
+
+;3&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span>
+tuck
+
+;4&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">3</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span>
+drop
+
+;3&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">3</span> <span style="color: #ae81ff;">2</span>
+swap
+
+;3&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3085a38" class="outline-2">
+<h2 id="org3085a38">(+jojo) &#x2013; define function</h2>
+<div class="outline-text-2" id="text-org3085a38">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> square dup mul<span style="color: #696969;">)</span>
+
+;0&gt;
+<span style="color: #ae81ff;">3</span>
+
+;1&gt; <span style="color: #ae81ff;">3</span>
+square
+
+;1&gt; <span style="color: #ae81ff;">9</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org88df1ed" class="outline-2">
+<h2 id="org88df1ed">list processing</h2>
+<div class="outline-text-2" id="text-org88df1ed">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> null cons cons
+
+;1&gt; <span style="color: #ae81ff;">1</span>
+
+;2&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span>
+
+;3&gt; <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span><span style="color: #696969;">)</span>
+
+;2&gt; <span style="color: #ae81ff;">1</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+
+;1&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+dup list-append
+
+;2&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+
+;1&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+dup
+
+;2&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+car
+
+;2&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span> <span style="color: #ae81ff;">1</span>
+over
+
+;3&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span> <span style="color: #ae81ff;">1</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+cdr
+
+;3&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span> <span style="color: #ae81ff;">1</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+cons
+
+;2&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span><span style="color: #696969;">)</span>
+equal?
+
+;1&gt; <span style="color: #66d9ef; font-weight: bold;">true</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1c926e" class="outline-2">
+<h2 id="org1c926e">local variable</h2>
+<div class="outline-text-2" id="text-org1c926e">
+</div><div id="outline-container-orgff7d53c" class="outline-3">
+<h3 id="orgff7d53c">:local-name! &amp; :local-name</h3>
+<div class="outline-text-3" id="text-orgff7d53c">
+<div class="org-src-container">
+
+<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> dup
+  <span style="color: #fd971f;">:x!</span> ;; put the object at the top of data-stack to local-name <span style="color: #a6e22e;">:x</span>
+  <span style="color: #a6e22e;">:x</span>  ;; get an object out of the local-name <span style="color: #a6e22e;">:x</span>
+  :x<span style="color: #696969;">)</span>
+
+;0&gt;
+<span style="color: #ae81ff;">2</span> dup dup
+
+;1&gt; <span style="color: #ae81ff;">2</span>
+
+;2&gt; <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">2</span>
+
+;3&gt; <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">2</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbab83" class="outline-3">
+<h3 id="orgbab83">(-&gt; :local-name &#x2026;)</h3>
+<div class="outline-text-3" id="text-orgbab83">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> hi <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:name</span> <span style="color: #66d9ef; font-weight: bold;">String</span><span style="color: #f92672; font-weight: bold;">,</span> <span style="color: #a6e22e;">:age</span> <span style="color: #66d9ef; font-weight: bold;">Nat</span><span style="color: #696969;">)</span>
+  <span style="color: #e6db74;">"hi "</span> p <span style="color: #a6e22e;">:name</span> p <span style="color: #e6db74;">", you are "</span> p <span style="color: #a6e22e;">:age</span> p <span style="color: #e6db74;">" years old."</span> p nl<span style="color: #696969;">)</span>
+
+;0&gt;
+<span style="color: #797979;">[</span><span style="color: #e6db74;">"xieyuheng"</span> <span style="color: #ae81ff;">5</span> hi<span style="color: #797979;">]</span>
+hi xieyuheng<span style="color: #f92672; font-weight: bold;">,</span> you are <span style="color: #ae81ff;">5</span> years old.
+</pre>
+</div>
+</div>
 </div>
 </div>
 
-<div id="outline-container-org84819eb" class="outline-2">
-<h2 id="org84819eb">license</h2>
-<div class="outline-text-2" id="text-org84819eb">
+<div id="outline-container-org86dd160" class="outline-2">
+<h2 id="org86dd160">(begin) &#x2013; sequential</h2>
+<div class="outline-text-2" id="text-org86dd160">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">begin</span>
+  <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> add dup mul<span style="color: #696969;">)</span>
+
+;1&gt; <span style="color: #ae81ff;">9</span>
+<span style="color: #797979;">[</span><span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> add dup mul<span style="color: #797979;">]</span> ;; <span style="color: #797979;">[</span><span style="color: #ae81ff;">...</span><span style="color: #797979;">]</span> is syntax sugar of <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">begin</span> ...<span style="color: #696969;">)</span>
+
+;2&gt; <span style="color: #ae81ff;">9</span> <span style="color: #ae81ff;">9</span>
+equal?
+
+;1&gt; <span style="color: #66d9ef; font-weight: bold;">true</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org447d127" class="outline-2">
+<h2 id="org447d127">(clo) &#x2013; closure</h2>
+<div class="outline-text-2" id="text-org447d127">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #ae81ff;">3</span> <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">clo</span> dup mul<span style="color: #696969;">)</span> apply
+
+;1&gt; <span style="color: #ae81ff;">3</span>
+
+;2&gt; <span style="color: #ae81ff;">3</span> <span style="color: #B380A8;">{</span>dup mul<span style="color: #B380A8;">}</span> ;; <span style="color: #B380A8;">{</span><span style="color: #ae81ff;">...</span><span style="color: #B380A8;">}</span> is syntax sugar of <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">clo</span> ...<span style="color: #696969;">)</span>
+
+;1&gt; <span style="color: #ae81ff;">9</span>
+<span style="color: #B380A8;">{</span>dup mul<span style="color: #B380A8;">}</span> apply
+
+;2&gt; <span style="color: #ae81ff;">9</span> <span style="color: #B380A8;">{</span>dup mul<span style="color: #B380A8;">}</span>
+
+;1&gt; <span style="color: #ae81ff;">81</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc29d8c3" class="outline-2">
+<h2 id="orgc29d8c3">condition</h2>
+<div class="outline-text-2" id="text-orgc29d8c3">
+</div><div id="outline-container-org90f7c3a" class="outline-3">
+<h3 id="org90f7c3a">ifte</h3>
+<div class="outline-text-3" id="text-org90f7c3a">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">begin</span>
+  <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">1</span> add <span style="color: #ae81ff;">2</span> eq?
+  <span style="color: #B380A8;">{</span><span style="color: #e6db74;">"in true branch."</span> p nl<span style="color: #B380A8;">}</span>
+  <span style="color: #B380A8;">{</span><span style="color: #e6db74;">"in false branch."</span> p nl<span style="color: #B380A8;">}</span>
+  ifte<span style="color: #696969;">)</span>
+in <span style="color: #66d9ef; font-weight: bold;">true</span> branch.
+
+;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">begin</span>
+  <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">1</span> add <span style="color: #ae81ff;">2</span> eq? not
+  <span style="color: #B380A8;">{</span><span style="color: #e6db74;">"in true branch."</span> p nl<span style="color: #B380A8;">}</span>
+  <span style="color: #B380A8;">{</span><span style="color: #e6db74;">"in false branch."</span> p nl<span style="color: #B380A8;">}</span>
+  ifte<span style="color: #696969;">)</span>
+in <span style="color: #66d9ef; font-weight: bold;">false</span> branch.
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd970682" class="outline-3">
+<h3 id="orgd970682">(if)</h3>
+<div class="outline-text-3" id="text-orgd970682">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">if</span> <span style="color: #797979;">[</span><span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">1</span> add <span style="color: #ae81ff;">2</span> eq?<span style="color: #797979;">]</span>
+  <span style="color: #797979;">[</span><span style="color: #e6db74;">"in true branch."</span> p nl<span style="color: #797979;">]</span>
+  <span style="color: #797979;">[</span><span style="color: #e6db74;">"in false branch."</span> p nl<span style="color: #797979;">]</span><span style="color: #696969;">)</span>
+in <span style="color: #66d9ef; font-weight: bold;">true</span> branch.
+
+;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">if</span> <span style="color: #797979;">[</span><span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">1</span> add <span style="color: #ae81ff;">2</span> eq? not<span style="color: #797979;">]</span>
+  <span style="color: #797979;">[</span><span style="color: #e6db74;">"in true branch."</span> p nl<span style="color: #797979;">]</span>
+  <span style="color: #797979;">[</span><span style="color: #e6db74;">"in false branch."</span> p nl<span style="color: #797979;">]</span><span style="color: #696969;">)</span>
+in <span style="color: #66d9ef; font-weight: bold;">false</span> branch.
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf86ad76" class="outline-3">
+<h3 id="orgf86ad76">(when)</h3>
+<div class="outline-text-3" id="text-orgf86ad76">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">when</span> <span style="color: #797979;">[</span><span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">1</span> add <span style="color: #ae81ff;">2</span> eq?<span style="color: #797979;">]</span>
+  <span style="color: #e6db74;">"in when branch."</span> p nl<span style="color: #696969;">)</span>
+in when branch.
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb19aea2" class="outline-3">
+<h3 id="orgb19aea2">(cond)</h3>
+<div class="outline-text-3" id="text-orgb19aea2">
+<div class="org-src-container">
+
+<pre class="src src-jojo">;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> list-length <span style="color: #696969;">(</span><span style="color: #66d9ef; font-weight: bold;">-&gt;</span> <span style="color: #a6e22e;">:list</span> <span style="color: #66d9ef; font-weight: bold;">--</span> <span style="color: #66d9ef; font-weight: bold;">Int</span><span style="color: #696969;">)</span>
+  <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">cond</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> null?<span style="color: #797979;">]</span> <span style="color: #ae81ff;">0</span>
+        <span style="color: #66d9ef; font-weight: bold;">else</span> <span style="color: #797979;">[</span><span style="color: #a6e22e;">:list</span> <span style="color: #ae81ff;">.cdr</span> list-length inc<span style="color: #797979;">]</span><span style="color: #696969;">))</span>
+
+;0&gt;
+<span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span><span style="color: #696969;">)</span> list-length
+
+;1&gt; <span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">list</span> <span style="color: #ae81ff;">1</span> <span style="color: #ae81ff;">2</span> <span style="color: #ae81ff;">3</span><span style="color: #696969;">)</span>
+
+;1&gt; <span style="color: #ae81ff;">3</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9fb16dd" class="outline-2">
+<h2 id="org9fb16dd"><span class="todo _gt__lt_">&gt;&lt;</span> built-in datatypes</h2>
+<div class="outline-text-2" id="text-org9fb16dd">
+</div><div id="outline-container-org43ce560" class="outline-3">
+<h3 id="org43ce560">List</h3>
+<div class="outline-text-3" id="text-org43ce560">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6c4beb4" class="outline-3">
+<h3 id="org6c4beb4">Vect &#x2013; vector</h3>
+<div class="outline-text-3" id="text-org6c4beb4">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6cb96c7" class="outline-3">
+<h3 id="org6cb96c7">Dict &#x2013; dictionary</h3>
+<div class="outline-text-3" id="text-org6cb96c7">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2de1b79" class="outline-3">
+<h3 id="org2de1b79">Tuple</h3>
+<div class="outline-text-3" id="text-org2de1b79">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaa4b4f1" class="outline-3">
+<h3 id="orgaa4b4f1">Set</h3>
+<div class="outline-text-3" id="text-orgaa4b4f1">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc23c91d" class="outline-2">
+<h2 id="orgc23c91d"><span class="todo _gt__lt_">&gt;&lt;</span> (+data) &#x2013; define new datatype</h2>
+<div class="outline-text-2" id="text-orgc23c91d">
+<div class="org-src-container">
+
+<pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+data</span> <span style="color: #696969;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org79c4975" class="outline-2">
+<h2 id="org79c4975">(+union)</h2>
+</div>
+
+<div id="outline-container-orgd4a2a7b" class="outline-2">
+<h2 id="orgd4a2a7b"><span class="todo _gt__lt_">&gt;&lt;</span> multiple dispatching</h2>
+<div class="outline-text-2" id="text-orgd4a2a7b">
+</div><div id="outline-container-orgb2b314e" class="outline-3">
+<h3 id="orgb2b314e">(+gene) &#x2013; define generic function prototype</h3>
+<div class="outline-text-3" id="text-orgb2b314e">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf52b65f" class="outline-3">
+<h3 id="orgf52b65f">(+disp) &#x2013; dispatching function</h3>
+<div class="outline-text-3" id="text-orgf52b65f">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org36c0b92" class="outline-2">
+<h2 id="org36c0b92"><span class="todo _gt__lt_">&gt;&lt;</span> built-in generics</h2>
+<div class="outline-text-2" id="text-org36c0b92">
+</div><div id="outline-container-org2cb492" class="outline-3">
+<h3 id="org2cb492">p &#x2013; print</h3>
+<div class="outline-text-3" id="text-org2cb492">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1b0f47c" class="outline-3">
+<h3 id="org1b0f47c">equal?</h3>
+<div class="outline-text-3" id="text-org1b0f47c">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb77e2fa" class="outline-3">
+<h3 id="orgb77e2fa">repr</h3>
+<div class="outline-text-3" id="text-orgb77e2fa">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7b7991b" class="outline-2">
+<h2 id="org7b7991b"><span class="todo _gt__lt_">&gt;&lt;</span> macro system</h2>
+<div class="outline-text-2" id="text-org7b7991b">
+</div><div id="outline-container-org9629486" class="outline-3">
+<h3 id="org9629486">(quote)</h3>
+<div class="outline-text-3" id="text-org9629486">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org25d3d5c" class="outline-3">
+<h3 id="org25d3d5c"><span class="todo _gt__lt_">&gt;&lt;</span> </h3>
+<div class="outline-text-3" id="text-org25d3d5c">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgcb8c9b6" class="outline-2">
+<h2 id="orgcb8c9b6"><span class="todo _gt__lt_">&gt;&lt;</span> testing</h2>
+<div class="outline-text-2" id="text-orgcb8c9b6">
+</div><div id="outline-container-orgafc8b87" class="outline-3">
+<h3 id="orgafc8b87">(assert) &amp; (assert!)</h3>
+<div class="outline-text-3" id="text-orgafc8b87">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9418e03" class="outline-2">
+<h2 id="org9418e03"><span class="todo _gt__lt_">&gt;&lt;</span> import python module</h2>
+<div class="outline-text-2" id="text-org9418e03">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9a884cf" class="outline-2">
+<h2 id="org9a884cf"><span class="todo _gt__lt_">&gt;&lt;</span> create jojo module</h2>
+<div class="outline-text-2" id="text-org9a884cf">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1c8cfe5" class="outline-2">
+<h2 id="org1c8cfe5"><span class="todo _gt__lt_">&gt;&lt;</span> command line interface</h2>
+<div class="outline-text-2" id="text-org1c8cfe5">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1f282a2" class="outline-2">
+<h2 id="org1f282a2"><span class="todo _gt__lt_">&gt;&lt;</span> writing script</h2>
+<div class="outline-text-2" id="text-org1f282a2">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd5dbe07" class="outline-2">
+<h2 id="orgd5dbe07">license</h2>
+<div class="outline-text-2" id="text-orgd5dbe07">
 <ul class="org-ul">
 <li><p>I dedicate all my works here to all human beings</p></li></ul>
 </div>
@@ -99,7 +709,7 @@ for the JavaScript code in this tag.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: xieyuheng</p>
-<p class="date">Created: 2017-12-11 Mon 13:31</p>
+<p class="date">Created: 2017-12-16 Sat 17:22</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

@@ -1386,6 +1386,10 @@ def vect_member_p(x, vect):
 def vect_length(vect):
     return len(vect)
 
+@prim('vect-empty?')
+def vect_empty_p(vect):
+    return len(vect) == 0
+
 @prim('vect-ref')
 def vect_ref(vect, index):
     return vect[index]

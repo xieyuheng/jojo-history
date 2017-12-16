@@ -4,6 +4,10 @@
 
 * [todo-stack]
 
+*** fix tests
+
+*** fix p
+
 *** repr
 
 * Int
@@ -157,10 +161,14 @@
                 :list.cdr list-repr/recur string-append]))
       #+end_src
 
-***** >< Vect
+***** Vect
 
       #+begin_src jojo
-
+      (+disp repr (-> :vect Vect -- String)
+        (cond [:vect vect-empty?] ["(vect)"]
+              else [:vect vect->list list-repr/recur
+                    "(vect " swap string-append
+                    ")" string-append]))
       #+end_src
 
 ***** >< Stack
