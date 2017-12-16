@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-12-16 Sat 17:22 -->
+<!-- 2017-12-16 Sat 17:33 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>J💛J💛 in python</title>
@@ -64,84 +64,84 @@ for the JavaScript code in this tag.
 <h2>overview</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org1436c02">getting start</a>
+<li><a href="#orgfa17f4a">getting start</a>
 <ul>
-<li><a href="#org6f9326b">install form pip package</a></li>
-<li><a href="#org98e9472">install from github</a></li>
-<li><a href="#org6a5db62">start the interpreter</a></li>
+<li><a href="#org9b0c7cf">install form pip package</a></li>
+<li><a href="#org2eeb47b">install from github</a></li>
+<li><a href="#org8f884ff">start the interpreter</a></li>
 </ul>
 </li>
-<li><a href="#org7147478">data stack</a></li>
-<li><a href="#orga89dfa8">comment</a></li>
-<li><a href="#orgca9f668">stack operation</a></li>
-<li><a href="#org3085a38">(+jojo) &#x2013; define function</a></li>
-<li><a href="#org88df1ed">list processing</a></li>
-<li><a href="#org1c926e">local variable</a>
+<li><a href="#org1efb67c">data stack</a></li>
+<li><a href="#orgb8ec6a9">comment</a></li>
+<li><a href="#org93d3bce">stack operation</a></li>
+<li><a href="#orgc12b3b">(+jojo) &#x2013; define function</a></li>
+<li><a href="#orgc7a8efd">list processing</a></li>
+<li><a href="#org1489414">local variable</a>
 <ul>
-<li><a href="#orgff7d53c">:local-name! &amp; :local-name</a></li>
-<li><a href="#orgbab83">(-&gt; :local-name &#x2026;)</a></li>
+<li><a href="#org871ff4c">:local-name! &amp; :local-name</a></li>
+<li><a href="#org3358712">(-&gt; :local-name &#x2026;)</a></li>
 </ul>
 </li>
-<li><a href="#org86dd160">(begin) &#x2013; sequential</a></li>
-<li><a href="#org447d127">(clo) &#x2013; closure</a></li>
-<li><a href="#orgc29d8c3">condition</a>
+<li><a href="#org4358d71">(begin) &#x2013; sequential</a></li>
+<li><a href="#org6e8e400">(clo) &#x2013; closure</a></li>
+<li><a href="#org2fa7e79">condition</a>
 <ul>
-<li><a href="#org90f7c3a">ifte</a></li>
-<li><a href="#orgd970682">(if)</a></li>
-<li><a href="#orgf86ad76">(when)</a></li>
-<li><a href="#orgb19aea2">(cond)</a></li>
+<li><a href="#org394ecbf">ifte</a></li>
+<li><a href="#orgdfffa2c">(if)</a></li>
+<li><a href="#org1d31b63">(when)</a></li>
+<li><a href="#orgf6702e8">(cond)</a></li>
 </ul>
 </li>
-<li><a href="#org9fb16dd"><span class="todo _gt__lt_">&gt;&lt;</span> built-in datatypes</a>
+<li><a href="#org64bf6f"><span class="todo _gt__lt_">&gt;&lt;</span> built-in datatypes</a>
 <ul>
-<li><a href="#org43ce560">List</a></li>
-<li><a href="#org6c4beb4">Vect &#x2013; vector</a></li>
-<li><a href="#org6cb96c7">Dict &#x2013; dictionary</a></li>
-<li><a href="#org2de1b79">Tuple</a></li>
-<li><a href="#orgaa4b4f1">Set</a></li>
+<li><a href="#orgcbd1053">List</a></li>
+<li><a href="#org3752041">Vect &#x2013; vector</a></li>
+<li><a href="#orgebd867c">Dict &#x2013; dictionary</a></li>
+<li><a href="#org3a4ffa5">Tuple</a></li>
+<li><a href="#org985c730">Set</a></li>
 </ul>
 </li>
-<li><a href="#orgc23c91d"><span class="todo _gt__lt_">&gt;&lt;</span> (+data) &#x2013; define new datatype</a></li>
-<li><a href="#org79c4975">(+union)</a></li>
-<li><a href="#orgd4a2a7b"><span class="todo _gt__lt_">&gt;&lt;</span> multiple dispatching</a>
+<li><a href="#org5f7fa47"><span class="todo _gt__lt_">&gt;&lt;</span> (+data) &#x2013; define new datatype</a></li>
+<li><a href="#org417335">(+union)</a></li>
+<li><a href="#org197527c"><span class="todo _gt__lt_">&gt;&lt;</span> multiple dispatching</a>
 <ul>
-<li><a href="#orgb2b314e">(+gene) &#x2013; define generic function prototype</a></li>
-<li><a href="#orgf52b65f">(+disp) &#x2013; dispatching function</a></li>
+<li><a href="#org320566d">(+gene) &#x2013; define generic function prototype</a></li>
+<li><a href="#orgfd0dec">(+disp) &#x2013; dispatching function</a></li>
 </ul>
 </li>
-<li><a href="#org36c0b92"><span class="todo _gt__lt_">&gt;&lt;</span> built-in generics</a>
+<li><a href="#org6bf22e2"><span class="todo _gt__lt_">&gt;&lt;</span> built-in generics</a>
 <ul>
-<li><a href="#org2cb492">p &#x2013; print</a></li>
-<li><a href="#org1b0f47c">equal?</a></li>
-<li><a href="#orgb77e2fa">repr</a></li>
+<li><a href="#org80f9081">p &#x2013; print</a></li>
+<li><a href="#orgcfef880">equal?</a></li>
+<li><a href="#orgf06125e">repr</a></li>
 </ul>
 </li>
-<li><a href="#org7b7991b"><span class="todo _gt__lt_">&gt;&lt;</span> macro system</a>
+<li><a href="#org416196d"><span class="todo _gt__lt_">&gt;&lt;</span> macro system</a>
 <ul>
-<li><a href="#org9629486">(quote)</a></li>
-<li><a href="#org25d3d5c"><span class="todo _gt__lt_">&gt;&lt;</span> </a></li>
+<li><a href="#org19b7e09">(quote)</a></li>
+<li><a href="#orgcce98c6"><span class="todo _gt__lt_">&gt;&lt;</span> </a></li>
 </ul>
 </li>
-<li><a href="#orgcb8c9b6"><span class="todo _gt__lt_">&gt;&lt;</span> testing</a>
+<li><a href="#org948895e"><span class="todo _gt__lt_">&gt;&lt;</span> testing</a>
 <ul>
-<li><a href="#orgafc8b87">(assert) &amp; (assert!)</a></li>
+<li><a href="#org4e42d48">(assert) &amp; (assert!)</a></li>
 </ul>
 </li>
-<li><a href="#org9418e03"><span class="todo _gt__lt_">&gt;&lt;</span> import python module</a></li>
-<li><a href="#org9a884cf"><span class="todo _gt__lt_">&gt;&lt;</span> create jojo module</a></li>
-<li><a href="#org1c8cfe5"><span class="todo _gt__lt_">&gt;&lt;</span> command line interface</a></li>
-<li><a href="#org1f282a2"><span class="todo _gt__lt_">&gt;&lt;</span> writing script</a></li>
-<li><a href="#orgd5dbe07">license</a></li>
+<li><a href="#orge952ce4"><span class="todo _gt__lt_">&gt;&lt;</span> import python module</a></li>
+<li><a href="#org6291ca2"><span class="todo _gt__lt_">&gt;&lt;</span> create jojo module</a></li>
+<li><a href="#org44fd95a"><span class="todo _gt__lt_">&gt;&lt;</span> command line interface</a></li>
+<li><a href="#org451ecdf"><span class="todo _gt__lt_">&gt;&lt;</span> writing script</a></li>
+<li><a href="#orge75a31a">license</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org1436c02" class="outline-2">
-<h2 id="org1436c02">getting start</h2>
-<div class="outline-text-2" id="text-org1436c02">
-</div><div id="outline-container-org6f9326b" class="outline-3">
-<h3 id="org6f9326b">install form pip package</h3>
-<div class="outline-text-3" id="text-org6f9326b">
+<div id="outline-container-orgfa17f4a" class="outline-2">
+<h2 id="orgfa17f4a">getting start</h2>
+<div class="outline-text-2" id="text-orgfa17f4a">
+</div><div id="outline-container-org9b0c7cf" class="outline-3">
+<h3 id="org9b0c7cf">install form pip package</h3>
+<div class="outline-text-3" id="text-org9b0c7cf">
 <div class="org-src-container">
 
 <pre class="src src-sh">pip install jojo --user
@@ -150,12 +150,12 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
-<div id="outline-container-org98e9472" class="outline-3">
-<h3 id="org98e9472">install from github</h3>
-<div class="outline-text-3" id="text-org98e9472">
+<div id="outline-container-org2eeb47b" class="outline-3">
+<h3 id="org2eeb47b">install from github</h3>
+<div class="outline-text-3" id="text-org2eeb47b">
 <div class="org-src-container">
 
-<pre class="src src-sh">git clone git@github.com:xieyuheng/jojo-in-python.git
+<pre class="src src-sh">git clone https://github.com/xieyuheng/jojo-in-python
 <span style="color: #a6e22e;">cd</span> jojo-in-python
 pip install . --user
 </pre>
@@ -163,9 +163,9 @@ pip install . --user
 </div>
 </div>
 
-<div id="outline-container-org6a5db62" class="outline-3">
-<h3 id="org6a5db62">start the interpreter</h3>
-<div class="outline-text-3" id="text-org6a5db62">
+<div id="outline-container-org8f884ff" class="outline-3">
+<h3 id="org8f884ff">start the interpreter</h3>
+<div class="outline-text-3" id="text-org8f884ff">
 <ul class="org-ul">
 <li><p>make sure the interpreter is in your PATH,</p><p>and type 'jojo' to start the interpreter.</p></li>
 
@@ -174,9 +174,9 @@ pip install . --user
 </div>
 </div>
 
-<div id="outline-container-org7147478" class="outline-2">
-<h2 id="org7147478">data stack</h2>
-<div class="outline-text-2" id="text-org7147478">
+<div id="outline-container-org1efb67c" class="outline-2">
+<h2 id="org1efb67c">data stack</h2>
+<div class="outline-text-2" id="text-org1efb67c">
 <ul class="org-ul">
 <li><p>you can put data into the data-stack,</p><p>and use jojo as an postfix notation calculator.</p></li></ul>
 
@@ -203,9 +203,9 @@ mul
 </div>
 </div>
 
-<div id="outline-container-orga89dfa8" class="outline-2">
-<h2 id="orga89dfa8">comment</h2>
-<div class="outline-text-2" id="text-orga89dfa8">
+<div id="outline-container-orgb8ec6a9" class="outline-2">
+<h2 id="orgb8ec6a9">comment</h2>
+<div class="outline-text-2" id="text-orgb8ec6a9">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;; line comment
@@ -217,9 +217,9 @@ mul
 </div>
 </div>
 
-<div id="outline-container-orgca9f668" class="outline-2">
-<h2 id="orgca9f668">stack operation</h2>
-<div class="outline-text-2" id="text-orgca9f668">
+<div id="outline-container-org93d3bce" class="outline-2">
+<h2 id="org93d3bce">stack operation</h2>
+<div class="outline-text-2" id="text-org93d3bce">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -256,9 +256,9 @@ swap
 </div>
 </div>
 
-<div id="outline-container-org3085a38" class="outline-2">
-<h2 id="org3085a38">(+jojo) &#x2013; define function</h2>
-<div class="outline-text-2" id="text-org3085a38">
+<div id="outline-container-orgc12b3b" class="outline-2">
+<h2 id="orgc12b3b">(+jojo) &#x2013; define function</h2>
+<div class="outline-text-2" id="text-orgc12b3b">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -276,9 +276,9 @@ square
 </div>
 </div>
 
-<div id="outline-container-org88df1ed" class="outline-2">
-<h2 id="org88df1ed">list processing</h2>
-<div class="outline-text-2" id="text-org88df1ed">
+<div id="outline-container-orgc7a8efd" class="outline-2">
+<h2 id="orgc7a8efd">list processing</h2>
+<div class="outline-text-2" id="text-orgc7a8efd">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -321,12 +321,12 @@ equal?
 </div>
 </div>
 
-<div id="outline-container-org1c926e" class="outline-2">
-<h2 id="org1c926e">local variable</h2>
-<div class="outline-text-2" id="text-org1c926e">
-</div><div id="outline-container-orgff7d53c" class="outline-3">
-<h3 id="orgff7d53c">:local-name! &amp; :local-name</h3>
-<div class="outline-text-3" id="text-orgff7d53c">
+<div id="outline-container-org1489414" class="outline-2">
+<h2 id="org1489414">local variable</h2>
+<div class="outline-text-2" id="text-org1489414">
+</div><div id="outline-container-org871ff4c" class="outline-3">
+<h3 id="org871ff4c">:local-name! &amp; :local-name</h3>
+<div class="outline-text-3" id="text-org871ff4c">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+jojo</span> dup
@@ -347,9 +347,9 @@ equal?
 </div>
 </div>
 
-<div id="outline-container-orgbab83" class="outline-3">
-<h3 id="orgbab83">(-&gt; :local-name &#x2026;)</h3>
-<div class="outline-text-3" id="text-orgbab83">
+<div id="outline-container-org3358712" class="outline-3">
+<h3 id="org3358712">(-&gt; :local-name &#x2026;)</h3>
+<div class="outline-text-3" id="text-org3358712">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -365,9 +365,9 @@ hi xieyuheng<span style="color: #f92672; font-weight: bold;">,</span> you are <s
 </div>
 </div>
 
-<div id="outline-container-org86dd160" class="outline-2">
-<h2 id="org86dd160">(begin) &#x2013; sequential</h2>
-<div class="outline-text-2" id="text-org86dd160">
+<div id="outline-container-org4358d71" class="outline-2">
+<h2 id="org4358d71">(begin) &#x2013; sequential</h2>
+<div class="outline-text-2" id="text-org4358d71">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -386,9 +386,9 @@ equal?
 </div>
 </div>
 
-<div id="outline-container-org447d127" class="outline-2">
-<h2 id="org447d127">(clo) &#x2013; closure</h2>
-<div class="outline-text-2" id="text-org447d127">
+<div id="outline-container-org6e8e400" class="outline-2">
+<h2 id="org6e8e400">(clo) &#x2013; closure</h2>
+<div class="outline-text-2" id="text-org6e8e400">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -409,12 +409,12 @@ equal?
 </div>
 </div>
 
-<div id="outline-container-orgc29d8c3" class="outline-2">
-<h2 id="orgc29d8c3">condition</h2>
-<div class="outline-text-2" id="text-orgc29d8c3">
-</div><div id="outline-container-org90f7c3a" class="outline-3">
-<h3 id="org90f7c3a">ifte</h3>
-<div class="outline-text-3" id="text-org90f7c3a">
+<div id="outline-container-org2fa7e79" class="outline-2">
+<h2 id="org2fa7e79">condition</h2>
+<div class="outline-text-2" id="text-org2fa7e79">
+</div><div id="outline-container-org394ecbf" class="outline-3">
+<h3 id="org394ecbf">ifte</h3>
+<div class="outline-text-3" id="text-org394ecbf">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -437,9 +437,9 @@ in <span style="color: #66d9ef; font-weight: bold;">false</span> branch.
 </div>
 </div>
 
-<div id="outline-container-orgd970682" class="outline-3">
-<h3 id="orgd970682">(if)</h3>
-<div class="outline-text-3" id="text-orgd970682">
+<div id="outline-container-orgdfffa2c" class="outline-3">
+<h3 id="orgdfffa2c">(if)</h3>
+<div class="outline-text-3" id="text-orgdfffa2c">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -458,9 +458,9 @@ in <span style="color: #66d9ef; font-weight: bold;">false</span> branch.
 </div>
 </div>
 
-<div id="outline-container-orgf86ad76" class="outline-3">
-<h3 id="orgf86ad76">(when)</h3>
-<div class="outline-text-3" id="text-orgf86ad76">
+<div id="outline-container-org1d31b63" class="outline-3">
+<h3 id="org1d31b63">(when)</h3>
+<div class="outline-text-3" id="text-org1d31b63">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -472,9 +472,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-orgb19aea2" class="outline-3">
-<h3 id="orgb19aea2">(cond)</h3>
-<div class="outline-text-3" id="text-orgb19aea2">
+<div id="outline-container-orgf6702e8" class="outline-3">
+<h3 id="orgf6702e8">(cond)</h3>
+<div class="outline-text-3" id="text-orgf6702e8">
 <div class="org-src-container">
 
 <pre class="src src-jojo">;0&gt;
@@ -494,12 +494,12 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org9fb16dd" class="outline-2">
-<h2 id="org9fb16dd"><span class="todo _gt__lt_">&gt;&lt;</span> built-in datatypes</h2>
-<div class="outline-text-2" id="text-org9fb16dd">
-</div><div id="outline-container-org43ce560" class="outline-3">
-<h3 id="org43ce560">List</h3>
-<div class="outline-text-3" id="text-org43ce560">
+<div id="outline-container-org64bf6f" class="outline-2">
+<h2 id="org64bf6f"><span class="todo _gt__lt_">&gt;&lt;</span> built-in datatypes</h2>
+<div class="outline-text-2" id="text-org64bf6f">
+</div><div id="outline-container-orgcbd1053" class="outline-3">
+<h3 id="orgcbd1053">List</h3>
+<div class="outline-text-3" id="text-orgcbd1053">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -507,9 +507,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org6c4beb4" class="outline-3">
-<h3 id="org6c4beb4">Vect &#x2013; vector</h3>
-<div class="outline-text-3" id="text-org6c4beb4">
+<div id="outline-container-org3752041" class="outline-3">
+<h3 id="org3752041">Vect &#x2013; vector</h3>
+<div class="outline-text-3" id="text-org3752041">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -517,9 +517,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org6cb96c7" class="outline-3">
-<h3 id="org6cb96c7">Dict &#x2013; dictionary</h3>
-<div class="outline-text-3" id="text-org6cb96c7">
+<div id="outline-container-orgebd867c" class="outline-3">
+<h3 id="orgebd867c">Dict &#x2013; dictionary</h3>
+<div class="outline-text-3" id="text-orgebd867c">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -527,9 +527,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org2de1b79" class="outline-3">
-<h3 id="org2de1b79">Tuple</h3>
-<div class="outline-text-3" id="text-org2de1b79">
+<div id="outline-container-org3a4ffa5" class="outline-3">
+<h3 id="org3a4ffa5">Tuple</h3>
+<div class="outline-text-3" id="text-org3a4ffa5">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -537,9 +537,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-orgaa4b4f1" class="outline-3">
-<h3 id="orgaa4b4f1">Set</h3>
-<div class="outline-text-3" id="text-orgaa4b4f1">
+<div id="outline-container-org985c730" class="outline-3">
+<h3 id="org985c730">Set</h3>
+<div class="outline-text-3" id="text-org985c730">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -548,9 +548,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-orgc23c91d" class="outline-2">
-<h2 id="orgc23c91d"><span class="todo _gt__lt_">&gt;&lt;</span> (+data) &#x2013; define new datatype</h2>
-<div class="outline-text-2" id="text-orgc23c91d">
+<div id="outline-container-org5f7fa47" class="outline-2">
+<h2 id="org5f7fa47"><span class="todo _gt__lt_">&gt;&lt;</span> (+data) &#x2013; define new datatype</h2>
+<div class="outline-text-2" id="text-org5f7fa47">
 <div class="org-src-container">
 
 <pre class="src src-jojo"><span style="color: #696969;">(</span><span style="color: #f92672; font-weight: bold;">+data</span> <span style="color: #696969;">)</span>
@@ -559,16 +559,16 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org79c4975" class="outline-2">
-<h2 id="org79c4975">(+union)</h2>
+<div id="outline-container-org417335" class="outline-2">
+<h2 id="org417335">(+union)</h2>
 </div>
 
-<div id="outline-container-orgd4a2a7b" class="outline-2">
-<h2 id="orgd4a2a7b"><span class="todo _gt__lt_">&gt;&lt;</span> multiple dispatching</h2>
-<div class="outline-text-2" id="text-orgd4a2a7b">
-</div><div id="outline-container-orgb2b314e" class="outline-3">
-<h3 id="orgb2b314e">(+gene) &#x2013; define generic function prototype</h3>
-<div class="outline-text-3" id="text-orgb2b314e">
+<div id="outline-container-org197527c" class="outline-2">
+<h2 id="org197527c"><span class="todo _gt__lt_">&gt;&lt;</span> multiple dispatching</h2>
+<div class="outline-text-2" id="text-org197527c">
+</div><div id="outline-container-org320566d" class="outline-3">
+<h3 id="org320566d">(+gene) &#x2013; define generic function prototype</h3>
+<div class="outline-text-3" id="text-org320566d">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -576,43 +576,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-orgf52b65f" class="outline-3">
-<h3 id="orgf52b65f">(+disp) &#x2013; dispatching function</h3>
-<div class="outline-text-3" id="text-orgf52b65f">
-<div class="org-src-container">
-
-<pre class="src src-jojo"></pre>
-</div>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org36c0b92" class="outline-2">
-<h2 id="org36c0b92"><span class="todo _gt__lt_">&gt;&lt;</span> built-in generics</h2>
-<div class="outline-text-2" id="text-org36c0b92">
-</div><div id="outline-container-org2cb492" class="outline-3">
-<h3 id="org2cb492">p &#x2013; print</h3>
-<div class="outline-text-3" id="text-org2cb492">
-<div class="org-src-container">
-
-<pre class="src src-jojo"></pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org1b0f47c" class="outline-3">
-<h3 id="org1b0f47c">equal?</h3>
-<div class="outline-text-3" id="text-org1b0f47c">
-<div class="org-src-container">
-
-<pre class="src src-jojo"></pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-orgb77e2fa" class="outline-3">
-<h3 id="orgb77e2fa">repr</h3>
-<div class="outline-text-3" id="text-orgb77e2fa">
+<div id="outline-container-orgfd0dec" class="outline-3">
+<h3 id="orgfd0dec">(+disp) &#x2013; dispatching function</h3>
+<div class="outline-text-3" id="text-orgfd0dec">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -621,12 +587,12 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org7b7991b" class="outline-2">
-<h2 id="org7b7991b"><span class="todo _gt__lt_">&gt;&lt;</span> macro system</h2>
-<div class="outline-text-2" id="text-org7b7991b">
-</div><div id="outline-container-org9629486" class="outline-3">
-<h3 id="org9629486">(quote)</h3>
-<div class="outline-text-3" id="text-org9629486">
+<div id="outline-container-org6bf22e2" class="outline-2">
+<h2 id="org6bf22e2"><span class="todo _gt__lt_">&gt;&lt;</span> built-in generics</h2>
+<div class="outline-text-2" id="text-org6bf22e2">
+</div><div id="outline-container-org80f9081" class="outline-3">
+<h3 id="org80f9081">p &#x2013; print</h3>
+<div class="outline-text-3" id="text-org80f9081">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -634,9 +600,19 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org25d3d5c" class="outline-3">
-<h3 id="org25d3d5c"><span class="todo _gt__lt_">&gt;&lt;</span> </h3>
-<div class="outline-text-3" id="text-org25d3d5c">
+<div id="outline-container-orgcfef880" class="outline-3">
+<h3 id="orgcfef880">equal?</h3>
+<div class="outline-text-3" id="text-orgcfef880">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf06125e" class="outline-3">
+<h3 id="orgf06125e">repr</h3>
+<div class="outline-text-3" id="text-orgf06125e">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -645,12 +621,22 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-orgcb8c9b6" class="outline-2">
-<h2 id="orgcb8c9b6"><span class="todo _gt__lt_">&gt;&lt;</span> testing</h2>
-<div class="outline-text-2" id="text-orgcb8c9b6">
-</div><div id="outline-container-orgafc8b87" class="outline-3">
-<h3 id="orgafc8b87">(assert) &amp; (assert!)</h3>
-<div class="outline-text-3" id="text-orgafc8b87">
+<div id="outline-container-org416196d" class="outline-2">
+<h2 id="org416196d"><span class="todo _gt__lt_">&gt;&lt;</span> macro system</h2>
+<div class="outline-text-2" id="text-org416196d">
+</div><div id="outline-container-org19b7e09" class="outline-3">
+<h3 id="org19b7e09">(quote)</h3>
+<div class="outline-text-3" id="text-org19b7e09">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgcce98c6" class="outline-3">
+<h3 id="orgcce98c6"><span class="todo _gt__lt_">&gt;&lt;</span> </h3>
+<div class="outline-text-3" id="text-orgcce98c6">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -659,9 +645,23 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org9418e03" class="outline-2">
-<h2 id="org9418e03"><span class="todo _gt__lt_">&gt;&lt;</span> import python module</h2>
-<div class="outline-text-2" id="text-org9418e03">
+<div id="outline-container-org948895e" class="outline-2">
+<h2 id="org948895e"><span class="todo _gt__lt_">&gt;&lt;</span> testing</h2>
+<div class="outline-text-2" id="text-org948895e">
+</div><div id="outline-container-org4e42d48" class="outline-3">
+<h3 id="org4e42d48">(assert) &amp; (assert!)</h3>
+<div class="outline-text-3" id="text-org4e42d48">
+<div class="org-src-container">
+
+<pre class="src src-jojo"></pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge952ce4" class="outline-2">
+<h2 id="orge952ce4"><span class="todo _gt__lt_">&gt;&lt;</span> import python module</h2>
+<div class="outline-text-2" id="text-orge952ce4">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -669,9 +669,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org9a884cf" class="outline-2">
-<h2 id="org9a884cf"><span class="todo _gt__lt_">&gt;&lt;</span> create jojo module</h2>
-<div class="outline-text-2" id="text-org9a884cf">
+<div id="outline-container-org6291ca2" class="outline-2">
+<h2 id="org6291ca2"><span class="todo _gt__lt_">&gt;&lt;</span> create jojo module</h2>
+<div class="outline-text-2" id="text-org6291ca2">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -679,9 +679,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org1c8cfe5" class="outline-2">
-<h2 id="org1c8cfe5"><span class="todo _gt__lt_">&gt;&lt;</span> command line interface</h2>
-<div class="outline-text-2" id="text-org1c8cfe5">
+<div id="outline-container-org44fd95a" class="outline-2">
+<h2 id="org44fd95a"><span class="todo _gt__lt_">&gt;&lt;</span> command line interface</h2>
+<div class="outline-text-2" id="text-org44fd95a">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -689,9 +689,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-org1f282a2" class="outline-2">
-<h2 id="org1f282a2"><span class="todo _gt__lt_">&gt;&lt;</span> writing script</h2>
-<div class="outline-text-2" id="text-org1f282a2">
+<div id="outline-container-org451ecdf" class="outline-2">
+<h2 id="org451ecdf"><span class="todo _gt__lt_">&gt;&lt;</span> writing script</h2>
+<div class="outline-text-2" id="text-org451ecdf">
 <div class="org-src-container">
 
 <pre class="src src-jojo"></pre>
@@ -699,9 +699,9 @@ in when branch.
 </div>
 </div>
 
-<div id="outline-container-orgd5dbe07" class="outline-2">
-<h2 id="orgd5dbe07">license</h2>
-<div class="outline-text-2" id="text-orgd5dbe07">
+<div id="outline-container-orge75a31a" class="outline-2">
+<h2 id="orge75a31a">license</h2>
+<div class="outline-text-2" id="text-orge75a31a">
 <ul class="org-ul">
 <li><p>I dedicate all my works here to all human beings</p></li></ul>
 </div>
@@ -709,7 +709,7 @@ in when branch.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: xieyuheng</p>
-<p class="date">Created: 2017-12-16 Sat 17:22</p>
+<p class="date">Created: 2017-12-16 Sat 17:33</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

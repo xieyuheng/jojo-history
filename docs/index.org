@@ -12,7 +12,7 @@
 *** install from github
 
     #+begin_src sh
-    git clone git@github.com:xieyuheng/jojo-in-python.git
+    git clone https://github.com/xieyuheng/jojo-in-python
     cd jojo-in-python
     pip install . --user
     #+end_src

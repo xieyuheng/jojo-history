@@ -1104,7 +1104,7 @@ def int_string_emitter(module, string):
 def doublequoted_string_p(string):
     if not string_p(string):
         return False
-    if len(string) < 3:
+    if len(string) < 2:
         return False
     elif string[0] != '"':
         return False
@@ -1562,8 +1562,8 @@ def dict_p(x):
 def dict_copy(d):
     return d.copy()
 
-@prim('vect->dict')
-def vect_to_dict(vect):
+@prim('even-vect->dict')
+def even_vect_to_dict(vect):
     length = len(vect)
     if length % 2 != 0:
         print("- vect->dict fail")
@@ -1582,9 +1582,26 @@ def vect_to_dict(vect):
 
     return d
 
+@prim('dict->assco-vect')
+def dict_to_assco_vect(d):
+    assco_vect = []
+    for k, v in d.items():
+        assco_vect.append((k, v))
+    return assco_vect
+
+@prim('dict->assco-list')
+def dict_to_assco_list(d):
+    assco_vect = dict_to_assco_vect(d)
+    assco_list = vect_to_list(assco_vect)
+    return assco_list
+
 @prim('dict-length')
 def dict_length(d):
     return len(d)
+
+@prim('dict-empty?')
+def dict_empty_p(d):
+    return len(d) == 0
 
 @prim('dict-find')
 def dict_find(d, k):
@@ -1631,6 +1648,10 @@ def tuple_to_vect(tu):
 def tuple_length(tu):
     return len(tu)
 
+@prim('tuple-empty?')
+def tuple_empty_p(tu):
+    return len(tu) == 0
+
 @prim('tuple-ref')
 def tuple_ref(tu, index):
     return tu[index]
@@ -1659,6 +1680,10 @@ def set_to_vect(s):
 @prim('set-length')
 def set_length(s):
     return len(s)
+
+@prim('set-empty?')
+def set_empty_p(s):
+    return len(s) == 0
 
 @prim('set-member?')
 def set_member_p(x, s):
@@ -2207,7 +2232,7 @@ def k_dict(module, sexp_list):
     jo_vect = []
     jo_vect.extend([MARK])
     jo_vect.extend(sexp_list_emit(module, sexp_list))
-    jo_vect.extend([COLLECT_VECT, vect_to_dict])
+    jo_vect.extend([COLLECT_VECT, even_vect_to_dict])
     return jo_vect
 
 @keyword('tuple')
