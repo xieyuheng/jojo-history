@@ -2813,17 +2813,27 @@
 
 *** *io*
 
-***** print
+***** py_print
 
       #+begin_src python
-      prim('print')(p_print)
+      @prim('py-print')
+      def py_print(x):
+          p_print(x)
       #+end_src
 
-***** representation
+***** py_repr
 
       #+begin_src python
-      @prim('representation')
-      def representation(x):
+      @prim('py-repr')
+      def py_repr(x):
+          return repr(x)
+      #+end_src
+
+***** default_repr
+
+      #+begin_src python
+      @prim('default-repr')
+      def default_repr(x):
           if x == Bool:
               return "Bool"
           elif x == Int:
@@ -2839,7 +2849,7 @@
           elif x == Set:
               return "Set"
           else:
-              return repr(x)
+              return py_repr(x)
       #+end_src
 
 ***** nl -- newline

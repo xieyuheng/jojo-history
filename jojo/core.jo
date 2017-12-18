@@ -42,7 +42,9 @@
       (quote (@ :body)) sexp-list-print newline
       error]))
 
-(+gene p (-> :x) :x print)
+(+gene p (-> :x) :x py-print)
+
+(+jojo print p)
 
 (+disp p (-> :bool Bool)
   (if :bool
@@ -50,17 +52,36 @@
     ["false" p]))
 
 (+disp p (-> :list List)
-  (cond [:list null?] ["()" p]
-        [:list cons?] ["(" p :list list-print/loop ")" p]))
-
-(+jojo list-print/loop (-> :list)
   (cond
     [:list null?] []
     [:list.cdr null?] [:list.car p]
     else [:list.car p space
-          :list.cdr list-print/loop]))
+          :list.cdr p]))
 
-(+gene repr (-> :x -- String) :x representation)
+(+disp p (-> Vect)
+  vect->list p)
+
+(+disp p (-> Tuple)
+  tuple->vect p)
+
+(+disp p (-> Set)
+  set->vect p)
+
+(+disp p (-> Dict)
+  dict->assco-list assco-list-dict-print)
+
+(+jojo assco-list-dict-print (-> :alist)
+  (cond
+    [:alist null?] []
+    [:alist.cdr null?]
+    [:alist.car 0 tuple-ref p " : " p
+     :alist.car 1 tuple-ref p]
+    else
+    [:alist.car 0 tuple-ref p " : " p
+     :alist.car 1 tuple-ref p ", " p
+     :alist.cdr assco-list-dict-print]))
+
+(+gene repr (-> :x -- String) :x default-repr)
 
 (+disp repr (-> :bool Bool -- String)
   (if :bool

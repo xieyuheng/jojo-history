@@ -1717,10 +1717,16 @@ def set_difference(s1, s2):
 def set_symmetric_difference(s1, s2):
     return s1.symmetric_difference(s2)
 
-prim('print')(p_print)
+@prim('py-print')
+def py_print(x):
+    p_print(x)
 
-@prim('representation')
-def representation(x):
+@prim('py-repr')
+def py_repr(x):
+    return repr(x)
+
+@prim('default-repr')
+def default_repr(x):
     if x == Bool:
         return "Bool"
     elif x == Int:
@@ -1736,7 +1742,7 @@ def representation(x):
     elif x == Set:
         return "Set"
     else:
-        return repr(x)
+        return py_repr(x)
 
 @prim('newline')
 def newline():

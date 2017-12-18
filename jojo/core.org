@@ -4,9 +4,22 @@
 
 * [todo-stack]
 
-*** fix p
-
 *** fix tests
+
+*** built-in gene
+
+    - to learn from the Dunder and built-in functions of python ?
+
+    - functions about number
+
+    - to-string
+    - to-list
+
+    - p
+    - w
+    - equal?
+    - length
+    - empty?
 
 * Int
 
@@ -84,156 +97,196 @@
           error]))
     #+end_src
 
-* *io*
-*** p -- print
+* p
 
-***** p
+*** p
 
-      #+begin_src jojo
-      (+gene p (-> :x) :x print)
-      #+end_src
+    #+begin_src jojo
+    (+gene p (-> :x) :x py-print)
+    #+end_src
 
-***** Bool
+*** print
 
-      #+begin_src jojo
-      (+disp p (-> :bool Bool)
-        (if :bool
-          ["true" p]
-          ["false" p]))
-      #+end_src
+    #+begin_src jojo
+    (+jojo print p)
+    #+end_src
 
-***** List
+*** Bool
 
-      #+begin_src jojo
-      (+disp p (-> :list List)
-        (cond [:list null?] ["()" p]
-              [:list cons?] ["(" p :list list-print/loop ")" p]))
+    #+begin_src jojo
+    (+disp p (-> :bool Bool)
+      (if :bool
+        ["true" p]
+        ["false" p]))
+    #+end_src
 
-      (+jojo list-print/loop (-> :list)
-        (cond
-          [:list null?] []
-          [:list.cdr null?] [:list.car p]
-          else [:list.car p space
-                :list.cdr list-print/loop]))
-      #+end_src
+*** List
+
+    #+begin_src jojo
+    (+disp p (-> :list List)
+      (cond
+        [:list null?] []
+        [:list.cdr null?] [:list.car p]
+        else [:list.car p space
+              :list.cdr p]))
+    #+end_src
+
+*** Vect
+
+    #+begin_src jojo
+    (+disp p (-> Vect)
+      vect->list p)
+    #+end_src
+
+*** Tuple
+
+    #+begin_src jojo
+    (+disp p (-> Tuple)
+      tuple->vect p)
+    #+end_src
+
+*** Set
+
+    #+begin_src jojo
+    (+disp p (-> Set)
+      set->vect p)
+    #+end_src
+
+*** Dict
+
+    #+begin_src jojo
+    (+disp p (-> Dict)
+      dict->assco-list assco-list-dict-print)
+
+    (+jojo assco-list-dict-print (-> :alist)
+      (cond
+        [:alist null?] []
+        [:alist.cdr null?]
+        [:alist.car 0 tuple-ref p " : " p
+         :alist.car 1 tuple-ref p]
+        else
+        [:alist.car 0 tuple-ref p " : " p
+         :alist.car 1 tuple-ref p ", " p
+         :alist.cdr assco-list-dict-print]))
+    #+end_src
+
+* repr
 
 *** repr
 
-***** repr
+    #+begin_src jojo
+    (+gene repr (-> :x -- String) :x default-repr)
+    #+end_src
 
-      #+begin_src jojo
-      (+gene repr (-> :x -- String) :x representation)
-      #+end_src
+*** Bool
 
-***** Bool
+    #+begin_src jojo
+    (+disp repr (-> :bool Bool -- String)
+      (if :bool
+        "true"
+        "false"))
+    #+end_src
 
-      #+begin_src jojo
-      (+disp repr (-> :bool Bool -- String)
-        (if :bool
-          "true"
-          "false"))
-      #+end_src
+*** String
 
-***** String
+    #+begin_src jojo
+    (+disp repr (-> String -- String)
+      doublequote string-append
+      doublequote swap string-append)
+    #+end_src
 
-      #+begin_src jojo
-      (+disp repr (-> String -- String)
-        doublequote string-append
-        doublequote swap string-append)
-      #+end_src
+*** List
 
-***** List
+    #+begin_src jojo
+    (+disp repr (-> :list List -- String)
+      (cond
+        [:list null?] ["(list)"]
+        [:list cons?] [:list list-inner-repr
+                       "(list " swap string-append
+                       ")" string-append]))
 
-      #+begin_src jojo
-      (+disp repr (-> :list List -- String)
-        (cond
-          [:list null?] ["(list)"]
-          [:list cons?] [:list list-inner-repr
-                         "(list " swap string-append
-                         ")" string-append]))
+    (+jojo list-inner-repr (-> :list List -- String)
+      (cond
+        [:list null?] [""]
+        [:list.cdr null?] [:list.car repr]
+        else [:list.car repr " " string-append
+              :list.cdr list-inner-repr string-append]))
+    #+end_src
 
-      (+jojo list-inner-repr (-> :list List -- String)
-        (cond
-          [:list null?] [""]
-          [:list.cdr null?] [:list.car repr]
-          else [:list.car repr " " string-append
-                :list.cdr list-inner-repr string-append]))
-      #+end_src
+*** Vect
 
-***** Vect
+    #+begin_src jojo
+    (+disp repr (-> :vect Vect -- String)
+      (cond
+        [:vect vect-empty?] ["(vect)"]
+        else [:vect vect-inner-repr
+              "(vect " swap string-append
+              ")" string-append]))
 
-      #+begin_src jojo
-      (+disp repr (-> :vect Vect -- String)
-        (cond
-          [:vect vect-empty?] ["(vect)"]
-          else [:vect vect-inner-repr
-                "(vect " swap string-append
-                ")" string-append]))
+    (+jojo vect-inner-repr
+      vect->list list-inner-repr)
+    #+end_src
 
-      (+jojo vect-inner-repr
-        vect->list list-inner-repr)
-      #+end_src
+*** Tuple
 
-***** Tuple
+    #+begin_src jojo
+    (+disp repr (-> :tuple Tuple -- String)
+      (cond
+        [:tuple tuple-empty?] ["(*)"]
+        else [:tuple tuple-inner-repr
+              "(* " swap string-append
+              ")" string-append]))
 
-      #+begin_src jojo
-      (+disp repr (-> :tuple Tuple -- String)
-        (cond
-          [:tuple tuple-empty?] ["(*)"]
-          else [:tuple tuple-inner-repr
-                "(* " swap string-append
-                ")" string-append]))
+    (+jojo tuple-inner-repr
+      tuple->vect vect-inner-repr)
+    #+end_src
 
-      (+jojo tuple-inner-repr
-        tuple->vect vect-inner-repr)
-      #+end_src
+*** Set
 
-***** Set
+    #+begin_src jojo
+    (+disp repr (-> :set Set -- String)
+      (cond
+        [:set set-empty?] ["(set)"]
+        else [:set set-inner-repr
+              "(set " swap string-append
+              ")" string-append]))
 
-      #+begin_src jojo
-      (+disp repr (-> :set Set -- String)
-        (cond
-          [:set set-empty?] ["(set)"]
-          else [:set set-inner-repr
-                "(set " swap string-append
-                ")" string-append]))
+    (+jojo set-inner-repr
+      set->vect vect-inner-repr)
+    #+end_src
 
-      (+jojo set-inner-repr
-        set->vect vect-inner-repr)
-      #+end_src
+*** Dict
 
-***** Dict
+    #+begin_src jojo
+    (+disp repr (-> Dict -- String)
+      dict->assco-list assco-list-dict-repr)
 
-      #+begin_src jojo
-      (+disp repr (-> Dict -- String)
-        dict->assco-list assco-list-dict-repr)
+    (+jojo assco-list-dict-repr (-> :alist -- String)
+      (cond
+        [:alist null?] ["(dict)"]
+        [:alist cons?] [:alist assco-list-dict-inner-repr
+                        "(dict " swap string-append
+                        ")" string-append]))
 
-      (+jojo assco-list-dict-repr (-> :alist -- String)
-        (cond
-          [:alist null?] ["(dict)"]
-          [:alist cons?] [:alist assco-list-dict-inner-repr
-                          "(dict " swap string-append
-                          ")" string-append]))
+    (+jojo assco-list-dict-inner-repr (-> :alist -- String)
+      (cond
+        [:alist null?] [""]
+        [:alist.cdr null?]
+        [:alist.car 0 tuple-ref repr " " string-append
+         :alist.car 1 tuple-ref repr string-append]
+        else
+        [:alist.car 0 tuple-ref repr " " string-append
+         :alist.car 1 tuple-ref repr ", " string-append string-append
+         :alist.cdr assco-list-dict-inner-repr string-append]))
+    #+end_src
 
-      (+jojo assco-list-dict-inner-repr (-> :alist -- String)
-        (cond
-          [:alist null?] [""]
-          [:alist.cdr null?]
-          [:alist.car 0 tuple-ref repr " " string-append
-           :alist.car 1 tuple-ref repr string-append]
-          else
-          [:alist.car 0 tuple-ref repr " " string-append
-           :alist.car 1 tuple-ref repr ", " string-append string-append
-           :alist.cdr assco-list-dict-inner-repr string-append]))
-      #+end_src
+* w
 
-*** w -- write
+*** w
 
-***** w
-
-      #+begin_src jojo
-      (+gene w (-> :x) :x repr p)
-      #+end_src
+    #+begin_src jojo
+    (+gene w (-> :x) :x repr p)
+    #+end_src
 
 * combinator
 
