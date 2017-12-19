@@ -101,7 +101,7 @@
 ***** p
 
       #+begin_src jojo
-      (+gene p (-> :x) :x py-print)
+      (+gene p (-> :x) :x default-print)
       #+end_src
 
 ***** print
@@ -287,27 +287,6 @@
       (+gene w (-> :x) :x repr p)
       #+end_src
 
-*** equal?
-
-***** equal?
-
-      #+begin_src jojo
-      (+gene equal? (-> :x :y -- Bool) :x :y eqv?)
-      #+end_src
-
-***** List
-
-      #+begin_src jojo
-      (+disp equal? (-> :x List :y List -- Bool)
-        (case [:x :y]
-          [<null> <null>] true
-          [<cons> <cons>]
-          (if [:x .car :y .car equal? not]
-            false
-            [:x .cdr :y .cdr equal?])
-          [Object Object] false))
-      #+end_src
-
 *** >< length
 
 *** >< empty?
@@ -417,6 +396,27 @@
               [:vl.car :tl.car class-member? not] false
               else [:vl.cdr :tl.cdr case-match?/loop]))
       #+end_src
+
+* equal?
+
+j*** equal?
+
+    #+begin_src jojo
+    (+gene equal? (-> :x :y -- Bool) :x :y eqv?)
+    #+end_src
+
+*** List
+
+    #+begin_src jojo
+    (+disp equal? (-> :x List :y List -- Bool)
+      (case [:x :y]
+        [<null> <null>] true
+        [<cons> <cons>]
+        (if [:x .car :y .car equal? not]
+          false
+          [:x .cdr :y .cdr equal?])
+        [Object Object] false))
+    #+end_src
 
 * more about List
 

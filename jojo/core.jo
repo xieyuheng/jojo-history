@@ -42,7 +42,7 @@
       (quote (@ :body)) sexp-list-print newline
       error]))
 
-(+gene p (-> :x) :x py-print)
+(+gene p (-> :x) :x default-print)
 
 (+jojo print p)
 

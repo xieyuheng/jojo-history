@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+*** be able to (+method) to (+data) -- single dispatching
+
 *** Stack as a real class
 
 *** stdlib in core
@@ -13,10 +15,6 @@
 ***** socket io in core
 
 *** (clone)
-
-*** (+data) with init function
-
-    - be able to (+method) to (+data) -- single dispatching
 
 *** fix the use of doublequote
 
@@ -1351,7 +1349,9 @@
 
       #+begin_src python
       class Null:
-          pass
+          @classmethod
+          def __repr__(self):
+              return "<null>"
       #+end_src
 
 ***** null
@@ -1374,6 +1374,10 @@
           def __init__(self, car, cdr):
               self.car = car
               self.cdr = cdr
+
+          @classmethod
+          def __repr__(self):
+              return "<cons>"
       #+end_src
 
 ***** cons
@@ -2823,6 +2827,17 @@
           p_print(x)
       #+end_src
 
+***** default_print
+
+      #+begin_src python
+      @prim('default-print')
+      def default_print(x):
+          if hasattr(x, '__repr__'):
+              py_print(x.__repr__())
+          else:
+              py_print(x)
+      #+end_src
+
 ***** py_repr
 
       #+begin_src python
@@ -2850,6 +2865,8 @@
               return "Tuple"
           elif x == Set:
               return "Set"
+          elif hasattr(x, '__repr__'):
+              return x.__repr__()
           else:
               return py_repr(x)
       #+end_src

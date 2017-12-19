@@ -844,7 +844,9 @@ def doublequote_p(char):
     return char == '"'
 
 class Null:
-    pass
+    @classmethod
+    def __repr__(self):
+        return "<null>"
 
 null = Null()
 
@@ -855,6 +857,10 @@ class Cons:
     def __init__(self, car, cdr):
         self.car = car
         self.cdr = cdr
+
+    @classmethod
+    def __repr__(self):
+        return "<cons>"
 
 def cons(car, cdr):
     if null_p(cdr) or cons_p(cdr):
@@ -1721,6 +1727,13 @@ def set_symmetric_difference(s1, s2):
 def py_print(x):
     p_print(x)
 
+@prim('default-print')
+def default_print(x):
+    if hasattr(x, '__repr__'):
+        py_print(x.__repr__())
+    else:
+        py_print(x)
+
 @prim('py-repr')
 def py_repr(x):
     return repr(x)
@@ -1741,6 +1754,8 @@ def default_repr(x):
         return "Tuple"
     elif x == Set:
         return "Set"
+    elif hasattr(x, '__repr__'):
+        return x.__repr__()
     else:
         return py_repr(x)
 
