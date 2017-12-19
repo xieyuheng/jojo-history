@@ -399,7 +399,7 @@
 
 * equal?
 
-j*** equal?
+*** equal?
 
     #+begin_src jojo
     (+gene equal? (-> :x :y -- Bool) :x :y eqv?)

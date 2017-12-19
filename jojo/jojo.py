@@ -844,9 +844,7 @@ def doublequote_p(char):
     return char == '"'
 
 class Null:
-    @classmethod
-    def __repr__(self):
-        return "<null>"
+    pass
 
 null = Null()
 
@@ -857,10 +855,6 @@ class Cons:
     def __init__(self, car, cdr):
         self.car = car
         self.cdr = cdr
-
-    @classmethod
-    def __repr__(self):
-        return "<cons>"
 
 def cons(car, cdr):
     if null_p(cdr) or cons_p(cdr):
@@ -919,24 +913,7 @@ def parse_sexp_cons_until_ket(string_vect, i, ket):
         return (cons(s, s_cons), i2)
 
 def p_print(x):
-    def p(x):
-        print(x, end="")
-    if x == Bool:
-        p("Bool")
-    elif x == Int:
-        p("Int")
-    elif x == String:
-        p("String")
-    elif x == Vect:
-        p("Vect")
-    elif x == Dict:
-        p("Dict")
-    elif x == Tuple:
-        p("Tuple")
-    elif x == Set:
-        p("Set")
-    else:
-        p(x)
+    print(x, end="")
     sys.stdout.flush()
 
 def sexp_print(s):
@@ -1729,10 +1706,23 @@ def py_print(x):
 
 @prim('default-print')
 def default_print(x):
-    if hasattr(x, '__repr__'):
-        py_print(x.__repr__())
+    if x == Bool:
+        py_print("Bool")
+    elif x == Int:
+        py_print("Int")
+    elif x == String:
+        py_print("String")
+    elif x == Vect:
+        py_print("Vect")
+    elif x == Dict:
+        py_print("Dict")
+    elif x == Tuple:
+        py_print("Tuple")
+    elif x == Set:
+        py_print("Set")
     else:
         py_print(x)
+    sys.stdout.flush()
 
 @prim('py-repr')
 def py_repr(x):
@@ -1754,8 +1744,6 @@ def default_repr(x):
         return "Tuple"
     elif x == Set:
         return "Set"
-    elif hasattr(x, '__repr__'):
-        return x.__repr__()
     else:
         return py_repr(x)
 
@@ -2128,11 +2116,6 @@ def prepare_data_arguments(field_vect, value_vect, data):
         print("  data must be a python class")
         print("  data : {}".format(data))
         error()
-    elif not hasattr(data, 'field_name_vect'):
-        print("- prepare_data_arguments fail")
-        print("  data must has 'field_name_vect' attribute")
-        print("  data : {}".format(data))
-        error()
 
     if len(field_vect) == 0:
         normal_value_vect = value_vect
@@ -2489,9 +2472,7 @@ def create_data_class(data_name, field_name_vect):
     rev.reverse()
     def update_ns(ns):
         ns.update({
-            '__init__' : create_data_init(field_name_vect),
-            'field_name_vect': field_name_vect,
-            'reversed_field_name_vect': rev,
+            '__init__': create_data_init(field_name_vect),
         })
     return types.new_class(
         data_name,
