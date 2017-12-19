@@ -1,3 +1,5 @@
 (+jojo test1
-  4 even? print nl
-  4 odd?  print nl)
+  (assert 4 even?)
+  (assert 4 odd? not))
+
+test1

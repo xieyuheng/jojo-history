@@ -1,34 +1,32 @@
 (+data <zull>)
 (+data <zons> .zar .zdr)
 
-(+jojo t1
+(begin
   zull
   1 swap zons
   2 swap zons
   3 swap zons
   :l!
-  :l.zar print nl
-  :l.zdr.zar print nl
-  :l.zdr.zdr.zar print nl)
+  (assert :l.zar 3 eq?)
+  (assert :l.zdr.zar 2 eq?)
+  (assert :l.zdr.zdr.zar 1 eq?))
 
-(+jojo t2
+(begin
   <zull> new
   1 swap <zons> new
   2 swap <zons> new
   3 swap <zons> new
   :l!
-  :l.zar print nl
-  :l .zdr.zar print nl
-  :l.zdr .zdr.zar print nl)
+  (assert :l.zar 3 eq?)
+  (assert :l.zdr.zar 2 eq?)
+  (assert :l.zdr.zdr.zar 1 eq?))
 
-(+jojo t3
-  <zull> new zull? print space
-  zull       zull? print space
-  1          zull? not print space
-  nl
+(begin
+  (assert <zull> new zull?)
+  (assert zull       zull?)
+  (assert 1          zull? not)
 
-  1 zull <zons> new zons? print space
-  1 zull zons       zons? print space
-  zull              zons? not print space
-  1                 zons? not print space
-  nl)
+  (assert 1 zull <zons> new zons?)
+  (assert 1 zull zons       zons?)
+  (assert zull              zons? not)
+  (assert 1                 zons? not))

@@ -329,7 +329,7 @@
 
     #+end_src
 
-* >< built-in generics
+* >< common generics
 
 *** p -- print
 

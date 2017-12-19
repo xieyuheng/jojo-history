@@ -1,6 +1,6 @@
 (from os import name)
 (from sys import copyright)
 
-(+jojo main
-  name print nl
-  copyright print)
+(begin
+  (assert name string?)
+  (assert copyright string?))

@@ -1,15 +1,10 @@
-(+gene 2print (-> :x :y --) :x print space :y print)
+(+gene 2repr (-> :x :y -- String) "><><><")
 
-(+disp 2print (-> Int Int --) drop drop "Int Int" print nl)
-(+disp 2print (-> String Int --) drop drop "String Int" print nl)
-(+disp 2print (-> Int String --) drop drop "Int String" print nl)
+(+disp 2repr (-> Int Int -- String) drop drop "Int Int")
+(+disp 2repr (-> String Int -- String) drop drop "String Int")
+(+disp 2repr (-> Int String -- String) drop drop "Int String")
 
-1 1     2print
-1 "a"   2print
-"a" 1   2print
-"a" "a" 2print
-nl
-
-"123" p nl
-
-(list 1 2 3) p nl
+(assert 1 1     2repr "Int Int" eq?)
+(assert 1 "a"   2repr "Int String" eq?)
+(assert "a" 1   2repr "String Int" eq?)
+(assert "a" "a" 2repr "><><><" eq?)

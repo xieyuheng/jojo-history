@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+*** Stack as a real class
+
 *** stdlib in core
 
 ***** file io in core

@@ -1,3 +1,10 @@
-(tuple (tuple 1 2 3) (tuple 1 2 3) (tuple 1 2 3)) print nl
+(begin
+  (tuple (tuple 1 2 3) (tuple 1 2 3) (tuple 1 2 3))
+  tuple-length 3 eq?)
 
-(* (* 1 2 3) (* 1 2 3) (* 1 2 3)) print nl
+(begin
+  (assert
+    (* (* 1 2 3) (* 1 2 3) (* 1 2 3))
+    :tu!
+    :tu 0 tuple-ref
+    :tu 1 tuple-ref equal?))

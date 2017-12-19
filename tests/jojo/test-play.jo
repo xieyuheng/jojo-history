@@ -1,6 +1,6 @@
 (assert
-  100 13 div dup print nl (-> :div1)
-  100 13 mod dup print nl (-> :mod1)
+  100 13 div (-> :div1)
+  100 13 mod (-> :mod1)
 
   100 13 divmod (-> :div2 :mod2)
 
