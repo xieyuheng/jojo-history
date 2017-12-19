@@ -2602,6 +2602,17 @@ def arrow_get_type_tuple_vect(module, arrow):
     type_vect_vect = type_vect_to_type_vect_vect(type_vect)
     return Vect(itertools.product(*type_vect_vect))
 
+@keyword("+def")
+def plus_def(module, body):
+    name = car(body)
+    rest = cdr(body)
+    jojo = JOJO(sexp_list_emit(module, rest))
+    vm = VM([], [RP(jojo)])
+    vm.exe()
+    data = vm.ds[0]
+    jojo_define(module, name, data)
+    return []
+
 key_jo_dict = {}
 
 def key_jo(name, jo_vect):

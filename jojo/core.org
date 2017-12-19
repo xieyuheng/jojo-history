@@ -538,3 +538,18 @@
     (+jojo list-member? (-> :list :x -- Bool)
       :list {:x equal?} list-any?)
     #+end_src
+
+* ><
+
+  #+begin_src jojo
+  (from flask import Flask)
+
+  (+def app
+    (call Flask
+      .import_name "myapp"))
+
+  (call app.add_url_rule
+    .rule "/"
+    .endpoint "index"
+    .view_func 1)
+  #+end_src
