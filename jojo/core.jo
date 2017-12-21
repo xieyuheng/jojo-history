@@ -190,7 +190,7 @@
 
 (+jojo case-spread-one-question
   (-> :value :case -- question)
-  (cond [:value 'else eq?] 'else
+  (cond [:case 'else eq?] 'else
         else `[(list (@ :value)) (list (@ :case)) case-match?]))
 
 (+jojo case-syntax-check (-> :sexp-list)
@@ -228,7 +228,7 @@
     (if [:x .car :y .car equal? not]
       false
       [:x .cdr :y .cdr equal?])
-    [Object Object] false))
+    else false))
 
 (+jojo list-any? (-> :list :pred -> Bool)
   (cond [:list null?] false

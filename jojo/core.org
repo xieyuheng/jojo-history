@@ -359,7 +359,7 @@
 
       (+jojo case-spread-one-question
         (-> :value :case -- question)
-        (cond [:value 'else eq?] 'else
+        (cond [:case 'else eq?] 'else
               else `[(list (@ :value)) (list (@ :case)) case-match?]))
       #+end_src
 
@@ -415,7 +415,7 @@
         (if [:x .car :y .car equal? not]
           false
           [:x .cdr :y .cdr equal?])
-        [Object Object] false))
+        else false))
     #+end_src
 
 * more about List
