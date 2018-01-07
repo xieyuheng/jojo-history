@@ -6,7 +6,7 @@
 *** install form pip package
 
     #+begin_src sh
-    pip install jojo --user
+    pip install jojo
     #+end_src
 
 *** install from github
@@ -14,7 +14,7 @@
     #+begin_src sh
     git clone https://github.com/xieyuheng/jojo-in-python
     cd jojo-in-python
-    pip install . --user
+    pip install .
     #+end_src
 
 *** start the interpreter
@@ -314,6 +314,10 @@
   #+end_src
 
 * (+union)
+
+  #+begin_src jojo
+
+  #+end_src
 
 * >< multiple dispatching
 
