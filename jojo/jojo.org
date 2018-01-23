@@ -4,6 +4,8 @@
 
 * [todo-stack]
 
+*** numpy and pandas as built-in ?
+
 *** Stack as a real class
 
 *** stdlib in core
