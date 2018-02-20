@@ -1245,101 +1245,101 @@
             process.start()
     #+end_src
 
+* scan -- lexer for sexp
+
+*** code_scan
+
+    - ';' as line comment
+
+    #+begin_src python
+    def code_scan(string):
+        string_vect = []
+        i = 0
+        length = len(string)
+        while i < length:
+            char = string[i]
+
+            if space_p(char):
+                i = i + 1
+
+            elif char == ';':
+                newline_index = string.find('\n', i+1)
+                if newline_index == -1:
+                    break
+                end = newline_index + 1
+                i = end
+
+            elif delimiter_p(char):
+                string_vect.append(char)
+                i = i + 1
+
+            elif doublequote_p(char):
+                doublequote_end_index = string.find('"', i+1)
+                if doublequote_end_index == -1:
+                    print("- code_scan fail")
+                    print("  doublequote mismatch")
+                    print("  string : {}".format(string))
+                    error()
+                end = doublequote_end_index + 1
+                string_vect.append(string[i:end])
+                i = end
+
+            else:
+                end = find_end(string, i+1)
+                string_vect.append(string[i:end])
+                i = end
+
+        return string_vect
+    #+end_src
+
+*** find_end
+
+    #+begin_src python
+    def find_end(string, begin):
+        length = len(string)
+        i = begin
+        while True:
+           if i == length:
+               return i
+           char = string[i]
+           if (space_p(char) or
+               delimiter_p(char) or
+               doublequote_p(char)):
+               return i
+           i = i + 1
+    #+end_src
+
+*** space_p
+
+    #+begin_src python
+    def space_p(char):
+        return char.isspace()
+    #+end_src
+
+*** delimiter_p
+
+    #+begin_src python
+    def delimiter_p(char):
+        return (char == '(' or
+                char == ')' or
+                char == '[' or
+                char == ']' or
+                char == '{' or
+                char == '}' or
+                char == ',' or
+                char == ';' or
+                char == '`' or
+                char == "'")
+    #+end_src
+
+*** doublequote_p
+
+    #+begin_src python
+    def doublequote_p(char):
+        return char == '"'
+    #+end_src
+
 * sexp -- string expression
-
-*** scan -- lexer for sexp
-
-***** code_scan
-
-      - ';' as line comment
-
-      #+begin_src python
-      def code_scan(string):
-          string_vect = []
-          i = 0
-          length = len(string)
-          while i < length:
-              char = string[i]
-
-              if space_p(char):
-                  i = i + 1
-
-              elif char == ';':
-                  newline_index = string.find('\n', i+1)
-                  if newline_index == -1:
-                      break
-                  end = newline_index + 1
-                  i = end
-
-              elif delimiter_p(char):
-                  string_vect.append(char)
-                  i = i + 1
-
-              elif doublequote_p(char):
-                  doublequote_end_index = string.find('"', i+1)
-                  if doublequote_end_index == -1:
-                      print("- code_scan fail")
-                      print("  doublequote mismatch")
-                      print("  string : {}".format(string))
-                      error()
-                  end = doublequote_end_index + 1
-                  string_vect.append(string[i:end])
-                  i = end
-
-              else:
-                  end = find_end(string, i+1)
-                  string_vect.append(string[i:end])
-                  i = end
-
-          return string_vect
-      #+end_src
-
-***** find_end
-
-      #+begin_src python
-      def find_end(string, begin):
-          length = len(string)
-          i = begin
-          while True:
-             if i == length:
-                 return i
-             char = string[i]
-             if (space_p(char) or
-                 delimiter_p(char) or
-                 doublequote_p(char)):
-                 return i
-             i = i + 1
-      #+end_src
-
-***** space_p
-
-      #+begin_src python
-      def space_p(char):
-          return char.isspace()
-      #+end_src
-
-***** delimiter_p
-
-      #+begin_src python
-      def delimiter_p(char):
-          return (char == '(' or
-                  char == ')' or
-                  char == '[' or
-                  char == ']' or
-                  char == '{' or
-                  char == '}' or
-                  char == ',' or
-                  char == ';' or
-                  char == '`' or
-                  char == "'")
-      #+end_src
-
-***** doublequote_p
-
-      #+begin_src python
-      def doublequote_p(char):
-          return char == '"'
-      #+end_src
 
 *** null & cons
 
