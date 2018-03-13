@@ -1,0 +1,3 @@
+#!/usr/bin/env jojo
+
+"hello world!" w nl

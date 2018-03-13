@@ -1,0 +1,8 @@
+(+module hi/0.0.1
+  (export
+    hi1 hi3 hi5)
+  (+jojo hi1 "hi1")
+  (+jojo hi2 "hi2")
+  (+jojo hi3 "hi")
+  (+jojo hi4 "hi4")
+  (+jojo hi5 "hi5"))

@@ -1,0 +1,17 @@
+#!/usr/bin/env jojo
+
+(run
+
+  (import socket/0.0.1)
+
+  (+jojo run-clinet
+    "cicada" "12345" tcp-socket-connect
+    socket-recv w nl)
+
+  (+var counter 0)
+
+  {run-clinet
+   counter inc (set counter)
+   counter w nl}
+
+  1000 times)

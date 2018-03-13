@@ -1,0 +1,5 @@
+#!/usr/bin/env jojo
+
+(run
+  (import haha/0.0.1)
+  haha)

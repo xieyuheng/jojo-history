@@ -1,0 +1,88 @@
+#!/usr/bin/env jojo
+
+(+data <leaf> .v)
+(+data <node> .l .r)
+
+(+jojo tree-1
+  1 leaf 2 leaf node
+  3 leaf 4 leaf node
+  5 leaf node
+  node)
+
+(+jojo tree-map (-> :tree :fun -- tree)
+  (case :tree
+    <leaf> [:tree .v :fun apply leaf]
+    <node> [:tree .l :fun recur
+            :tree .r :fun recur node]))
+
+(+jojo tree-eqv? (-> :t1 :t2 :eqv --)
+  (case [:t1 :t2]
+    [<leaf> <leaf>] [:t1 .v :t2 .v :eqv apply]
+    [<node> <node>] (if :t1 .l :t2 .l :eqv recur not
+                        then false
+                        else :t1 .r :t2 .r :eqv recur)
+    else false))
+
+(assert
+  tree-1 {100 add} tree-map
+
+  101 leaf 102 leaf node
+  103 leaf 104 leaf node
+  105 leaf node
+  node
+
+  {eq?} tree-eqv?)
+
+
+(+jojo tree-zip (-> :t1 :t2 -- tree maybe)
+  (case [:t1 :t2]
+    [<leaf> <leaf>] [:t1 .v :t2 .v pair leaf return-maybe]
+    [<node> <node>] (let-bind bind-maybe
+                      :l [:t1 .l :t2 .l tree-zip]
+                      :r [:t1 .r :t2 .r tree-zip]
+                      [:l :r node return-maybe])
+    else nothing))
+
+(+jojo maybe-write (-> :m :f --)
+  (case :m
+    <nothing> ['nothing jo-write space]
+    <just> [:m .v :f apply 'just jo-write space]))
+
+(assert
+  tree-1 dup tree-zip tag '<just> eq?)
+
+(+jojo tree-2
+  1 1 pair leaf 2 2 pair leaf node
+  3 3 pair leaf 4 4 pair leaf node
+  5 5 pair leaf node
+  node)
+
+(assert
+  tree-1 dup tree-zip .v
+  tree-2
+  {(-> :pair1 :pair2)
+   :pair1 .l :pair2 .l eq?
+   :pair1 .r :pair2 .r eq? and}
+  tree-eqv?)
+
+(assert
+  tree-1 1 leaf tree-zip nothing?)
+
+
+(+jojo number-tree (-> number, :tree -- number, tree)
+  (case :tree
+    <leaf> [dup inc swap leaf]
+    <node> [:tree .l recur :l!
+            :tree .r recur :r!
+            :l :r node]))
+
+(+jojo tree-3
+  "1" leaf "2" leaf node
+  "3" leaf "4" leaf node
+  "5" leaf node
+  node)
+
+(assert
+  0 tree-3 number-tree swap drop
+  tree-1 {dec} tree-map
+  {eq?} tree-eqv?)

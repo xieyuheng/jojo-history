@@ -1,0 +1,5 @@
+(+module haha/0.0.1
+  (export haha)
+
+  (+var haha-lib current-reading-dir "haha.so" string-append lib-open)
+  (+jojo haha haha-lib "haha" lib-call))

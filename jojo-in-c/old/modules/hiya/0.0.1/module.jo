@@ -1,0 +1,11 @@
+(+module hiya/0.0.1
+  (import hi/0.0.1
+    '(hi3) import-only
+    'hi- import-prefix
+    (table 'hi-hi3 'hi) import-rename)
+  (import ya/0.0.1
+    '(ya3) import-only
+    (table 'ya3 'ya) import-rename)
+  (export
+    hiya)
+  (+jojo hiya hi ya string-append))

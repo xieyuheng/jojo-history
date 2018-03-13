@@ -1,0 +1,4 @@
+#!/usr/bin/env jojo
+
+"- current-reading-dir : " w current-reading-dir w nl
+"- current-running-dir : " w current-running-dir w nl

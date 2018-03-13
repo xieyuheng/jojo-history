@@ -1,0 +1,24 @@
+#!/usr/bin/env jojo
+
+(run
+
+  (import socket/0.0.1)
+
+  (+var thanks-server "12345" 256 tcp-socket-listen)
+
+  (+jojo run-server
+    thanks-server
+    "- thanks-server listening" w nl
+    run-server/loop)
+
+  (+jojo run-server/loop (-> :socket --)
+    :socket socket-accept (-> :client :addr)
+
+    "got a connection from " w :addr w nl
+
+    :client "thank you for connecting" socket-send
+    :client socket-close
+
+    :socket recur)
+
+  run-server)

@@ -1,0 +1,14 @@
+#!/usr/bin/env jojo
+
+(note
+  (+jojo t (-> <int> -- <int>)
+    (if dup 1000000 eq? then int-write newline end)
+    inc recur)
+  0 t)
+
+(+jojo t
+  0
+  {(if dup 1000000 eq? then int-write newline end)
+   inc recur}
+  apply)
+t

@@ -1,0 +1,2083 @@
+#+property: tangle core.jo
+#+title: core
+
+* [todo-stack]
+
+*** EOPL
+
+    - a version of EOPL
+      for function-compose-language
+
+      we can do this by implement EOPL and re-factor it.
+
+      with concurrency in mind
+
+      and with the question about lazy-ness in mind
+
+*** sub module
+
+*** use sub module for EOPL
+
+    - org-page
+      org-index
+
+      generated pages are based on org-publish
+      and include information generated form org-index
+      to navigate a book
+
+*** process calculi
+
+***** CSP
+
+***** actor
+
+      - station
+      - process
+      - receive message and send message
+      - message across the net
+      - [maybe] (# ...) for message
+
+*** monad
+
+    - generic function over monad
+      - maybe we need a new language
+        with type checker and type class to do this
+
+    - list monad
+
+*** from minikanren
+
+    - logic programming module
+
+*** sexp syntax for org
+
+    - use jojo to write tangle
+    - parse org
+
+*** sexp syntax for html
+
+*** sexp syntax for c
+
+* [note]
+
+*** (data)
+
+    - type-name is the same as constructor-name
+      thus I use (data) instead of (type)
+
+* flag
+
+  #+begin_src jojo
+  core-flag-on
+  test-flag-on
+  repl-flag-off
+  #+end_src
+
+* <int>
+
+*** even & odd
+
+    #+begin_src jojo
+    (+jojo even? 2 mod 0 eq?)
+    (+jojo odd? even? not)
+    #+end_src
+
+* <jo>
+
+*** jo-append
+
+    #+begin_src jojo
+    (+jojo jo-append (-> :jo1 :jo2 -- <jo>)
+      :jo1 jo->string
+      :jo2 jo->string
+      string-append
+      string->jo)
+    #+end_src
+
+*** tag-jo->jo
+
+    #+begin_src jojo
+    (+jojo tag-jo->jo (-> :tag-jo -- <jo>)
+      (if :tag-jo tag-jo? not then
+          "- tag-jo->jo fail" string-write newline
+          "  jo is not tag jo : " string-write :tag-jo jo-write newline
+          debug)
+      :tag-jo jo->string :tag-string!
+      :tag-string string-length :tag-string-length!
+      :tag-string 1 :tag-string-length dec string-slice
+      string->jo)
+    #+end_src
+
+*** jo->tag-jo
+
+    #+begin_src jojo
+    (+jojo jo->tag-jo (-> :jo -- tag jo)
+      '< :jo '> jo-append jo-append)
+    #+end_src
+
+* array
+
+*** array-eqv?
+
+    #+begin_src jojo
+    (+jojo array-eqv? (-> :x :y :pred -- <bool>)
+      (if :x array-length
+          :y array-length
+          eq? not then false end)
+      :x :y :pred 0 array-eqv?/loop)
+
+    (+jojo array-eqv?/loop (-> :x :y :pred :index -- <bool>)
+      (if :index :x array-length gteq? then true end)
+      (if :x :index array-ref
+          :y :index array-ref
+          :pred apply not then false end)
+      :x :y :pred :index inc recur)
+    #+end_src
+
+* list
+
+*** <null> & <cons>
+
+    #+begin_src jojo
+    (+data <null>)
+    (+data <cons> .car .cdr)
+
+    (+jojo cons
+      (if dup null? then <cons> new end)
+      (if dup cons? then <cons> new end)
+      "- cons fail" string-write newline
+      "  cdr of cons must be <null> or <cons>" string-write newline
+      debug)
+    #+end_src
+
+*** list?
+
+    #+begin_src jojo
+    (+jojo list? (-> :x -- <bool>)
+      (case :x
+        <null> true
+        <cons> true
+        else false))
+    #+end_src
+
+*** array->list
+
+    #+begin_src jojo
+    (+jojo array->list 0 right-of-array->list)
+
+    (+jojo right-of-array->list (-> :array :index -- list)
+      (cond [:index :array array-length gteq?] [null]
+            else [:array :index inc recur
+                  :array :index array-ref
+                  swap cons]))
+    #+end_src
+
+*** list-spread
+
+    #+begin_src jojo
+    (+jojo list-spread (-> :list --)
+      (case :list
+        <null> []
+        <cons> [:list .car :list .cdr recur]))
+    #+end_src
+
+*** list-length
+
+    #+begin_src jojo
+    (+jojo list-length (-> :list -> <int>)
+      (case :list
+        <null> 0
+        <cons> [:list .cdr recur inc]))
+    #+end_src
+
+*** list-ref
+
+    #+begin_src jojo
+    (+jojo list-ref (-> :list :index -- value)
+      (cond [:list null?]
+            ["- list-ref fail"
+             string-write newline
+             "  index greater then length of list"
+             string-write newline
+             debug]
+            [:index 0 eq?] [:list .car]
+            else [:list .cdr :index dec recur]))
+    #+end_src
+
+*** list-any?
+
+    #+begin_src jojo
+    (+jojo list-any? (-> :list :pred -> <bool>)
+      (cond [:list null?] [false]
+            [:list .car :pred apply] [true]
+            else [:list .cdr :pred recur]))
+    #+end_src
+
+*** list-every?
+
+    #+begin_src jojo
+    (+jojo list-every? (-> :list :pred -> <bool>)
+      (cond [:list null?] [true]
+            [:list .car :pred apply not] [false]
+            else [:list .cdr :pred recur]))
+    #+end_src
+
+*** list-append
+
+    #+begin_src jojo
+    (+jojo list-append (-> :left :right -> list)
+      (case :left
+        <null> [:right]
+        <cons> [:left .cdr :right recur
+                :left .car swap cons]))
+    #+end_src
+
+*** tail-cons
+
+    #+begin_src jojo
+    (+jojo tail-cons null cons list-append)
+    #+end_src
+
+*** list-left
+
+    #+begin_src jojo
+    (+jojo list-left (-> :list :pred -- left)
+      (cond [:list null?] [null]
+            [:list .car :pred apply] [null]
+            else [:list .car
+                  :list .cdr :pred recur
+                  cons]))
+    #+end_src
+
+*** list-right
+
+    #+begin_src jojo
+    (+jojo list-right (-> :list :pred -- right)
+      (cond [:list null?] [null]
+            [:list .car :pred apply] [:list]
+            else [:list .cdr :pred recur]))
+    #+end_src
+
+*** list-split
+
+    #+begin_src jojo
+    (+jojo list-split (-> :list :pred -- left right)
+      (cond [:list null?] [null null]
+            [:list .car :pred apply] [null :list]
+            else [:list .car
+                  :list .cdr :pred recur
+                  :right! cons :right]))
+    #+end_src
+
+*** list-map
+
+    #+begin_src jojo
+    (+jojo list-map (-> :list :fun -- list)
+      (case :list
+        <null> null
+        <cons> [:list .car :fun apply :list .cdr :fun recur cons]))
+    #+end_src
+
+*** list-for-each
+
+    #+begin_src jojo
+    (+jojo list-for-each (-> :list :fun --)
+      (case :list
+        <null> []
+        <cons> [:list .car :fun apply :list .cdr :fun recur]))
+    #+end_src
+
+*** list-filter
+
+    #+begin_src jojo
+    (+jojo list-filter (-> :list :pred -- list)
+      (cond [:list null?] [null]
+            [:list .car :pred apply] [:list .car :list .cdr :pred recur cons]
+            else [:list .cdr :pred recur]))
+    #+end_src
+
+*** list-reverse
+
+    #+begin_src jojo
+    (+jojo list-reverse null swap list-reverse-swap-append)
+
+    (+jojo list-reverse-swap-append (-> left :list -- list)
+      (case :list
+        <null> []
+        <cons> [:list .car swap cons :list .cdr recur]))
+    #+end_src
+
+*** list-eqv?
+
+    #+begin_src jojo
+    (+jojo list-eqv? (-> :l1 :l2 :eqv -- <bool>)
+      (cond [:l1 null? :l2 null? and] [true]
+            [:l1 null?] [false]
+            [:l2 null?] [false]
+            [:l1 .car :l2 .car :eqv apply not] [false]
+            else [:l1 .cdr :l2 .cdr :eqv recur]))
+    #+end_src
+
+* sexp
+
+*** [note] sexp
+
+    #+begin_src jojo
+    (note sexp
+      = sexp list -- <null> or <cons>
+      | <string>
+      | <jo>)
+    #+end_src
+
+*** read-sexp
+
+    #+begin_src jojo
+    (+jojo read-sexp (-> -- sexp)
+      read-jo :jo!
+      (cond
+        [:jo round-bar eq?]
+        [round-ket read-sexp-list-until-ket]
+
+        [:jo square-bar eq?]
+        ['begin square-ket read-sexp-list-until-ket cons]
+
+        [:jo flower-bar eq?]
+        ['clo flower-ket read-sexp-list-until-ket cons]
+
+        [:jo doublequote eq?]
+        [read-string]
+
+        [:jo singlequote eq?]
+        ['quote null cons recur tail-cons]
+
+        [:jo backquote eq?]
+        ['partquote null cons recur tail-cons]
+
+        else :jo))
+
+    (+jojo read-sexp-list-until-ket (-> :ket <jo> -- sexp list)
+      read-jo :jo!
+      (if :jo :ket eq?
+          then null
+          else :jo jo-unread read-sexp, :ket recur, cons))
+    #+end_src
+
+*** sexp-write
+
+    #+begin_src jojo
+    (+jojo sexp-write (-> :sexp --)
+      (case :sexp
+        <null> ['null jo-write]
+        <cons> [round-bar jo-write :sexp sexp-list-write
+                round-ket jo-write]
+        <string> [doublequote jo-write :sexp string-write
+                  doublequote jo-write]
+        <jo> [:sexp jo-write]))
+
+    (+jojo sexp-list-write (-> :list sexp list --)
+      (cond
+        [:list null?] []
+        [:list .cdr null?] [:list .car sexp-write]
+        else [:list .car sexp-write space
+              :list .cdr recur]))
+    #+end_src
+
+* repl
+
+*** repl
+
+    #+begin_src jojo
+    (+jojo repl (-> <input-stack> --)
+      reading-stack-push
+      repl/loop
+      reading-stack-pop input-stack-free)
+
+    (+jojo repl/loop
+      (if has-jo? not then end)
+      read-sexp sexp-eval
+      (if repl-flag then print-data-stack)
+      recur)
+
+    (+jojo repl-over-the-repl-in-c
+      repl/loop)
+    #+end_src
+
+*** sexp-eval
+
+    #+begin_src jojo
+    (+jojo sexp-eval (-> :sexp --)
+      (case :sexp
+        <null>   [:sexp sexp-compile-jojo apply]
+        <cons>   [:sexp sexp-compile-jojo apply]
+        <string> [:sexp sexp-compile-jojo apply]
+        <jo>     [:sexp jo-eval]))
+    #+end_src
+
+*** jo-eval
+
+    #+begin_src jojo
+    (+jojo jo-eval (-> :jo --)
+      (cond
+        [:jo int-jo?] [:jo sexp-compile-jojo apply]
+
+        [:jo local-jo?
+         :jo set-local-jo? or
+         :jo dynamic-local-jo? or
+         :jo set-dynamic-local-jo? or
+         :jo field-jo? or
+         :jo set-field-jo? or]
+        ["- jo-eval can not handle : " string-write
+         :jo jo-write newline]
+
+        [:jo comma eq?] []
+
+        [:jo jo-bound? not]
+        ["- jo is not bound : " string-write
+         :jo jo-write newline]
+
+        else [:jo sexp-compile-jojo apply]))
+    #+end_src
+
+* compiler
+
+*** <macro>
+
+    #+begin_src jojo
+    (+data <macro> .expend)
+    #+end_src
+
+*** (+macro)
+
+    #+begin_src jojo
+    (+jojo +macro (-> :body sexp list --)
+      :body .cdr body-compile-jojo macro
+      :body .car name-bind)
+    #+end_src
+
+*** body-compile-jojo
+
+    #+begin_src jojo
+    (+jojo body-compile-jojo (-> :body -- <jojo>)
+      compiling-stack-tos :address!
+      :body body-compile
+      emit-jojo-end
+      :address new-jojo
+      compiling-stack-drop :address compiling-stack-push)
+    #+end_src
+
+*** sexp-compile-jojo
+
+    #+begin_src jojo
+    (+jojo sexp-compile-jojo null cons body-compile-jojo)
+    #+end_src
+
+*** sexp-list-compile
+
+    #+begin_src jojo
+    (+jojo sexp-list-compile (-> :list sexp list --)
+      (cond
+        [:list null?] []
+        else
+        [:list .car sexp-compile
+         :list .cdr recur]))
+    #+end_src
+
+*** macro-expend
+
+    #+begin_src jojo
+    (+jojo macro-expend (-> :sexp --)
+      (if :sexp cons? not then :sexp end)
+      :sexp .car jo-ref :head!
+      (if :head tag '<macro> eq?
+          then :sexp .cdr :head .expend apply recur
+          else :sexp))
+    #+end_src
+
+*** macro-compile
+
+    #+begin_src jojo
+    (+jojo macro-compile .expend apply sexp-compile)
+    #+end_src
+
+*** sexp-compile
+
+    #+begin_src jojo
+    (+jojo sexp-compile (-> :sexp --)
+      (case :sexp
+        <null>   [:sexp emit-lit]
+        <cons>   [:sexp sexp-compile/cons]
+        <string> [:sexp emit-lit]
+        <jo>     [:sexp jo-compile]))
+
+    (+jojo sexp-compile/cons (-> :sexp --)
+      :sexp macro-expend :primitive-sexp!
+      :primitive-sexp .cdr
+      :primitive-sexp .car
+      jo-ref apply)
+    #+end_src
+
+*** body-compile
+
+    #+begin_src jojo
+    (+jojo sexp->tail-sexp (-> :sexp -> tail-sexp)
+      (cond [:sexp cons? not] :sexp
+            [:sexp .car 'if eq?] ['tail-if :sexp .cdr cons]
+            [:sexp .car 'begin eq?] ['tail-begin :sexp .cdr cons]
+            else :sexp))
+
+    (+jojo body-compile (-> :list sexp list --)
+      (cond
+        [:list null?] []
+
+        [:list .cdr null?]
+        [:list .car
+         macro-expend
+         sexp->tail-sexp
+         sexp-compile]
+
+        else
+        [:list .car sexp-compile
+         :list .cdr recur]))
+    #+end_src
+
+*** jo-compile
+
+    #+begin_src jojo
+    (+jojo jo-compile (-> :jo --)
+      (cond
+        [:jo int-jo?] [:jo jo->int emit-lit]
+
+        [:jo local-jo?]     [:jo jo-emit-local]
+        [:jo set-local-jo?] [:jo jo-emit-set-local]
+
+        [:jo dynamic-local-jo?]     [:jo jo-emit-dynamic-local]
+        [:jo set-dynamic-local-jo?] [:jo jo-emit-set-dynamic-local]
+
+        [:jo field-jo?]     [:jo jo-emit-field]
+        [:jo set-field-jo?] [:jo jo-emit-set-field]
+
+        [:jo comma eq?] []
+
+        else [:jo jo-emit]))
+    #+end_src
+
+*** body-run
+
+    #+begin_src jojo
+    (+jojo body-run body-compile-jojo apply)
+    #+end_src
+
+*** sexp-run
+
+    #+begin_src jojo
+    (+jojo sexp-run sexp-compile-jojo apply)
+    #+end_src
+
+* basic syntax
+
+*** (quote)
+
+    #+begin_src jojo
+    (+jojo quote {emit-lit} list-for-each)
+
+    (note
+      (+jojo quote {sexp-quote-compile} list-for-each)
+
+      (+jojo sexp-quote-compile (-> :sexp --)
+        (if :sexp cons?
+            then :sexp sexp-list-quote-compile
+            else :sexp emit-lit))
+
+      (+jojo sexp-list-quote-compile (-> :list --)
+        (cond
+          [:list null?]
+          [null emit-lit]
+
+          [:list .car cons? not]
+          [:list .cdr recur
+           :list .car emit-lit
+           'swap jo-emit
+           'cons jo-emit]
+
+          else
+          [:list .cdr recur
+           :list .car recur
+           'swap jo-emit
+           'cons jo-emit])))
+    #+end_src
+
+*** (partquote)
+
+    #+begin_src jojo
+    (+jojo partquote {sexp-partquote-compile} list-for-each)
+
+    (+jojo sexp-partquote-compile (-> :sexp --)
+      (if :sexp cons?
+          then :sexp sexp-list-partquote-compile
+          else :sexp emit-lit))
+
+    (note this function depends on (list))
+
+    (+jojo sexp-list-partquote-compile (-> :list --)
+      (cond
+        [:list null?]
+        [null emit-lit]
+
+        [:list .car cons? not]
+        [:list .cdr recur
+         :list .car emit-lit
+         'swap jo-emit
+         'cons jo-emit]
+
+        [:list .car .car '@ eq?]
+        [:list .cdr recur
+         :list .car .cdr list macro-compile
+         'swap jo-emit
+         'list-append jo-emit]
+
+        else
+        [:list .cdr recur
+         :list .car recur
+         'swap jo-emit
+         'cons jo-emit]))
+    #+end_src
+
+*** (if)
+
+    #+begin_src jojo
+    (+jojo if-else-then (-> :body --)
+      :body {'then eq?} list-split (-> :question :then-else)
+      :then-else {'else eq?} list-split (-> :then :else)
+      :question sexp-list-compile
+      emit-jz :address-for-jz!
+      :then .cdr sexp-list-compile
+      emit-jmp :address-for-jmp!
+      :address-for-jz set-offset-to-here
+      :else .cdr sexp-list-compile
+      :address-for-jmp set-offset-to-here)
+
+    (+jojo if-then (-> :body --)
+      :body {'then eq?} list-split (-> :question :then)
+      :question sexp-list-compile
+      emit-jz :address-for-jz!
+      :then .cdr sexp-list-compile
+      :address-for-jz set-offset-to-here)
+
+    (+jojo core-if (-> :body --)
+      (cond
+        [:body {'else eq?} list-any?
+         :body {'then eq?} list-any? and]
+        [:body if-else-then]
+
+        [:body {'then eq?} list-any?]
+        [:body if-then]
+
+        else ["- (if) fail" string-write newline
+              "  the body dose not has 'then" string-write newline
+              "  body : " string-write :body sexp-list-write newline
+              debug]))
+    #+end_src
+
+*** (tail-if)
+
+    #+begin_src jojo
+    (+jojo tail-if-else-then (-> :body --)
+      :body {'then eq?} list-split (-> :question :then-else)
+      :then-else {'else eq?} list-split (-> :then :else)
+      :question sexp-list-compile
+      emit-jz :address-for-jz!
+      :then .cdr body-compile 'end jo-emit
+      :address-for-jz set-offset-to-here
+      :else .cdr body-compile 'end jo-emit)
+
+    (+jojo tail-if-then (-> :body --)
+      :body {'then eq?} list-split (-> :question :then)
+      :question sexp-list-compile
+      emit-jz :address-for-jz!
+      :then .cdr body-compile 'end jo-emit
+      :address-for-jz set-offset-to-here)
+
+    (+jojo tail-if (-> :body --)
+      (cond
+        [:body {'else eq?} list-any?
+         :body {'then eq?} list-any? and]
+        [:body tail-if-else-then]
+
+        [:body {'then eq?} list-any?]
+        [:body tail-if-then]
+
+        else ["- (tail-if) fail" string-write newline
+              "  the body dose not has 'then" string-write newline
+              "  body : " string-write :body sexp-list-write newline
+              debug]))
+
+
+    (note
+
+      (+jojo tail-if-else-then (-> :body --)
+        :body {'then eq?} list-split (-> :question :then-else)
+        :then-else {'else eq?} list-split (-> :then :else)
+        :question sexp-list-compile
+        emit-jz :address-for-jz!
+        :then .cdr body-compile 'end jo-emit
+        emit-jmp :address-for-jmp!
+        :address-for-jz set-offset-to-here
+        :else .cdr body-compile 'end jo-emit
+        :address-for-jmp set-offset-to-here)
+
+      (+jojo tail-if-then (-> :body --)
+        :body {'then eq?} list-split (-> :question :then)
+        :question sexp-list-compile
+        emit-jz :address-for-jz!
+        :then .cdr body-compile 'end jo-emit
+        :address-for-jz set-offset-to-here)
+
+      (+jojo tail-if (-> :body --)
+        (cond
+          [:body {'else eq?} list-any?
+           :body {'then eq?} list-any? and]
+          [:body tail-if-else-then]
+
+          [:body {'then eq?} list-any?]
+          [:body tail-if-then]
+
+          else ["- (tail-if) fail" string-write newline
+                "  the body dose not has 'then" string-write newline
+                "  body : " string-write :body sexp-list-write newline
+                debug])))
+    #+end_src
+
+*** (clo)
+
+    #+begin_src jojo
+    (+jojo core-clo
+      body-compile-jojo emit-lit
+      'current-local-env jo-emit
+      'closure jo-emit)
+    #+end_src
+
+*** (cond)
+
+    #+begin_src jojo
+    (+jojo cond/expend (-> :body -- sexp)
+      (cond
+        [:body list-length 2 eq?]
+        [:body .car :body .cdr .car cond/expend-if-then
+         'else tail-cons
+         'cond/miss-match-report tail-cons
+         'debug tail-cons]
+
+        else
+        [:body .car :body .cdr .car cond/expend-if-then
+         'else tail-cons
+         :body .cdr .cdr recur tail-cons]))
+
+    (+jojo cond/miss-match-report
+      "- runtime (cond) miss match" string-write newline)
+
+    (note
+      (+jojo cond/expend-if-then (-> :question :answer -- sexp)
+        `(if (@ (if :question 'else eq?
+                    then 'true
+                    else :question))
+             then (@ :answer))))
+
+    (+jojo cond/expend-if-then (-> :question :answer -- sexp)
+      (cond [:question 'else eq?]
+            ['if null cons
+             'true tail-cons
+             'then tail-cons
+             :answer tail-cons]
+            else
+            ['if null cons
+             :question tail-cons
+             'then tail-cons
+             :answer tail-cons]))
+    #+end_src
+
+*** (->)
+
+    #+begin_src jojo
+    (+jojo arrow/expend (-> :body -- sexp)
+      :body {'-- eq?} list-left
+      {local-jo?} list-filter
+      {local-jo->set-local-jo} list-map
+      list-reverse
+      'begin swap cons)
+    #+end_src
+
+*** jo-list-compile-cells
+
+    #+begin_src jojo
+    (+jojo jo-list-compile-cells (-> :list -- <address>)
+      compiling-stack-tos :address!
+      :list {jo-emit} list-for-each
+      emit-zero
+      :address cells-copy :new-address!
+      compiling-stack-drop :address compiling-stack-push
+      :new-address)
+    #+end_src
+
+*** (+data)
+
+    #+begin_src jojo
+    (+jojo plus-data (-> :body --)
+      (if :body .car tag-jo? not then
+          "- (+data) fail" string-write newline
+          "  name must be of form <...>" string-write newline
+          "  body : " string-write :body sexp-list-write newline
+          end)
+
+      :body .cdr
+      {field-jo?} list-filter
+      jo-list-compile-cells :address!
+
+      :address :body .car name-bind-data)
+    #+end_src
+
+*** (+gene)
+
+    #+begin_src jojo
+    (+jojo plus-gene (-> :body --)
+      :body .car :name!
+      :body .cdr :rest-body!
+      :body .cdr .car :arrow-sexp!
+
+      :arrow-sexp .cdr
+      {'-- eq?} list-left
+      {local-jo?} list-filter
+      list-length
+      :name name-bind-gene
+
+      :rest-body body-compile-jojo
+      :name name-bind-disp-default-to-jojo)
+    #+end_src
+
+*** (+disp)
+
+    - this syntax always use <jojo> as disp
+
+    #+begin_src jojo
+    (+jojo plus-disp (-> :body --)
+      :body .car :name!
+      :body .cdr :rest-body!
+      :body .cdr .car :arrow-sexp!
+
+      :arrow-sexp .cdr
+      {'-- eq?} list-left
+      {tag-jo?} list-filter
+      jo-list-compile-cells :address-of-tags!
+
+      :rest-body body-compile-jojo
+      :address-of-tags
+      :name name-bind-disp-to-jojo)
+    #+end_src
+
+* reboot basic syntax -- the order matters
+
+*** re-define (+jojo)
+
+    #+begin_src jojo
+    (+jojo +jojo (-> :body sexp list --)
+      :body .cdr body-compile-jojo
+      :body .car name-bind)
+    #+end_src
+
+*** run repl-over-the-repl-in-c
+
+    #+begin_src jojo
+    repl-over-the-repl-in-c
+    #+end_src
+
+*** re-define new keywords
+
+    #+begin_src jojo
+    (+jojo note drop)
+
+    (+jojo begin sexp-list-compile)
+    (+jojo tail-begin body-compile)
+
+    (+jojo if core-if)
+    (+jojo clo core-clo)
+
+    (+macro cond cond/expend)
+    (+macro -> arrow/expend)
+
+    (+jojo +data plus-data)
+    (+jojo +gene plus-gene)
+    (+jojo +disp plus-disp)
+    #+end_src
+
+* more syntax
+
+*** (array)
+
+    #+begin_src jojo
+    (+macro array array/expend)
+
+    (+jojo array/expend (-> :body -- sexp)
+      'begin null cons
+      'mark tail-cons
+      :body list-append
+      'collect tail-cons)
+    #+end_src
+
+*** (list)
+
+    #+begin_src jojo
+    (+macro list list/expend)
+
+    (+jojo list/expend (-> :body -- sexp)
+      'begin null cons
+      'mark tail-cons
+      :body list-append
+      'collect tail-cons
+      'array->list tail-cons)
+    #+end_src
+
+*** (assert) & (assert!)
+
+    #+begin_src jojo
+    (+macro assert assert/expend)
+
+    (+jojo assert/expend (-> :body -- sexp)
+      `(if (@ :body list-spread)
+           then
+           else
+           "- (assert) fail" string-write newline
+           "  assertion : " string-write
+           (quote (@ :body)) sexp-list-write newline))
+
+    (+macro assert! assert!/expend)
+
+    (+jojo assert!/expend (-> :body -- sexp)
+      `(if (@ :body list-spread)
+           then
+           else
+           "- (assert!) fail" string-write newline
+           "  assertion : " string-write
+           (quote (@ :body)) sexp-list-write newline
+           debug))
+    #+end_src
+
+*** (test)
+
+    #+begin_src jojo
+    (+jojo test (-> :body --)
+      (if test-flag then :body begin))
+    #+end_src
+
+*** (let-bind) -- moand interface
+
+    #+begin_src jojo
+    (note example
+      (let-bind bind-maybe
+        :l [:t1 .l :t2 .l zip-tree]
+        :r [:t1 .r :t2 .r zip-tree]
+        [:l :r node return-maybe])
+      (begin
+        [:t1 .l :t2 .l tree-zip]
+        {:l! [:t1 .r :t2 .r zip-tree]
+         {:r! [:l :r node return-maybe]}
+         bind-maybe}
+        bind-maybe)
+      (begin
+        [:t1 .l :t2 .l tree-zip] {:l!
+        [:t1 .r :t2 .r zip-tree] {:r!
+        [:l :r node return-maybe]} bind-maybe} bind-maybe))
+
+    (+macro let-bind let-bind/expend)
+
+    (+jojo let-bind/expend (-> :body -- sexp)
+      :body .car :body .cdr let-bind/expend-recur)
+
+    (+jojo let-bind/expend-recur (-> :binder :rest -- sexp)
+      (cond
+        [:rest list-length 1 eq?]
+        [:rest .car]
+
+        [:rest .car local-jo?]
+        `[(@ :rest .cdr .car)
+          {(@ :rest .car local-jo->set-local-jo
+              :binder :rest .cdr .cdr recur)}
+          (@ :binder)]
+
+        else
+        `[(@ :rest .car)
+          {drop
+           (@ :binder :rest .cdr recur)}
+          (@ :binder)]))
+    #+end_src
+
+*** (case)
+
+    #+begin_src jojo
+    (+macro case case/expend)
+
+    (+jojo case/expend (-> :body -- sexp)
+      `(begin (list (@ :body .car)) {tag} list-map
+         (@ :body .cdr case/expend-rest)))
+
+    (+jojo case/expend-rest (-> :body -- sexp)
+      (cond
+        [:body list-length 2 eq?]
+        [:body .car :body .cdr .car case/expend-if-then
+         `(else "- runtime (case) miss match" string-write newline
+                debug)
+         list-append]
+
+        else
+        [:body .car :body .cdr .car case/expend-if-then
+         `(else (@ :body .cdr .cdr recur))
+         list-append]))
+
+    (+jojo case/expend-if-then (-> :tags :answer -- sexp)
+      (cond [:tags 'else eq?]
+            `(if true
+                 then drop (@ :answer))
+            [:tags cons?]
+            `(if dup (quote (@ :tags .cdr)) {case/match?} list-eqv?
+                 then drop (@ :answer))
+            else
+            `(if dup .car (quote (@ :tags)) case/match?
+                 then drop (@ :answer))))
+
+    (+jojo case/match? (-> :tag1 :tag2 -- <bool>)
+      (cond [:tag1 underscore-jo?] [true]
+            [:tag2 underscore-jo?] [true]
+            else [:tag1 :tag2 eq?]))
+    #+end_src
+
+*** (+var)
+
+    #+begin_src jojo
+    (+jojo +var (-> :body --)
+      :body .car :name!
+      :body .cdr :body!
+      'mark :body cons
+      'collect tail-cons
+      body-run :array!
+      (if :array array-length 1 eq? then
+          :array 0 array-ref :name name-bind end)
+      "- (+var) fail" w nl
+      "  body eval to not one value" w nl
+      "  name : " w :name w nl
+      "  body : " w :body w nl
+      "  number of values : " w :array array-length w nl
+      debug)
+    #+end_src
+
+*** (set)
+
+    #+begin_src jojo
+    (+jojo set (-> :body --)
+      :body .car :name!
+      `((quote (@ :name)) name-rebind)
+      begin)
+    #+end_src
+
+*** (get)
+
+    #+begin_src jojo
+    (+jojo get (-> :body --)
+      :body .car :name!
+      `((quote (@ :name)) name-get)
+      begin)
+    #+end_src
+
+*** (+atom)
+
+    #+begin_src jojo
+    (+jojo +atom (-> :body --)
+      :body .car :name!
+      :body .cdr .car :gc-actor-name!
+      `((quote (@ :gc-actor-name)) name-get
+        (quote (@ :name)) name-bind-atom)
+      begin)
+    #+end_src
+
+* monad
+
+*** [note] bind and compose can implement each ohter
+
+    #+begin_src jojo
+    (note
+      (+jojo bind
+        (-> (: :1m [:<1> <<monad>>])
+            (: :1-2m (-> :<1> -- :<2> <<monad>>))
+         -- (: :2m [:<2> <<monad>>]))
+        dummy {drop :1m} :1-2m compose apply)
+      (+jojo compose
+        (-> (: :0-1m (-> :<0> -- :<1> <<monad>>))
+            (: :1-2m (-> :<1> -- :<2> <<monad>>))
+         -- (: :0-2m (-> :<0> -- :<2> <<monad>>)))
+        {:0-1m apply :1-2m bind}))
+    #+end_src
+
+*** maybe monad
+
+    #+begin_src jojo
+    (+data <nothing>)
+    (+data <just> .v)
+
+    (+jojo return-maybe just)
+
+    (+jojo bind-maybe (-> :m :v->m -- maybe)
+      (case :m
+        <nothing> nothing
+        <just> [:m .v :v->m apply]))
+    #+end_src
+
+*** >< list monad
+
+    #+begin_src jojo
+    (note
+      (+jojo return-list)
+      (+jojo bind-list))
+    #+end_src
+
+* pair
+
+*** <pair>
+
+    #+begin_src jojo
+    (+data <pair> .l .r)
+    #+end_src
+
+* combinator
+
+*** times
+
+    #+begin_src jojo
+    (+jojo times (-> :fun :n --)
+      (if :n 0 lteq? then end)
+      :fun apply
+      :fun :n dec recur)
+    #+end_src
+
+* w -- write -- gene
+
+*** w
+
+    #+begin_src jojo
+    (+jojo write w)
+
+    (+gene w (-> :x --) :x data-print)
+
+    (+disp w (-> <int> --) int-write)
+    (+disp w (-> <string> --) string-write)
+    (+disp w (-> <jo> --) jo-write)
+    (+disp w (-> <byte> --) "(byte " w byte-write ")" w)
+    #+end_src
+
+*** list-write
+
+    #+begin_src jojo
+    (+disp w (-> <null> --) drop "()" w)
+
+    (+disp w (-> <cons> --) list-write)
+
+    (+jojo list-write (-> :list --)
+      "(" w :list list-write/loop ")" w)
+
+    (+jojo list-write/loop (-> :list --)
+      (cond
+        [:list null?] []
+        [:list .cdr null?] [:list .car w]
+        else [:list .car w space
+              :list .cdr recur]))
+    #+end_src
+
+*** array-write
+
+    #+begin_src jojo
+    (+disp w (-> <array> --) array-write)
+
+    (+jojo array-write (-> :array --)
+      (if :array array-length 0 eq? then "(array)" w end)
+      "(array " w :array 0 array-write/loop ")" w)
+
+    (+jojo array-write/loop (-> :array :index --)
+      (if :index :array array-length 1 sub eq? then
+          :array :index array-ref w end)
+      :array :index array-ref w space
+      :array :index inc recur)
+    #+end_src
+
+*** pair-write
+
+    #+begin_src jojo
+    (+disp w (-> <pair>) pair-write)
+
+    (+jojo pair-write (-> :pair --)
+      :pair .l w space
+      :pair .r w space
+      "pair" w)
+    #+end_src
+
+*** nl
+
+    #+begin_src jojo
+    (+jojo nl newline)
+    #+end_src
+
+* equal? -- gene
+
+*** equal?
+
+    #+begin_src jojo
+    (+gene equal? (-> :x :y -- <bool>) :x :y eq?)
+
+    (+disp equal? (-> <string> <string> -- <bool>) string-eq?)
+    (+disp equal? (-> :x <cons> :y <cons> -- <bool>)
+      (if :x .car :y .car equal? not
+          then false
+          else :x .cdr :y .cdr equal?))
+
+    (+disp equal? (-> <array> <array> -- <bool>)
+      {equal?} array-eqv?)
+
+    (+disp equal? (-> :x <pair> :y <pair> -- <bool>)
+      (if :x .l :y .l equal? not
+          then false
+          else :x .r :y .r equal?))
+    #+end_src
+
+* more list
+
+*** list-foldr
+
+    #+begin_src jojo
+    (+jojo list-foldr (-> a :list, :b, :a-b->b -- b)
+      (case :list
+        <null> :b
+        <cons> [:list .car
+                :list .cdr :b :a-b->b recur
+                :a-b->b apply]))
+    #+end_src
+
+*** list-foldl
+
+    #+begin_src jojo
+    (+jojo list-foldl (-> a :list, :b, :b-a->b -- b)
+      (case :list
+        <null> :b
+        <cons> [:list .cdr :b :b-a->b recur
+                :list .car
+                :b-a->b apply]))
+    #+end_src
+
+*** list-member?
+
+    #+begin_src jojo
+    (+jojo list-member? (-> :list :x -- <bool>)
+      :list {:x equal?} list-any?)
+    #+end_src
+
+* table
+
+*** <null-table> & <cons-table>
+
+    #+begin_src jojo
+    (+data <null-table>)
+    (+data <cons-table> .rest .key .value)
+    #+end_src
+
+*** table?
+
+    #+begin_src jojo
+    (+jojo table? (-> :x -- <bool>)
+      (case :x
+        <null-table> true
+        <cons-table> true
+        else false))
+    #+end_src
+
+*** list->table
+
+    #+begin_src jojo
+    (+jojo list->table (-> :list -- table)
+      (if :list list-length odd? then
+          "- list->table fail" w nl
+          "  length of list is not even" w nl
+          "  length : " w :list list-length w nl
+          "  list : " w :list w nl
+          debug)
+      :list list->table/recur)
+
+    (+jojo list->table/recur (-> :list -- table)
+      (case :list
+        <null> null-table
+        <cons> [:list .cdr .cdr recur
+                :list .car :list .cdr .car
+                cons-table]))
+    #+end_src
+
+*** table
+
+    #+begin_src jojo
+    (+jojo table list macro-compile 'list->table jo-emit)
+    #+end_src
+
+*** table-write
+
+    #+begin_src jojo
+    (+disp w (-> <null-table>) drop "(table)" w)
+
+    (+disp w (-> <cons-table>) table-write)
+
+    (+jojo table-write (-> :table --)
+      (if :table null-table? then "(table)" w end)
+      "(table " w :table table-write/loop ")" w)
+
+    (+jojo table-write/loop (-> :table --)
+      (cond
+        [:table null-table?] []
+        [:table .rest null-table?] [:table .key w space :table .value w]
+        else [:table .key w space :table .value w comma w space
+              :table .rest recur]))
+    #+end_src
+
+*** table-find
+
+    #+begin_src jojo
+    (+jojo table-find (-> :table :key -- value true or false)
+      (cond [:table null-table?] false
+            [:table .key :key equal?] [:table .value true]
+            else [:table .rest :key recur]))
+    #+end_src
+
+*** table-contain?
+
+    #+begin_src jojo
+    (+jojo table-contain? (-> :large :small -- <bool>)
+      (cond [:small null-table?] true
+            [:large :small .key table-find]
+            (if :small .value equal?
+                then :large :small .rest recur
+                else false)
+            else false))
+    #+end_src
+
+*** table-merge
+
+    #+begin_src jojo
+    (+jojo table-merge (-> :base :src -- table true or key false)
+      (cond [:src null-table?] [:base true]
+            [:base :src .key table-find]
+            (if :src .value equal?
+                then :base :src .rest recur
+                else :src .key false end)
+            else [:base :src .key :src .value cons-table
+                  :src .rest recur]))
+    #+end_src
+
+*** table-equal?
+
+    #+begin_src jojo
+    (+jojo table-equal? (-> :t1 :t2 -- <bool>)
+      (if :t1 :t2 table-contain? not
+          then false end
+          else :t2 :t1 table-contain?))
+    #+end_src
+
+*** table-key-filter
+
+    #+begin_src jojo
+    (+jojo table-key-filter (-> :table :pred -- :table)
+      (cond [:table null-table?] null-table
+            [:table .key :pred apply]
+            [:table .rest :pred recur
+             :table .key :table .value cons-table]
+            else [:table .rest :pred recur]))
+    #+end_src
+
+*** table-key-map
+
+    #+begin_src jojo
+    (+jojo table-key-map (-> :table :fun -- :table)
+      (cond [:table null-table?] null-table
+            else [:table .rest :fun recur
+                  :table .key :fun apply
+                  :table .value cons-table]))
+    #+end_src
+
+* byte
+
+*** (byte)
+
+    #+begin_src jojo
+    (+jojo byte {jo->byte emit-lit} list-for-each)
+    #+end_src
+
+* system
+
+*** cmd-list
+
+    #+begin_src jojo
+    (+jojo cmd-list 0 cmd-list/loop)
+
+    (+jojo cmd-list/loop (-> :index --)
+      (cond [:index cmd-number eq?] null
+            else [:index index->cmd-string
+                  :index inc recur
+                  cons]))
+    #+end_src
+
+*** dash-prefixed-string?
+
+    #+begin_src jojo
+    (+jojo dash-prefixed-string? (-> :str -- <bool>)
+      (cond [:str string-length 1 lt?] false
+            [:str 0 string-ref (byte -) eq?] true
+            else false))
+    #+end_src
+
+*** usr-jojo-dir
+
+    #+begin_src jojo
+    (+jojo usr-jojo-dir
+      (cond ["USR_JOJO_DIR" find-env-string] []
+            ["HOME" find-env-string] ["/.jojo" string-append]
+            else ["- usr-jojo-dir fail" w nl
+                  "  system env USR_JOJO_DIR is empty" w nl
+                  "  system env HOME is empty" w nl
+                  debug]))
+    #+end_src
+
+*** sys-jojo-dir
+
+    #+begin_src jojo
+    (+jojo sys-jojo-dir
+      (cond ["SYS_JOJO_DIR" find-env-string] []
+            else "/usr/lib/jojo"))
+    #+end_src
+
+* <lib>
+
+*** lib-load
+
+    #+begin_src jojo
+    (+jojo lib-load current-reading-dir swap string-append lib-open)
+    #+end_src
+
+* <file>
+
+*** maybe-drop-shabang
+
+    #+begin_src jojo
+    (+jojo maybe-drop-shabang
+      (-> <input-stack> -- <input-stack>)
+      (if dup input-stack-empty? then end)
+      reading-stack-push
+      read-line :line!
+      (cond [:line string-length 3 lteq?] [:line string-unread]
+            [:line 0 2 string-slice "#!" string-eq?] []
+            else [:line string-unread])
+      reading-stack-pop)
+    #+end_src
+
+*** input-stack-read-sexp-list
+
+    #+begin_src jojo
+    (+jojo input-stack-read-sexp-list
+      (-> <input-stack> -- sexp list)
+      reading-stack-push
+      read-sexp-list-to-the-end
+      reading-stack-pop input-stack-free)
+    #+end_src
+
+*** read-sexp-list-to-the-end
+
+    #+begin_src jojo
+    (+jojo read-sexp-list-to-the-end (-> -- sexp list)
+      (if has-jo? not then null end)
+      read-sexp recur cons)
+    #+end_src
+
+*** absolute-path?
+
+    #+begin_src jojo
+    (+jojo absolute-path? (-> :path -- <bool>)
+      (if :path string-length 0 eq? then false end)
+      :path 0 string-ref (byte /) eq?)
+    #+end_src
+
+*** path->reading-path
+
+    #+begin_src jojo
+    (+jojo path->reading-path (-> :path -- path)
+      (if :path absolute-path?
+          then :path
+          else current-reading-dir :path string-append))
+    #+end_src
+
+*** path-readable?
+
+    #+begin_src jojo
+    (+jojo path-readable? (-> :path -- <bool>)
+      (if :path path-open-read
+          then file-close true
+          else drop false))
+    #+end_src
+
+*** path-load
+
+    #+begin_src jojo
+    (+jojo path-load (-> :path --)
+      :path path->reading-path :real-path!
+      (cond [:real-path path-open-read]
+            [:file!
+             :file file-input-stack
+             maybe-drop-shabang
+             repl
+             :file file-close]
+            else [:error-number!
+                  "- path-load fail" w nl
+                  "  path : " w :path w nl
+                  "  real-path : " w :real-path w nl
+                  "  " w :error-number error-number-print nl
+                  debug]))
+    #+end_src
+
+* module
+
+*** [note] module system
+
+    - a module in jojo is a global name
+      stores a table of exported names,
+
+    - while a module in file system is a dir of files,
+      with a module.jo in the dir,
+      to store meta data of the module.
+
+    - every module has a version,
+      - in jojo, the global name
+        should be "<module-name>/<version>"
+      - in file system, the dir of a module
+        should be "<module-name>/<version>/*"
+
+    - a module will be installed to "~/.jojo"
+      as "~/.jojo/modules/<module-name>/<version>/*"
+
+    - module system solves two problems :
+
+      - re-load problem :
+        when used by multiple clients,
+        a module should only be loaded once.
+
+      - unique-name problem :
+        a name must be resolved to an unique-name
+
+*** (+module)
+
+    #+begin_src jojo
+    (+jojo +module
+      dup .car :name! .cdr :body!
+
+      :body expend-include :body!
+
+      :body :name
+      module/generate-define-table-list
+      :define-table-list!
+
+      :define-table-list
+      {(if table-merge not then :key!
+           "- (+module) fail to merge define-table-list" w nl
+           "  define-table-list : " w :define-table-list w nl
+           "  key : " w :key w nl
+           "  module name : " w :name w nl
+           debug)}
+      null-table swap list-foldr :define-table!
+
+      :body :name
+      module/generate-export-table
+      :export-table!
+
+      :body module/collect-import-table-list
+      :import-table-list!
+
+      :import-table-list
+      {(if table-merge not then :key!
+           "- (+module) fail to merge import-table-list" w nl
+           "  import-table-list : " w :import-table-list w nl
+           "  key : " w :key w nl
+           "  module name : " w :name w nl
+           debug)}
+      null-table swap list-foldr :import-table!
+
+      :import-table :define-table
+      (if table-merge not then :key!
+          "- (+module) fail to merge import-table with define-table" w nl
+          "  import-table : " w :import-table w nl
+          "  define-table : " w :define-table w nl
+          "  key : " w :key w nl
+          "  module name : " w :name w nl
+          debug)
+      :rename-table!
+
+      :rename-table
+      :export-table
+      module/export-check
+
+      :body
+      {sexp-for-module? not} list-filter
+
+      {:rename-table sexp-table-substitute} list-map
+
+      sexp-list-compile
+
+      :export-table
+      :name name-bind)
+    #+end_src
+
+*** expend-include
+
+    #+begin_src jojo
+    (+jojo expend-include (-> :body -- body)
+      (cond [:body null?] null
+            [:body .car cons? not] [:body .car :body .cdr recur cons]
+            [:body .car .car 'include eq?]
+            [:body .car .cdr path-list-read-sexp-list
+             :body .cdr recur
+             list-append]
+            else [:body .car :body .cdr recur cons]))
+    #+end_src
+
+*** path-list-read-sexp-list
+
+    #+begin_src jojo
+    (+jojo path-list-read-sexp-list
+      {path-read-sexp-list} list-map
+      null {list-append} list-foldr)
+    #+end_src
+
+*** path-read-sexp-list
+
+    #+begin_src jojo
+    (+jojo path-read-sexp-list (-> :path --)
+      :path path->reading-path :real-path!
+      (cond [:real-path path-open-read]
+            [:file! :file file-input-stack
+             input-stack-read-sexp-list
+             :file file-close]
+            else [:error-number!
+                  "- path-read-sexp-list fail" w nl
+                  "  path : " w :path w nl
+                  "  real-path : " w :real-path w nl
+                  "  " w :error-number error-number-print nl
+                  debug]))
+    #+end_src
+
+*** list-car-filter
+
+    #+begin_src jojo
+    (+jojo list-car-filter (-> list :pred -- list)
+      {:x! (if :x cons? not then false
+               else :x .car :pred apply)}
+      list-filter)
+    #+end_src
+
+*** module/generate-define-table-list
+
+***** module/generate-define-table-list
+
+      #+begin_src jojo
+      (+jojo module/generate-define-table-list
+        (-> :list :name -- table list)
+        (list
+          :list :name module/generate-jojo-table
+          :list :name module/generate-gene-table
+          :list :name module/generate-disp-table
+          :list :name module/generate-var-table
+          :list :name module/generate-atom-table
+          :list :name module/generate-data-table))
+      #+end_src
+
+***** module/plus-filter
+
+      #+begin_src jojo
+      (+jojo module/plus-filter
+        (-> :list :plus -- name list)
+        :list
+        {:plus eq?} list-car-filter
+        {.cdr .car} list-map)
+      #+end_src
+
+***** module/name-list->table
+
+      #+begin_src jojo
+      (+jojo module/name-list->table
+        (-> :name-list :module-name -- table)
+        :name-list
+        {(-> :jo :table -- table)
+         :table :jo
+         :module-name ': jo-append :jo jo-append
+         cons-table}
+        null-table swap list-foldr)
+      #+end_src
+
+***** module/generate-jojo-table
+
+      #+begin_src jojo
+      (+jojo module/generate-jojo-table
+        (-> :list :module-name -- table)
+        :list '+jojo module/plus-filter
+        :module-name module/name-list->table)
+      #+end_src
+
+***** module/generate-gene-table
+
+      #+begin_src jojo
+      (+jojo module/generate-gene-table
+        (-> :list :module-name -- table)
+        :list '+gene module/plus-filter
+        :module-name module/name-list->table)
+      #+end_src
+
+***** module/generate-disp-table
+
+      #+begin_src jojo
+      (+jojo module/generate-disp-table
+        (-> :list :module-name -- table)
+        :list '+disp module/plus-filter
+        :module-name module/name-list->table)
+      #+end_src
+
+***** module/generate-var-table
+
+      #+begin_src jojo
+      (+jojo module/generate-var-table
+        (-> :list :module-name -- table)
+        :list '+var module/plus-filter
+        :module-name module/name-list->table)
+      #+end_src
+
+***** module/tag-list->table
+
+      #+begin_src jojo
+      (+jojo module/tag-list->table
+        (-> :tag-list :module-name -- table)
+        :tag-list
+        {(-> :jo :table -- table)
+         :table :jo
+         :module-name ': jo-append
+         :jo tag-jo->jo jo-append
+         jo->tag-jo
+         cons-table}
+        null-table swap list-foldr)
+      #+end_src
+
+***** module/tag-list->predicate-table
+
+      #+begin_src jojo
+      (+jojo module/tag-list->predicate-table
+        (-> :tag-list :module-name -- table)
+        :tag-list
+        {(-> :jo :table -- table)
+         :table :jo tag-jo->jo '? jo-append
+         :module-name ': jo-append
+         :jo tag-jo->jo jo-append
+         '? jo-append
+         cons-table}
+        null-table swap list-foldr)
+      #+end_src
+
+***** module/tag-list->constructor-table
+
+      #+begin_src jojo
+      (+jojo module/tag-list->constructor-table
+        (-> :tag-list :module-name -- table)
+        :tag-list
+        {(-> :jo :table -- table)
+         :table :jo tag-jo->jo
+         :module-name ': jo-append
+         :jo tag-jo->jo jo-append
+         cons-table}
+        null-table swap list-foldr)
+      #+end_src
+
+***** module/generate-atom-table
+
+      #+begin_src jojo
+      (+jojo module/generate-atom-table
+        (-> :list :module-name -- table table)
+        :list '+atom module/plus-filter :tag-list!
+        :tag-list :module-name module/tag-list->table
+        :tag-list :module-name module/tag-list->predicate-table)
+      #+end_src
+
+***** module/generate-data-table
+
+      #+begin_src jojo
+      (+jojo module/generate-data-table
+        (-> :list :module-name -- table table table)
+        :list '+data module/plus-filter :tag-list!
+        :tag-list :module-name module/tag-list->table
+        :tag-list :module-name module/tag-list->predicate-table
+        :tag-list :module-name module/tag-list->constructor-table)
+      #+end_src
+
+*** module/generate-export-table
+
+    #+begin_src jojo
+    (+jojo module/generate-export-table
+      (-> :list :module-name -- table)
+      :list
+      {'export eq?}
+      list-car-filter {.cdr} list-map
+      null {list-append} list-foldr
+      {tag-jo? not} list-filter :name-list!
+
+      :name-list :module-name module/name-list->table)
+
+    (note
+      (+jojo module/generate-export-table
+        (-> :list :module-name -- table)
+        :list
+        {'export eq?}
+        list-car-filter {.cdr} list-map
+        null {list-append} list-foldr
+
+        dup {tag-jo?} list-filter :tag-list!
+        {tag-jo? not} list-filter :name-list!
+
+        :name-list :module-name module/name-list->table
+        :tag-list  :module-name module/tag-list->table
+
+        (if table-merge not then :key!
+            "- (module/generate-export-table)" w nl
+            "  fail to merge export tables" w nl
+            "  key : " w :key w nl
+            debug)))
+    #+end_src
+
+*** module/export-check
+
+    #+begin_src jojo
+    (+jojo module/export-check
+      (-> :rename-table :export-table --)
+      (if :rename-table :export-table table-contain? then end)
+      "- module/export-check fail" w nl
+      "  rename-table does not contain export-table" w nl
+      "  rename-table : " w :rename-table w nl
+      "  export-table : " w :export-table w nl
+      debug)
+    #+end_src
+
+*** module/collect-import-table-list
+
+    #+begin_src jojo
+    (+jojo module/collect-import-table-list
+      {'import eq?} list-car-filter
+      {.cdr module/import-one} list-map)
+    #+end_src
+
+*** module/import-one
+
+    #+begin_src jojo
+    (+jojo module/import-one (-> :body -- table)
+      :body .car :name!
+      (if :name module-loaded? not then
+          :name module-load)
+      :body body-run :result!
+      (if :result table? then :result end)
+      "- module/import-one fail" w nl
+      "  result of body is not table" w nl
+      "  body : " w :body w nl
+      "  result : " w :result w nl
+      debug)
+    #+end_src
+
+*** sexp-for-module?
+
+    #+begin_src jojo
+    (+jojo sexp-for-module? (-> :sexp -- <bool>)
+      '(import export)
+      {:jo! (if :sexp cons? not then false
+                else :jo :sexp .car eq?)}
+      list-any?)
+    #+end_src
+
+*** sexp-table-substitute
+
+    #+begin_src jojo
+    (+jojo sexp-table-substitute (-> :sexp :table -- sexp)
+      (cond [:sexp cons?]
+            [:sexp .car :table recur
+             :sexp .cdr {:table sexp-table-substitute} list-map
+             cons]
+            [:table :sexp table-find] []
+            else :sexp))
+    #+end_src
+
+*** module-loaded?
+
+    #+begin_src jojo
+    (+jojo module-loaded? (-> :name -- <bool>)
+      (if :name jo-bound?
+          then :name sexp-run table?
+          else false))
+    #+end_src
+
+*** module-find-path
+
+    #+begin_src jojo
+    (+jojo module-find-path-from-dir
+      (-> :dir :name -- path true or false)
+      :dir "/modules/" string-append
+      :name jo->string string-append
+      "/module.jo" string-append :path!
+      (if :path path-readable?
+          then :path true
+          else false))
+
+    (+jojo module-find-path
+      (-> :name -- path true or false)
+      (cond [current-running-dir :name module-find-path-from-dir] true
+            [usr-jojo-dir :name module-find-path-from-dir] true
+            [sys-jojo-dir :name module-find-path-from-dir] true
+            else false))
+    #+end_src
+
+*** module-load
+
+    #+begin_src jojo
+    (+jojo module-load (-> :name --)
+      (if :name module-find-path
+          then path-load
+          else
+          "- module-load fail" w nl
+          "  can not find module : " w :name w nl
+          "  current-running-dir : " w current-running-dir w nl
+          "  usr-jojo-dir : " w usr-jojo-dir w nl
+          "  sys-jojo-dir : " w sys-jojo-dir w nl
+          debug))
+    #+end_src
+
+*** (run)
+
+    #+begin_src jojo
+    (+jojo run (-> :body --)
+      :body expend-include :body!
+
+      :body module/collect-import-table-list
+      :import-table-list!
+
+      :import-table-list
+      {(if table-merge not then :key!
+           "- (run) fail to merge import-table-list" w nl
+           "  import-table-list : " w :import-table-list w nl
+           "  key : " w :key w nl
+           debug)}
+      null-table swap list-foldr :import-table!
+
+      :import-table :rename-table!
+
+      :body
+      {sexp-for-module? not} list-filter
+      {:rename-table sexp-table-substitute} list-map
+      body-run)
+    #+end_src
+
+*** [note] table processing in module system
+
+    - we can use table processing functions
+      to handle the name unique-name binding
+
+      #+begin_src jojo
+      (note take r7rs import declaration for example
+        (import <import-set>)
+        where <import-set>
+        = <library-name>
+        | (only <import-set> <identifier> ...)
+        | (except <import-set> <identifier> ...)
+        | (prefix <import-set> <identifier>)
+        | (rename <import-set> (<old-identifier> <new-identifier>) ...) )
+
+      (note in jojo we can use table processing functions like :
+        '(<name> ...) only
+        '(<name> ...) except
+        <prefix> prefix
+        '(table <old> <new>, ...) rename)
+
+      (note but these names are too general
+        for table processing functions
+        we use the following instead :
+        only   : {<name> eq?} table-key-filter
+        except : {<name> eq? not} table-key-filter
+        prefix : {<prefix> swap jo-append} table-key-map
+        rename : {(if dup <old> eq? then drop <new> else)} table-key-map)
+
+      (note we can abstract those special use of
+        table processing functions :
+        '(<name> ...) import-only
+        '(<name> ...) import-except
+        <prefix> import-prefix
+        '(table <old> <new>, ...) import-rename)
+      #+end_src
+
+*** import-only
+
+    #+begin_src jojo
+    (+jojo import-only (-> table :list -- table)
+      {(-> :name -- <bool>)
+       :list {:name eq?} list-any?}
+      table-key-filter)
+    #+end_src
+
+*** import-except
+
+    #+begin_src jojo
+    (+jojo import-except (-> table :list -- table)
+      {(-> :name -- <bool>)
+       :list {:name eq? not} list-any?}
+      table-key-filter)
+    #+end_src
+
+*** import-prefix
+
+    #+begin_src jojo
+    (+jojo import-prefix (-> table :prefix-jo -- table)
+      {:prefix-jo swap jo-append}
+      table-key-map)
+    #+end_src
+
+*** import-rename
+
+    #+begin_src jojo
+    (+jojo import-rename (-> table :renaming -- table)
+      {:renaming sexp-table-substitute}
+      table-key-map)
+    #+end_src
+
+* the-story-begin
+
+*** welcome-to-jojo
+
+    #+begin_src jojo
+    (+jojo welcome-to-jojo
+      "welcome to jojo's programming adventure ^-^/" w nl)
+    #+end_src
+
+*** the-story-begin
+
+    #+begin_src jojo
+    (+jojo the-story-begin
+      (cond
+        [cmd-number 1 eq?]
+        [core-flag-off
+         test-flag-off
+         repl-flag-on
+         welcome-to-jojo
+         print-data-stack
+         terminal-input-stack repl]
+
+        else
+        [core-flag-off
+         test-flag-off
+         repl-flag-off
+         cmd-list .cdr .car path-load]))
+
+    the-story-begin
+    #+end_src

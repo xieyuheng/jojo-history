@@ -1,0 +1,6 @@
+#!/usr/bin/env jojo
+
+(+jojo square dup mul)
+(+jojo power4 step square square)
+2 power4
+2 power4

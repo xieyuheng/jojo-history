@@ -1,0 +1,85 @@
+#!/usr/bin/env jojo
+
+
+(+jojo square dup mul)
+(assert 2 square 4 eq?)
+
+
+(+jojo list-length/cond
+  :list!
+  (cond
+    [:list null?] [0]
+    else [:list .cdr recur inc]))
+(assert (list 1 2 3 4 5) list-length/cond 5 eq?)
+
+
+(+jojo com (-> :m1 :m2 -- jojo)
+  {:m1 apply :m2 apply})
+(assert {1} {2} com apply add 3 eq?)
+(assert {1} {2} com {3} com apply add add 6 eq?)
+(assert {1} {2} {3} com com apply add add 6 eq?)
+
+
+(+gene add-two (-> :x :y --) 0)
+(+disp add-two (-> <string> <int> --) swap string-length add)
+(+disp add-two (-> <int> <string> --) string-length add)
+(+disp add-two (-> <int> <int> --) add)
+(+disp add-two (-> <string> <string> --)
+  string-length swap string-length add)
+
+(assert "123" 3 add-two 6 eq?)
+(assert 3 "123" add-two 6 eq?)
+(assert 3 3 add-two 6 eq?)
+(assert "123" "123" add-two 6 eq?)
+(assert '123 "123" add-two 0 eq?)
+
+
+
+
+(+jojo one-two-three 'one 'two 'three)
+(+jojo one-two-three-list '(one two three))
+(assert
+  '(1 2 3)
+  '(1 2 3)
+  {eq?} list-eqv?)
+(assert
+  `(1 2 3 (@ one-two-three) 1 2 3)
+  '(1 2 3 one two three 1 2 3)
+  {eq?} list-eqv?)
+(assert
+  `(1 2 3 (@ one-two-three-list list-spread) 1 2 3)
+  '(1 2 3 one two three 1 2 3)
+  {eq?} list-eqv?)
+(assert
+  `(((@ 1))) .car .car
+  1 eq?)
+(assert
+  `(((@ `(((@ 1)))))) .car .car .car .car
+  1 eq?)
+
+
+
+(+jojo list-length/case
+  :list!
+  (case :list
+    <null> 0
+    <cons> [:list .cdr recur inc]))
+(assert (list 1 2 3 4 5) list-length/case 5 eq?)
+
+
+
+(+jojo fun-1
+  ::dynamic-local)
+(+jojo fun-2
+  'dynamic-of-fun-2 ::dynamic-local!
+  fun-1
+  nop)
+(assert
+  'dynamic-of-fun-2 fun-2 eq?)
+(assert
+  'dynamic-of-top-begin ::dynamic-local!
+  fun-2
+  fun-1
+  swap 'dynamic-of-fun-2 eq?
+  swap 'dynamic-of-top-begin eq?
+  and)

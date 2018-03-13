@@ -1,0 +1,2671 @@
+#+property: tangle jojo.h
+#+title: jojo c header file
+
+* prolog
+
+  #+begin_src c
+  #ifndef JOJO_H
+  #define JOJO_H
+  #+end_src
+
+* header
+
+  #+begin_src c
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <unistd.h>
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <errno.h>
+  #include <string.h>
+  #include <fcntl.h>
+  #include <ctype.h>
+  #include <stdint.h>
+  #include <dlfcn.h>
+  #include <dirent.h>
+  #include <signal.h>
+  #include <limits.h>
+  #include <stdarg.h>
+  #+end_src
+
+* type
+
+  #+begin_src c
+  typedef enum { false, true } bool;
+  typedef intptr_t cell;
+  typedef void (* primitive_t)();
+  #+end_src
+
+* utility
+
+*** report
+
+    #+begin_src c
+    extern void report(char* format, ...);
+    #+end_src
+
+*** report_in_red
+
+    #+begin_src c
+    extern void report_in_red(char* format, ...);
+    #+end_src
+
+*** report_in_green
+
+    #+begin_src c
+    extern void report_in_green(char* format, ...);
+    #+end_src
+
+* debug
+
+  #+begin_src c
+  extern void p_debug();
+  #+end_src
+
+* jotable
+
+*** jotable_entry
+
+    #+begin_src c
+    struct jotable_entry {
+      char *key;
+      struct jotable_entry *tag;
+      cell data;
+    };
+
+    typedef struct jotable_entry* jo_t;
+
+    // prime table size
+    //   1000003   about 976 k
+    //   1000033
+    //   1000333
+    //   100003    about 97 k
+    //   100333
+    //   997
+    #define JOTABLE_SIZE 100003
+    struct jotable_entry jotable[JOTABLE_SIZE];
+
+    // thus (jotable + index) is jo
+    #+end_src
+
+*** str2jo
+
+    #+begin_src c
+    extern jo_t str2jo(char* str);
+    #+end_src
+
+*** jo2str
+
+    #+begin_src c
+    extern char* jo2str(jo_t jo);
+    #+end_src
+
+*** literal jo
+
+    #+begin_src c
+    extern jo_t EMPTY_JO;
+
+    extern jo_t TAG_PRIM;
+    extern jo_t TAG_JOJO;
+    extern jo_t TAG_CLOSURE;
+    extern jo_t TAG_ADDRESS;
+    extern jo_t TAG_CLASS;
+
+    extern jo_t TAG_LOCAL_ENV;
+
+    extern jo_t TAG_BOOL;
+    extern jo_t TAG_INT;
+    extern jo_t TAG_BYTE;
+    extern jo_t TAG_STRING;
+    extern jo_t TAG_ARRAY;
+    extern jo_t TAG_JO;
+
+    extern jo_t TAG_MARK;
+
+    extern jo_t TAG_UNINITIALISED_FIELD_PLACE_HOLDER;
+
+    extern jo_t TAG_FILE;
+    extern jo_t TAG_SOCKET;
+    extern jo_t TAG_INPUT_STACK;
+
+    extern jo_t TAG_DATA_PREDICATE;
+    extern jo_t TAG_DATA_CONSTRUCTOR;
+
+    extern jo_t TAG_GENE;
+
+    extern jo_t ROUND_BAR;
+    extern jo_t ROUND_KET;
+    extern jo_t SQUARE_BAR;
+    extern jo_t SQUARE_KET;
+    extern jo_t FLOWER_BAR;
+    extern jo_t FLOWER_KET;
+    extern jo_t DOUBLEQUOTE;
+    extern jo_t SINGLEQUOTE;
+    extern jo_t BACKQUOTE;
+    extern jo_t COMMA;
+
+    extern jo_t JO_INS_LIT;
+
+    extern jo_t JO_INS_LOCAL;
+    extern jo_t JO_INS_SET_LOCAL;
+
+    extern jo_t JO_INS_DYNAMIC_LOCAL;
+    extern jo_t JO_INS_SET_DYNAMIC_LOCAL;
+
+    extern jo_t JO_INS_FIELD;
+    extern jo_t JO_INS_SET_FIELD;
+
+    extern jo_t JO_INS_JMP;
+    extern jo_t JO_INS_JZ;
+
+    extern jo_t JO_NULL;
+    extern jo_t JO_THEN;
+    extern jo_t JO_ELSE;
+
+    extern jo_t JO_APPLY;
+    extern jo_t JO_EXE;
+    extern jo_t JO_END;
+    extern jo_t JO_RECUR;
+    extern jo_t JO_CLOSURE;
+    extern jo_t JO_CURRENT_LOCAL_ENV;
+    #+end_src
+
+*** name_record
+
+    #+begin_src c
+    extern jo_t name_record[];
+    extern cell name_record_counter;
+    #+end_src
+
+*** bind_name
+
+    #+begin_src c
+    extern bool core_flag;
+    extern void bind_name(jo_t name,
+                          jo_t tag,
+                          cell data);
+    #+end_src
+
+*** rebind_name
+
+    #+begin_src c
+    extern void rebind_name(jo_t name,
+                            jo_t tag,
+                            cell data);
+    #+end_src
+
+*** literal jo_array
+
+***** generate_jo_array
+
+      #+begin_src c
+      // caller free
+      extern jo_t* generate_jo_array(char*ss[]);
+      #+end_src
+
+***** macro
+
+      #+begin_src c
+      #define J0 (char*[]){0}
+      #define J(...) generate_jo_array((char*[]){__VA_ARGS__, 0})
+      #+end_src
+
+* stack
+
+*** stack_link
+
+    #+begin_src c
+    struct stack_link {
+      cell* stack;
+      struct stack_link* link;
+    };
+    #+end_src
+
+*** stack
+
+    #+begin_src c
+    struct stack {
+      char* name;
+      cell pointer;
+      cell* stack;
+      struct stack_link* link;
+    };
+
+    #define STACK_BLOCK_SIZE 1024
+    #+end_src
+
+*** new_stack
+
+    #+begin_src c
+    extern struct stack* new_stack(char* name);
+    #+end_src
+
+*** stack_free
+
+    #+begin_src c
+    extern void stack_free(struct stack* stack);
+    #+end_src
+
+*** stack_empty_p
+
+    #+begin_src c
+    extern bool stack_empty_p(struct stack* stack);
+    #+end_src
+
+*** stack_length
+
+    #+begin_src c
+    extern cell stack_length(struct stack* stack);
+    #+end_src
+
+*** pop
+
+    #+begin_src c
+    extern cell pop(struct stack* stack);
+    #+end_src
+
+*** tos
+
+    #+begin_src c
+    extern cell tos(struct stack* stack);
+    #+end_src
+
+*** drop
+
+    #+begin_src c
+    extern void drop(struct stack* stack);
+    #+end_src
+
+*** push
+
+    #+begin_src c
+    extern void push(struct stack* stack, cell data);
+    #+end_src
+
+*** stack_peek
+
+    - peek start from index 1
+
+    #+begin_src c
+    extern cell stack_peek(struct stack* stack, cell index);
+    #+end_src
+
+*** stack_ref
+
+    #+begin_src c
+    extern cell stack_ref(struct stack* stack, cell index);
+    #+end_src
+
+* input_stack
+
+*** [note]
+
+    - free input_stack will not close the file.
+
+*** input_stack_type
+
+    #+begin_src c
+    typedef enum {
+      INPUT_STACK_REGULAR_FILE,
+      INPUT_STACK_STRING,
+      INPUT_STACK_TERMINAL,
+    } input_stack_type;
+    #+end_src
+
+*** input_stack_link
+
+    #+begin_src c
+    struct input_stack_link {
+      char* stack;
+      cell end_pointer;
+      struct input_stack_link* link;
+    };
+    #+end_src
+
+*** input_stack
+
+    #+begin_src c
+    struct input_stack {
+      cell pointer;
+      cell end_pointer;
+      char* stack;
+      struct input_stack_link* link;
+      input_stack_type type;
+      union {
+        int   file;
+        char* string;
+        // int   terminal;
+      };
+      cell string_pointer;
+    };
+
+    #define INPUT_STACK_BLOCK_SIZE (4 * 1024)
+    #+end_src
+
+*** new_input_stack
+
+    #+begin_src c
+    extern struct input_stack* new_input_stack(input_stack_type input_stack_type);
+    #+end_src
+
+*** file_input_stack
+
+    #+begin_src c
+    extern struct input_stack* file_input_stack(int file);
+    #+end_src
+
+*** string_input_stack
+
+    #+begin_src c
+    extern struct input_stack* string_input_stack(char* string);
+    #+end_src
+
+*** terminal_input_stack
+
+    #+begin_src c
+    extern struct input_stack* terminal_input_stack();
+    #+end_src
+
+*** input_stack_free
+
+    #+begin_src c
+    extern void input_stack_free(struct input_stack* input_stack);
+    #+end_src
+
+*** input_stack_empty_p
+
+    - note the semantic of 'input_stack_empty_p'.
+
+      when one asks 'input_stack_empty_p',
+      there is already one byte readed from the input_stack,
+      and then unreaded.
+
+    #+begin_src c
+    extern bool input_stack_empty_p(struct input_stack* input_stack);
+    #+end_src
+
+*** input_stack_pop
+
+    #+begin_src c
+    extern char input_stack_pop(struct input_stack* input_stack);
+    #+end_src
+
+*** input_stack_tos
+
+    #+begin_src c
+    extern char input_stack_tos(struct input_stack* input_stack);
+    #+end_src
+
+*** input_stack_drop
+
+    #+begin_src c
+    extern void input_stack_drop(struct input_stack* input_stack);
+    #+end_src
+
+*** input_stack_push
+
+    #+begin_src c
+    extern void input_stack_push(struct input_stack* input_stack, char byte);
+    #+end_src
+
+* output_stack
+
+*** [note]
+
+    - I will not seek the real file during pop and push.
+      and no undo for the terminal.
+
+    - output to
+      1. file     -- the aim is to flush bytes to file
+      2. string   -- the aim is to collect bytes to string
+      3. terminal -- byte are directly printed to the terminal
+
+    - flush to file or collect to string
+      will not free the output_stack.
+
+    - free output_stack will not close the file.
+
+*** output_stack_type
+
+    #+begin_src c
+    typedef enum {
+      OUTPUT_STACK_REGULAR_FILE,
+      OUTPUT_STACK_STRING,
+      OUTPUT_STACK_TERMINAL,
+    } output_stack_type;
+    #+end_src
+
+*** output_stack_link
+
+    #+begin_src c
+    struct output_stack_link {
+      char* stack;
+      struct output_stack_link* link;
+    };
+    #+end_src
+
+*** output_stack
+
+    #+begin_src c
+    struct output_stack {
+      cell pointer;
+      char* stack;
+      struct output_stack_link* link;
+      output_stack_type type;
+      union {
+        int   file; // with cache
+        // char* string;
+        //   generate string
+        //   instead of output to pre-allocated buffer
+        // int   terminal; // no cache
+      };
+      cell string_pointer;
+    };
+
+    #define OUTPUT_STACK_BLOCK_SIZE (4 * 1024)
+    #+end_src
+
+*** new_output_stack
+
+    #+begin_src c
+    extern struct output_stack* new_output_stack(output_stack_type output_stack_type);
+    #+end_src
+
+*** file_output_stack
+
+    #+begin_src c
+    extern struct output_stack* file_output_stack(int file);
+    #+end_src
+
+*** string_output_stack
+
+    #+begin_src c
+    extern struct output_stack* string_output_stack();
+    #+end_src
+
+*** terminal_output_stack
+
+    #+begin_src c
+    extern struct output_stack* terminal_output_stack();
+    #+end_src
+
+*** output_stack_free
+
+    #+begin_src c
+    extern void output_stack_free(struct output_stack* output_stack);
+    #+end_src
+
+*** file_output_stack_flush
+
+    #+begin_src c
+    extern void file_output_stack_flush(struct output_stack* output_stack);
+    #+end_src
+
+*** string_output_stack_collect
+
+    #+begin_src c
+    extern cell string_output_stack_length(struct output_stack* output_stack);
+
+    extern char* string_output_stack_collect(struct output_stack* output_stack);
+    #+end_src
+
+*** output_stack_empty_p
+
+    #+begin_src c
+    extern bool output_stack_empty_p(struct output_stack* output_stack);
+    #+end_src
+
+*** output_stack_pop
+
+    #+begin_src c
+    extern char output_stack_pop(struct output_stack* output_stack);
+    #+end_src
+
+*** output_stack_tos
+
+    #+begin_src c
+    extern char output_stack_tos(struct output_stack* output_stack);
+    #+end_src
+
+*** output_stack_drop
+
+    #+begin_src c
+    extern void output_stack_drop(struct output_stack* output_stack);
+    #+end_src
+
+*** output_stack_push
+
+    #+begin_src c
+    extern void output_stack_push(struct output_stack* output_stack, char b);
+    #+end_src
+
+* ds -- data stack
+
+*** ds
+
+    #+begin_src c
+    struct dp {
+      jo_t t;
+      cell d;
+    };
+
+    extern struct stack* ds;
+
+    extern struct dp ds_pop();
+
+    extern void ds_drop();
+
+    extern struct dp ds_tos();
+
+    extern bool ds_empty_p();
+
+    extern void ds_push(jo_t tag, cell data);
+
+    extern jo_t ds_peek_tag(cell index);
+
+    extern cell ds_peek_data(cell index);
+
+    extern struct dp ds_ref(cell index);
+
+    extern cell ds_length();
+    #+end_src
+
+* rs -- return stack
+
+*** local
+
+    #+begin_src c
+    struct local {
+      jo_t name;
+      cell local_tag;
+      cell local_data;
+    };
+
+    #define LOCAL_RECORD_SIZE (16 * 1024)
+    extern struct local local_record[LOCAL_RECORD_SIZE];
+    extern cell current_local_counter;
+    #+end_src
+
+*** dynamic_local
+
+    #+begin_src c
+    struct dynamic_local {
+      jo_t name;
+      cell dynamic_local_tag;
+      cell dynamic_local_data;
+    };
+
+    #define DYNAMIC_LOCAL_RECORD_SIZE (4 * 1024)
+    extern struct dynamic_local dynamic_local_record[DYNAMIC_LOCAL_RECORD_SIZE];
+    extern cell current_dynamic_local_counter;
+    #+end_src
+
+*** rs
+
+    #+begin_src c
+    struct rp {
+      jo_t* j;
+      jo_t  t;
+      cell  d;
+      cell  l;
+      cell  y;
+    };
+
+    extern struct stack* rs;
+
+    extern struct rp rs_pop();
+
+    extern void rs_drop();
+
+    extern struct rp rs_tos();
+
+    extern bool rs_empty_p();
+
+    extern void rs_push(jo_t* jojo,
+                        jo_t tag,
+                        cell data,
+                        cell local_counter,
+                        cell dynamic_local_counter);
+
+    extern cell rs_length();
+
+    extern struct rp rs_ref(cell index);
+
+    extern void rs_inc();
+    #+end_src
+
+* *gc*
+
+*** struct gp
+
+    #+begin_src c
+    typedef enum {
+      GC_MARK_FREE,
+      GC_MARK_USING,
+    } gc_mark_t;
+
+    struct gp { // gc point
+      gc_mark_t mark;
+      struct class* class;
+      cell p; // actual data point
+    };
+    #+end_src
+
+*** gr -- gc record
+
+    #+begin_src c
+    #define GR_SIZE 64 * 1024
+    // #define GR_SIZE 1024
+    // #define GR_SIZE 3 // for testing
+
+    extern struct gp gr[GR_SIZE];
+    extern struct gp* gr_pointer;
+    #+end_src
+
+*** gr_end_p
+
+    #+begin_src c
+    extern bool gr_end_p();
+    #+end_src
+
+*** init_gr
+
+    #+begin_src c
+    extern void init_gr();
+    #+end_src
+
+*** struct class
+
+    #+begin_src c
+    typedef enum {
+      GC_STATE_MARKING,
+      GC_STATE_SWEEPING,
+    } gc_state_t;
+
+    typedef void (* gc_actor_t)(gc_state_t, cell);
+
+    struct class {
+      jo_t class_name;
+      gc_actor_t gc_actor;
+      cell fields_number;
+      jo_t* fields;
+    };
+    #+end_src
+
+*** get & set field
+
+    - to abstract the order of tag and data in memory.
+
+    #+begin_src c
+    extern jo_t get_field_tag(cell* fields, cell field_index);
+
+    extern void set_field_tag(cell* fields, cell field_index, jo_t tag);
+
+    extern cell get_field_data(cell* fields, cell field_index);
+
+    extern void set_field_data(cell* fields, cell field_index, cell data);
+    #+end_src
+
+*** class_index_to_field_name
+
+    #+begin_src c
+    // assume exist
+    extern jo_t class_index_to_field_name(struct class* class, cell index);
+    #+end_src
+
+*** class_field_name_to_index
+
+    #+begin_src c
+    // assume exist
+    extern cell class_field_name_to_index(struct class* class, jo_t field_name);
+    #+end_src
+
+*** get & set gp field
+
+    #+begin_src c
+    extern jo_t get_gp_field_tag(struct gp* gp, cell field_index);
+
+    extern void set_gp_field_tag(struct gp* gp,
+                                 cell field_index,
+                                 jo_t tag);
+
+    extern cell get_gp_field_data(struct gp* gp, cell field_index);
+
+    extern void set_gp_field_data(struct gp* gp,
+                                  cell field_index,
+                                  cell data);
+    #+end_src
+
+*** get_field
+
+    #+begin_src c
+    extern struct dp get_field(jo_t class_tag, struct gp* gp, jo_t name);
+    #+end_src
+
+*** ins_get_field
+
+    #+begin_src c
+    extern void ins_get_field();
+    #+end_src
+
+*** ins_set_field
+
+    #+begin_src c
+    extern void ins_set_field();
+    #+end_src
+
+*** mark_one_data
+
+    #+begin_src c
+    extern void mark_one_data(jo_t tag, cell data);
+    #+end_src
+
+*** mark_gr
+
+    #+begin_src c
+    extern void mark_gr();
+    #+end_src
+
+*** sweep_one_gp
+
+    #+begin_src c
+    extern void sweep_one_gp(struct gp* gp);
+    #+end_src
+
+*** sweep_gr
+
+    #+begin_src c
+    extern void sweep_gr();
+    #+end_src
+
+*** run_gc
+
+    #+begin_src c
+    extern void run_gc();
+    #+end_src
+
+*** basic gc actors
+
+***** gc_ignore
+
+      #+begin_src c
+      extern void gc_ignore(gc_state_t gc_state, cell data);
+      #+end_src
+
+***** gc_free
+
+      #+begin_src c
+      extern void gc_free(gc_state_t gc_state, struct gp* gp);
+      #+end_src
+
+***** gc_recur
+
+      #+begin_src c
+      extern void gc_recur(gc_state_t gc_state, struct gp* gp);
+      #+end_src
+
+*** new_record_gp
+
+    #+begin_src c
+    extern void next_free_record_gp();
+
+    extern struct gp* new_record_gp();
+    #+end_src
+
+*** plus_atom
+
+    #+begin_src c
+    extern void plus_atom(char* class_name, gc_actor_t gc_actor);
+    #+end_src
+
+*** plus_data
+
+    #+begin_src c
+    // argument 'fields' is shared
+    extern void plus_data(char* class_name, jo_t* fields);
+    #+end_src
+
+*** plus_prim
+
+    #+begin_src c
+    extern void plus_prim(char* function_name, primitive_t fun);
+    #+end_src
+
+*** p_tag
+
+    #+begin_src c
+    extern void p_tag();
+    #+end_src
+
+*** p_eq_p
+
+    #+begin_src c
+    extern void p_eq_p();
+    #+end_src
+
+*** p_new
+
+    #+begin_src c
+    extern void p_new();
+    #+end_src
+
+*** expose_gc
+
+    #+begin_src c
+    extern void expose_gc();
+    #+end_src
+
+* <jojo>
+
+*** new_jojo_gp
+
+    #+begin_src c
+    extern struct gp* new_jojo_gp(jo_t* jojo);
+    #+end_src
+
+*** jojo_length
+
+    #+begin_src c
+    extern cell jojo_length(jo_t* jojo);
+    #+end_src
+
+*** p_new_jojo
+
+    #+begin_src c
+    extern void p_new_jojo();
+    #+end_src
+
+*** gc_jojo
+
+    #+begin_src c
+    extern void gc_jojo(gc_state_t gc_state, struct gp* gp);
+    #+end_src
+
+*** expose_jojo
+
+    #+begin_src c
+    extern void expose_jojo();
+    #+end_src
+
+* gene
+
+*** [note] dynamic dispatching
+
+    - for a gene function
+      fixed number of tags of specified arguments
+      are used to find the absolute function
+
+*** disp
+
+***** struct disp
+
+      #+begin_src c
+      struct disp_entry {
+        jo_t key;
+        jo_t tag;
+        cell data;
+        struct disp_entry* rest;
+      };
+
+      struct disp {
+        struct disp_entry* table;
+        cell size;
+      };
+      #+end_src
+
+***** new_disp
+
+      #+begin_src c
+      extern struct disp* new_disp(cell size);
+      #+end_src
+
+***** disp_hash
+
+      #+begin_src c
+      extern cell disp_hash(struct disp* disp, jo_t key);
+      #+end_src
+
+***** disp_insert_entry
+
+      #+begin_src c
+      extern void disp_insert_entry(struct disp_entry* disp_entry,
+                                    jo_t key,
+                                    jo_t tag,
+                                    cell data);
+      #+end_src
+
+***** disp_insert
+
+      #+begin_src c
+      extern void disp_insert(struct disp* disp, jo_t key, jo_t tag, cell data);
+      #+end_src
+
+***** disp_find_entry
+
+      #+begin_src c
+      extern struct disp_entry* disp_find_entry(struct disp_entry* disp_entry,
+                                                jo_t key);
+      #+end_src
+
+***** disp_find
+
+      #+begin_src c
+      extern struct disp_entry* disp_find(struct disp* disp,
+                                          jo_t key);
+      #+end_src
+
+***** disp_print_entry
+
+      #+begin_src c
+      extern void disp_print_entry(struct disp_entry* disp_entry);
+      #+end_src
+
+***** disp_print
+
+      #+begin_src c
+      extern void disp_print(struct disp* disp);
+      #+end_src
+
+*** multi_disp
+
+***** struct multi_disp
+
+      #+begin_src c
+      struct multi_disp_entry {
+        jo_t* key;
+        jo_t tag;
+        cell data;
+        struct multi_disp_entry* rest;
+      };
+
+      struct multi_disp {
+        struct multi_disp_entry* table;
+        cell size;
+      };
+      #+end_src
+
+***** new_multi_disp
+
+      #+begin_src c
+      extern struct multi_disp* new_multi_disp(cell size);
+      #+end_src
+
+***** multi_disp_hash
+
+      #+begin_src c
+      extern cell multi_disp_hash(struct multi_disp* multi_disp, jo_t* key);
+      #+end_src
+
+***** multi_disp_insert_entry
+
+      #+begin_src c
+      // argument 'key' is shared
+      extern void multi_disp_insert_entry
+      (struct multi_disp_entry* multi_disp_entry,
+       jo_t* key,
+       jo_t tag,
+       cell data);
+      #+end_src
+
+***** multi_disp_insert
+
+      #+begin_src c
+      extern void multi_disp_insert(struct multi_disp* multi_disp,
+                                    jo_t* key,
+                                    jo_t tag,
+                                    cell data);
+      #+end_src
+
+***** multi_disp_find_entry
+
+      #+begin_src c
+      extern struct multi_disp_entry*
+      multi_disp_find_entry
+      (struct multi_disp_entry* multi_disp_entry,
+       jo_t* key);
+      #+end_src
+
+***** multi_disp_find
+
+      #+begin_src c
+      extern struct multi_disp_entry*
+      multi_disp_find(struct multi_disp* multi_disp,
+                      jo_t* key);
+      #+end_src
+
+***** multi_disp_print_entry
+
+      #+begin_src c
+      extern void multi_disp_print_entry(struct multi_disp_entry* multi_disp_entry);
+      #+end_src
+
+***** multi_disp_print
+
+      #+begin_src c
+      extern void multi_disp_print(struct multi_disp* multi_disp);
+      #+end_src
+
+*** struct gene
+
+    #+begin_src c
+    struct gene {
+      jo_t tag;
+      cell data;
+      union {
+        jo_t disp;
+        jo_t* multi_disp;
+      };
+      cell arity;
+    };
+    #+end_src
+
+*** plus_gene
+
+    #+begin_src c
+    extern void plus_gene(char* function_name,
+                          cell arity);
+    #+end_src
+
+*** plus_disp
+
+    #+begin_src c
+    // argument 'tags' is shared
+    extern void plus_disp(char* gene_name,
+                          jo_t* tags,
+                          char* tag_name,
+                          cell data);
+    #+end_src
+
+*** plus_disp_default
+
+    #+begin_src c
+    extern void plus_disp_default(char* gene_name,
+                                  char* tag_name,
+                                  cell data);
+    #+end_src
+
+*** disp_exe
+
+    #+begin_src c
+    extern void disp_exe(struct gene* gene, jo_t tag);
+    #+end_src
+
+*** multi_disp_exe
+
+    #+begin_src c
+    extern void multi_disp_exe(struct gene* gene, jo_t* tags);
+    #+end_src
+
+*** p_gene_exe
+
+    #+begin_src c
+    extern void p_gene_exe();
+    #+end_src
+
+*** p_prim_exe
+
+    #+begin_src c
+    extern void p_prim_exe();
+    #+end_src
+
+*** p_jojo_exe
+
+    #+begin_src c
+    extern void p_jojo_exe();
+    #+end_src
+
+*** p_data_predicate_exe
+
+    #+begin_src c
+    extern void p_data_predicate_exe();
+    #+end_src
+
+*** p_default_exe
+
+    #+begin_src c
+    extern void p_default_exe();
+    #+end_src
+
+*** expose_gene
+
+    #+begin_src c
+    extern void expose_gene();
+    #+end_src
+
+* exe & jo_apply & eval
+
+*** [note]
+
+    - be careful when calling jo_apply in primitive,
+      because after push a jojo to rs,
+      one need to exit current primitive to run the jojo.
+
+      if wished follow a 'eval();' after jo_apply
+      to return to the primitive function.
+
+*** jo_apply
+
+    #+begin_src c
+    extern void jo_apply(jo_t jo);
+    #+end_src
+
+*** eval_one_step
+
+    #+begin_src c
+    extern void eval_one_step();
+    #+end_src
+
+*** eval
+
+    #+begin_src c
+    extern void eval();
+    #+end_src
+
+* *ending*
+
+*** p_end
+
+    #+begin_src c
+    extern void p_end();
+    #+end_src
+
+*** p_bye
+
+    #+begin_src c
+    extern void p_bye();
+    #+end_src
+
+*** p_nop
+
+    #+begin_src c
+    extern void p_nop();
+    #+end_src
+
+*** expose_ending
+
+    #+begin_src c
+    extern void expose_ending();
+    #+end_src
+
+* *stack*
+
+*** p_drop
+
+    #+begin_src c
+    extern void p_drop();
+    #+end_src
+
+*** p_dup
+
+    #+begin_src c
+    extern void p_dup();
+    #+end_src
+
+*** p_over
+
+    #+begin_src c
+    extern void p_over();
+    #+end_src
+
+*** p_tuck
+
+    #+begin_src c
+    extern void p_tuck();
+    #+end_src
+
+*** p_swap
+
+    #+begin_src c
+    extern void p_swap();
+    #+end_src
+
+*** expose_stack
+
+    #+begin_src c
+    extern void expose_stack();
+    #+end_src
+
+* *io*
+
+*** reading_stack
+
+    #+begin_src c
+    extern struct stack* reading_stack; // of input_stack
+    #+end_src
+
+*** writing_stack
+
+    #+begin_src c
+    extern struct stack* writing_stack; // of output_stack
+    #+end_src
+
+*** p_reading_stack_push
+
+    #+begin_src c
+    extern void p_reading_stack_push();
+    #+end_src
+
+*** p_reading_stack_tos
+
+    #+begin_src c
+    extern void p_reading_stack_tos();
+    #+end_src
+
+*** p_reading_stack_pop
+
+    #+begin_src c
+    extern void p_reading_stack_pop();
+    #+end_src
+
+*** p_reading_stack_drop
+
+    #+begin_src c
+    extern void p_reading_stack_drop();
+    #+end_src
+
+*** p_terminal_input_stack
+
+    #+begin_src c
+    extern void p_terminal_input_stack();
+    #+end_src
+
+*** p_input_stack_free
+
+    #+begin_src c
+    extern void p_input_stack_free();
+    #+end_src
+
+*** p_input_stack_empty_p
+
+    #+begin_src c
+    extern void p_input_stack_empty_p();
+    #+end_src
+
+*** has_byte_p
+
+    #+begin_src c
+    extern bool has_byte_p();
+    #+end_src
+
+*** read_byte
+
+    #+begin_src c
+    extern char read_byte();
+    #+end_src
+
+*** p_read_byte
+
+    #+begin_src c
+    extern void p_read_byte();
+    #+end_src
+
+*** byte_unread
+
+    #+begin_src c
+    extern void byte_unread(char b);
+    #+end_src
+
+*** byte_write
+
+    #+begin_src c
+    extern void byte_write(char b);
+    #+end_src
+
+*** p_byte_write
+
+    #+begin_src c
+    extern void p_byte_write();
+    #+end_src
+
+*** has_jo_p
+
+    - note that,
+      this function clear spaces for next jo
+
+    #+begin_src c
+    extern bool has_jo_p();
+    #+end_src
+
+*** p_has_jo_p
+
+    #+begin_src c
+    extern void p_has_jo_p();
+    #+end_src
+
+*** read_jo
+
+    #+begin_src c
+    extern jo_t read_jo();
+    #+end_src
+
+*** p_read_jo
+
+    #+begin_src c
+    extern void p_read_jo();
+    #+end_src
+
+*** string_unread
+
+    #+begin_src c
+    extern void string_unread(char* str);
+    #+end_src
+
+*** p_string_unread
+
+    #+begin_src c
+    extern void p_string_unread();
+    #+end_src
+
+*** jo_unread
+
+    #+begin_src c
+    extern void jo_unread(jo_t jo);
+    #+end_src
+
+*** p_newline
+
+    #+begin_src c
+    extern void p_newline();
+    #+end_src
+
+*** p_space
+
+    #+begin_src c
+    extern void p_space();
+    #+end_src
+
+*** expose_io
+
+    #+begin_src c
+    extern void expose_io();
+    #+end_src
+
+* *local*
+
+*** local_find
+
+    #+begin_src c
+    extern cell local_find(jo_t name);
+    #+end_src
+
+*** ins_local
+
+    #+begin_src c
+    extern void ins_local();
+    #+end_src
+
+*** set_local
+
+    #+begin_src c
+    extern void set_local(jo_t name, jo_t tag, cell data);
+    #+end_src
+
+*** ins_set_local
+
+    #+begin_src c
+    extern void ins_set_local();
+    #+end_src
+
+*** expose_local
+
+    #+begin_src c
+    extern void expose_local();
+    #+end_src
+
+* *dynamic-local*
+
+*** dynamic_local_find
+
+    #+begin_src c
+    extern cell dynamic_local_find(jo_t name);
+    #+end_src
+
+*** ins_dynamic_local
+
+    #+begin_src c
+    extern void ins_dynamic_local();
+    #+end_src
+
+*** set_dynamic_local
+
+    #+begin_src c
+    extern void set_dynamic_local(jo_t name, jo_t tag, cell data);
+    #+end_src
+
+*** ins_set_dynamic_local
+
+    #+begin_src c
+    extern void ins_set_dynamic_local();
+    #+end_src
+
+*** expose_dynamic_local
+
+    #+begin_src c
+    extern void expose_dynamic_local();
+    #+end_src
+
+* *compiler*
+
+*** compiling_stack
+
+    - to redirect compiling location
+
+    #+begin_src c
+    extern struct stack* compiling_stack; // of jojo
+
+    extern void p_compiling_stack_inc();
+    #+end_src
+
+*** emit
+
+    #+begin_src c
+    extern void emit(cell n);
+    #+end_src
+
+*** emit_jojo_end
+
+    #+begin_src c
+    extern void emit_jojo_end();
+    #+end_src
+
+*** about string pattern [syntax of jojo]
+
+***** local_string_p
+
+      #+begin_src c
+      // :local
+      extern bool local_string_p(char* str);
+      #+end_src
+
+***** set_local_string_p
+
+      #+begin_src c
+      // :local!
+      extern bool set_local_string_p(char* str);
+      #+end_src
+
+***** field_string_p
+
+      #+begin_src c
+      // .field
+      extern bool field_string_p(char* str);
+      #+end_src
+
+***** set_field_string_p
+
+      #+begin_src c
+      // .field!
+      extern bool set_field_string_p(char* str);
+      #+end_src
+
+***** tag_string_p
+
+      #+begin_src c
+      // <tag>
+      extern bool tag_string_p(char* str);
+      #+end_src
+
+*** compile_jo
+
+    #+begin_src c
+    extern void compile_jo(jo_t jo);
+    #+end_src
+
+*** compile_until_meet_jo
+
+    #+begin_src c
+    extern void compile_until_meet_jo(jo_t ending_jo);
+    #+end_src
+
+*** compile_until_meet_jo_or_jo
+
+    #+begin_src c
+    extern jo_t compile_until_meet_jo_or_jo(jo_t ending_jo1, jo_t ending_jo2);
+    #+end_src
+
+*** p_compile_until_round_ket
+
+    #+begin_src c
+    extern void p_compile_until_round_ket();
+    #+end_src
+
+*** compile_jojo_until_ket
+
+    #+begin_src c
+    extern jo_t* compile_jojo_until_ket(jo_t ket);
+    #+end_src
+
+*** expose_compiler
+
+    #+begin_src c
+    extern void expose_compiler();
+    #+end_src
+
+* *control*
+
+*** k_ignore
+
+    #+begin_src c
+    extern void k_ignore();
+    #+end_src
+
+*** ins_lit
+
+    #+begin_src c
+    extern void ins_lit();
+    #+end_src
+
+*** ins_jmp
+
+    #+begin_src c
+    extern void ins_jmp();
+    #+end_src
+
+*** ins_jz
+
+    #+begin_src c
+    extern void ins_jz();
+    #+end_src
+
+*** k_if
+
+    #+begin_src c
+    //// if then
+    //   (if a b p? then c d)
+    //// ==>
+    //     a b p? jz[:end-of-then]
+    //     c d
+    //   :end-of-then
+
+    //// if then else
+    //   (if a b p? then c d else e f)
+    //// ==>
+    //     a b p? jz[:end-of-then]
+    //     c d jmp[:end-of-else]
+    //   :end-of-then
+    //     e f
+    //   :end-of-else
+
+    extern void k_if();
+    #+end_src
+
+*** compile_maybe_square
+
+    #+begin_src c
+    extern void compile_maybe_square();
+    #+end_src
+
+*** k_case
+
+    - k_case can only handle one-value
+
+    #+begin_src c
+    //   (case [...]
+    //     tag [...]
+    //     ...)
+    //// ==>
+    //     [...]
+    //     dup tag 'tag eq? jz[:end-of-this-case]
+    //     drop [...] jmp[:end-of-case]
+    //   :end-of-this-case
+    //     ... ...
+    //   :end-of-case
+    //     drop
+
+    extern void k_case();
+    #+end_src
+
+*** k_cond
+
+    #+begin_src c
+    //   (cond
+    //     [:t1 leaf? :t2 leaf? and] [...]
+    //     [:t1 node? :t2 node? and] [...]
+    //     else [else-body])
+    //// ==>
+    //     [:t1 leaf? :t2 leaf? and] jz[:end-of-this-cond]
+    //     [...] jmp[:end-of-cond]
+    //   :end-of-this-cond
+    //     [:t1 node? :t2 node? and] jz[:end-of-this-cond]
+    //     [...] jmp[:end-of-cond]
+    //   :end-of-this-cond
+    //     [else-body]
+    //   :end-of-cond
+
+    extern void k_cond();
+    #+end_src
+
+*** p_recur
+
+    #+begin_src c
+    extern void p_recur();
+    #+end_src
+
+*** expose_control
+
+    #+begin_src c
+    extern void expose_control();
+    #+end_src
+
+* *top*
+
+*** test_flag
+
+    #+begin_src c
+    extern bool test_flag;
+    extern void p_test_flag();
+    extern void p_test_flag_on();
+    extern void p_test_flag_off();
+    #+end_src
+
+*** k_plus_data
+
+    #+begin_src c
+    #define MAX_FIELDS 1024
+
+    extern void k_plus_data();
+    #+end_src
+
+*** k_arrow
+
+    #+begin_src c
+    extern void k_arrow();
+    #+end_src
+
+*** k_plus_jojo
+
+    #+begin_src c
+    extern void k_plus_jojo();
+    #+end_src
+
+*** expose_top
+
+    #+begin_src c
+    extern void expose_top();
+    #+end_src
+
+* *repl*
+
+*** local_env_print
+
+    #+begin_src c
+    extern bool local_env_empty_p(struct local* lr);
+
+    extern void local_env_print(struct local* lr);
+    #+end_src
+
+*** data_print
+
+    #+begin_src c
+    extern void data_print(jo_t tag, cell data);
+    #+end_src
+
+*** p_data_print
+
+    #+begin_src c
+    extern void p_data_print();
+    #+end_src
+
+*** jojo_print_one
+
+    #+begin_src c
+    extern jo_t* jojo_print_one(jo_t* jojo);
+    #+end_src
+
+*** jojo_print
+
+    #+begin_src c
+    extern void jojo_print(jo_t* jojo);
+    #+end_src
+
+*** p_print_ds
+
+    #+begin_src c
+    extern void p_print_ds();
+    #+end_src
+
+*** print_return_point
+
+    #+begin_src c
+    extern void print_return_point(struct rp p);
+    #+end_src
+
+*** p_print_rs
+
+    #+begin_src c
+    extern void p_print_rs();
+    #+end_src
+
+*** repl_flag
+
+    #+begin_src c
+    extern bool repl_flag;
+    extern void p_repl_flag();
+    extern void p_repl_flag_on();
+    extern void p_repl_flag_off();
+    #+end_src
+
+*** repl_one_step
+
+    #+begin_src c
+    extern void repl_one_step();
+    #+end_src
+
+*** repl
+
+    #+begin_src c
+    extern void repl(struct input_stack* input_stack);
+    #+end_src
+
+*** debug_repl
+
+    #+begin_src c
+    extern cell debug_repl_level;
+
+    extern void debug_repl(struct input_stack* input_stack);
+    #+end_src
+
+*** p_debug
+
+    #+begin_src c
+    extern void p_debug();
+    #+end_src
+
+*** to handle kernel signal
+
+***** [note]
+
+      - A function is said to be reentrant
+        if it can safely be simultaneously executed
+        by multiple threads of execution in the same process.
+        In this context, “safe” means that
+        the function achieves its expected result,
+        regardless of the state of execution
+        of any other thread of execution.
+
+        Because a signal handler may asynchronously interrupt
+        the execution of a program at any point in time,
+        the main program and the signal handler
+        in effect form two independent
+        (although not concurrent) threads of execution
+        within the same process.
+
+        -- quote from (2010) (michael kerrisk) the linux programming interface
+
+      - thus single handler must be reentrant.
+
+      - since nonreentrant functions in many C libraries [specially stdio],
+        and we can call such functions in the debug repl of jojo,
+        we should not simply call the debug repl in the kernel_signal_handler.
+
+      - but except introducing runtime overhead,
+        I can think of not solutions to this problem.
+
+        thus, after exited the debug repl,
+        possibly unnecessary errors that induced by nonreentrant functions,
+        might lead you into the debug repl again.
+
+        thus, the debug repl is not reliable to enable you
+        to recover from any errors which trigger kernel signal.
+        [the debug repl can only debug them.]
+
+***** kernel_signal_handler
+
+      #+begin_src c
+      extern void kernel_signal_handler(int sig, siginfo_t *siginfo, void *ucontext);
+      #+end_src
+
+***** init_kernel_signal_handler
+
+      #+begin_src c
+      extern void init_kernel_signal_handler();
+      #+end_src
+
+*** expose_repl
+
+    #+begin_src c
+    extern void expose_repl();
+    #+end_src
+
+* step
+
+*** report_one_step
+
+    #+begin_src c
+    extern bool step_flag;
+    extern cell stepper_counter;
+    extern cell pending_steps;
+
+    extern void report_one_step();
+    #+end_src
+
+*** p_step
+
+    #+begin_src c
+    // do not handle tail call
+    extern void p_step();
+    #+end_src
+
+*** expose_step
+
+    #+begin_src c
+    extern void expose_step();
+    #+end_src
+
+* <bool>
+
+*** p_true
+
+    #+begin_src c
+    extern void p_true();
+    #+end_src
+
+*** p_false
+
+    #+begin_src c
+    extern void p_false();
+    #+end_src
+
+*** p_not
+
+    #+begin_src c
+    extern void p_not();
+    #+end_src
+
+*** p_and
+
+    #+begin_src c
+    extern void p_and();
+    #+end_src
+
+*** p_or
+
+    #+begin_src c
+    extern void p_or();
+    #+end_src
+
+*** expose_bool
+
+    #+begin_src c
+    extern void expose_bool();
+    #+end_src
+
+* <string>
+
+*** new_string_gp
+
+    #+begin_src c
+    extern struct gp* new_string_gp(char* str);
+    #+end_src
+
+*** compile_string
+
+    #+begin_src c
+    extern void compile_string();
+    #+end_src
+
+*** p_read_line
+
+    #+begin_src c
+    extern void p_read_line();
+    #+end_src
+
+*** p_string_to_jo
+
+    #+begin_src c
+    extern void p_string_to_jo();
+    #+end_src
+
+*** expose_string
+
+    #+begin_src c
+    extern void expose_string();
+    #+end_src
+
+* <int>
+
+*** p_inc
+
+    #+begin_src c
+    extern void p_inc();
+    #+end_src
+
+*** p_dec
+
+    #+begin_src c
+    extern void p_dec();
+    #+end_src
+
+*** p_neg
+
+    #+begin_src c
+    extern void p_neg();
+    #+end_src
+
+*** p_add
+
+    #+begin_src c
+    extern void p_add();
+    #+end_src
+
+*** p_sub
+
+    #+begin_src c
+    extern void p_sub();
+    #+end_src
+
+*** p_mul
+
+    #+begin_src c
+    extern void p_mul();
+    #+end_src
+
+*** p_div
+
+    #+begin_src c
+    extern void p_div();
+    #+end_src
+
+*** p_mod
+
+    #+begin_src c
+    extern void p_mod();
+    #+end_src
+
+*** p_gt_p
+
+    #+begin_src c
+    extern void p_gt_p();
+    #+end_src
+
+*** p_lt_p
+
+    #+begin_src c
+    extern void p_lt_p();
+    #+end_src
+
+*** p_gteq_p
+
+    #+begin_src c
+    extern void p_gteq_p();
+    #+end_src
+
+*** p_lteq_p
+
+    #+begin_src c
+    extern void p_lteq_p();
+    #+end_src
+
+*** p_int_write
+
+    #+begin_src c
+    extern void p_int_write();
+    #+end_src
+
+*** expose_int
+
+    #+begin_src c
+    extern void expose_int();
+    #+end_src
+
+* <jo>
+
+*** special literal jo
+
+    #+begin_src c
+    extern void p_round_bar()    ;
+    extern void p_round_ket()    ;
+    extern void p_square_bar()   ;
+    extern void p_square_ket()   ;
+    extern void p_flower_bar()   ;
+    extern void p_flower_ket()   ;
+    extern void p_doublequote()  ;
+    extern void p_singlequote()  ;
+    extern void p_backquote()    ;
+    extern void p_comma()        ;
+    #+end_src
+
+*** p_jo_write
+
+    #+begin_src c
+    extern void p_jo_write();
+    #+end_src
+
+*** p_jo_unread
+
+    #+begin_src c
+    extern void p_jo_unread();
+    #+end_src
+
+*** p_jo_apply
+
+    #+begin_src c
+    extern void p_jo_apply();
+    #+end_src
+
+*** p_jo_to_int
+
+    #+begin_src c
+    extern void p_jo_to_int();
+    #+end_src
+
+*** p_jo_to_byte
+
+    #+begin_src c
+    extern void p_jo_to_byte();
+    #+end_src
+
+*** p_int_jo_p
+
+    #+begin_src c
+    extern void p_int_jo_p();
+    #+end_src
+
+*** p_local_jo_p
+
+    #+begin_src c
+    extern void p_local_jo_p();
+    #+end_src
+
+*** p_set_local_jo_p
+
+    #+begin_src c
+    extern void p_set_local_jo_p();
+    #+end_src
+
+*** p_field_jo_p
+
+    #+begin_src c
+    extern void p_field_jo_p();
+    #+end_src
+
+*** p_set_field_jo_p
+
+    #+begin_src c
+    extern void p_set_field_jo_p();
+    #+end_src
+
+*** p_tag_jo_p
+
+    #+begin_src c
+    extern void p_tag_jo_p();
+    #+end_src
+
+*** underscore_string_p
+
+    #+begin_src c
+    extern bool underscore_string_p(char* str);
+    #+end_src
+
+*** p_underscore_jo_p
+
+    #+begin_src c
+    extern void p_underscore_jo_p();
+    #+end_src
+
+*** p_get_local_jo_to_set_local_jo
+
+    #+begin_src c
+    extern void p_get_local_jo_to_set_local_jo();
+    #+end_src
+
+*** dynamic_local_string_p
+
+    #+begin_src c
+    extern bool dynamic_local_string_p(char* str);
+    #+end_src
+
+*** set_dynamic_local_string_p
+
+    #+begin_src c
+    extern bool set_dynamic_local_string_p(char* str);
+    #+end_src
+
+*** p_dynamic_local_jo_p
+
+    #+begin_src c
+    extern void p_dynamic_local_jo_p();
+    #+end_src
+
+*** p_set_dynamic_local_jo_p
+
+    #+begin_src c
+    extern void p_set_dynamic_local_jo_p();
+    #+end_src
+
+*** p_jo_to_string
+
+    #+begin_src c
+    extern void p_jo_to_string();
+    #+end_src
+
+*** p_jo_bound_p
+
+    #+begin_src c
+    extern void p_jo_bound_p();
+    #+end_src
+
+*** expose_jo
+
+    #+begin_src c
+    extern void expose_jo();
+    #+end_src
+
+* <address>
+
+*** p_compiling_stack_tos
+
+    #+begin_src c
+    extern void p_compiling_stack_tos();
+    #+end_src
+
+*** p_compiling_stack_drop
+
+    #+begin_src c
+    extern void p_compiling_stack_drop();
+    #+end_src
+
+*** p_compiling_stack_push
+
+    #+begin_src c
+    extern void p_compiling_stack_push();
+    #+end_src
+
+*** p_set_offset_to_here
+
+    #+begin_src c
+    extern void p_set_offset_to_here();
+    #+end_src
+
+*** p_tag_change
+
+    #+begin_src c
+    extern void p_tag_change();
+    #+end_src
+
+*** p_allocate
+
+    #+begin_src c
+    extern void p_allocate();
+    #+end_src
+
+*** p_free
+
+    #+begin_src c
+    extern void p_free();
+    #+end_src
+
+*** p_set_cell
+
+    #+begin_src c
+    extern void p_set_cell();
+    #+end_src
+
+*** p_get_cell
+
+    #+begin_src c
+    extern void p_get_cell();
+    #+end_src
+
+*** p_set_byte
+
+    #+begin_src c
+    extern void p_set_byte();
+    #+end_src
+
+*** p_get_byte
+
+    #+begin_src c
+    extern void p_get_byte();
+    #+end_src
+
+*** expose_address
+
+    #+begin_src c
+    extern void expose_address();
+    #+end_src
+
+* <array>
+
+*** new_array_gp
+
+    #+begin_src c
+    extern struct gp* new_array_gp(cell* array);
+    #+end_src
+
+*** p_new_array
+
+    #+begin_src c
+    extern void p_new_array();
+    #+end_src
+
+*** p_array_length
+
+    #+begin_src c
+    extern void p_array_length();
+    #+end_src
+
+*** p_array_ref
+
+    #+begin_src c
+    extern void p_array_ref();
+    #+end_src
+
+*** p_array_set
+
+    #+begin_src c
+    extern void p_array_set();
+    #+end_src
+
+*** p_mark
+
+    #+begin_src c
+    extern void p_mark();
+    #+end_src
+
+*** collect_find_length
+
+    #+begin_src c
+    extern cell collect_find_length();
+    #+end_src
+
+*** p_collect
+
+    #+begin_src c
+    extern void p_collect();
+    #+end_src
+
+*** expose_array
+
+    #+begin_src c
+    extern void expose_array();
+    #+end_src
+
+* <closure>
+
+*** gc_local_env
+
+    #+begin_src c
+    extern void gc_local_env(gc_state_t gc_state, struct gp* gp);
+    #+end_src
+
+*** current_local_record
+
+    #+begin_src c
+    // caller free
+    extern struct local* current_local_record();
+    #+end_src
+
+*** p_current_local_env
+
+    #+begin_src c
+    extern void p_current_local_env();
+    #+end_src
+
+*** set_local_record
+
+    #+begin_src c
+    extern void set_local_record(struct local* lr);
+    #+end_src
+
+*** p_closure_exe
+
+    #+begin_src c
+    extern void p_closure_exe();
+    #+end_src
+
+*** k_closure
+
+    #+begin_src c
+    extern void k_closure();
+    #+end_src
+
+*** expose_closure
+
+    #+begin_src c
+    extern void expose_closure();
+    #+end_src
+
+* <file>
+
+*** p_error_number_print
+
+    #+begin_src c
+    extern void p_error_number_print();
+    #+end_src
+
+*** path_open
+
+    #+begin_src c
+    extern void path_open(int flag);
+    #+end_src
+
+*** p_path_open_read
+
+    #+begin_src c
+    extern void p_path_open_read();
+    #+end_src
+
+*** p_path_open_write
+
+    #+begin_src c
+    extern void p_path_open_write();
+    #+end_src
+
+*** p_path_open_read_and_write
+
+    #+begin_src c
+    extern void p_path_open_read_and_write();
+    #+end_src
+
+*** p_path_open_create
+
+    #+begin_src c
+    extern void p_path_open_create();
+    #+end_src
+
+*** p_file_close
+
+    #+begin_src c
+    extern void p_file_close();
+    #+end_src
+
+*** p_file_read
+
+    #+begin_src c
+    extern void p_file_read();
+    #+end_src
+
+*** p_file_write
+
+    #+begin_src c
+    extern void p_file_write();
+    #+end_src
+
+*** p_file_input_stack
+
+    #+begin_src c
+    extern void p_file_input_stack();
+    #+end_src
+
+*** current_reading_dir
+
+    #+begin_src c
+    extern void erase_real_path_to_dir(char* path);
+
+    // caller free
+    extern char* current_reading_dir();
+    #+end_src
+
+*** p_current_reading_dir
+
+    #+begin_src c
+    extern void p_current_reading_dir();
+    #+end_src
+
+*** current_running_dir
+
+    #+begin_src c
+    // caller free
+    extern char* current_running_dir();
+    #+end_src
+
+*** p_current_running_dir
+
+    #+begin_src c
+    extern void p_current_running_dir();
+    #+end_src
+
+*** expose_file
+
+    #+begin_src c
+    extern void expose_file();
+    #+end_src
+
+* *system*
+
+*** p_cmd_number
+
+    #+begin_src c
+    extern cell cmd_number;
+
+    extern void p_cmd_number();
+    #+end_src
+
+*** p_index_to_cmd_string
+
+    #+begin_src c
+    extern char** cmd_string_array;
+
+    extern void p_index_to_cmd_string();
+    #+end_src
+
+*** p_find_env_string
+
+    #+begin_src c
+    extern void p_find_env_string();
+    #+end_src
+
+*** expose_system
+
+    #+begin_src c
+    extern void expose_system();
+    #+end_src
+
+* *cffi*
+
+*** ccall
+
+    #+begin_src c
+    extern void ccall (char* function_name, void* lib);
+    #+end_src
+
+*** p_path_load_clib
+
+    #+begin_src c
+    extern void p_path_load_clib();
+    #+end_src
+
+*** expose_cffi
+
+    #+begin_src c
+    extern void expose_cffi();
+    #+end_src
+
+* *core*
+
+*** core_flag
+
+    #+begin_src c
+    extern void p_core_flag();
+    extern void p_core_flag_on();
+    extern void p_core_flag_off();
+    #+end_src
+
+*** load_core
+
+    #+begin_src c
+    extern void load_core();
+    #+end_src
+
+*** p_name_bind
+
+    #+begin_src c
+    extern void p_name_bind();
+    #+end_src
+
+*** p_jo_emit
+
+    #+begin_src c
+    extern void p_jo_emit();
+    #+end_src
+
+*** p_emit_lit
+
+    #+begin_src c
+    extern void p_emit_lit();
+    #+end_src
+
+*** p_emit_zero
+
+    #+begin_src c
+    extern void p_emit_zero();
+    #+end_src
+
+*** p_jo_emit_local
+
+    #+begin_src c
+    extern void p_jo_emit_local();
+    #+end_src
+
+*** p_jo_emit_set_local
+
+    #+begin_src c
+    extern void p_jo_emit_set_local();
+    #+end_src
+
+*** p_jo_emit_dynamic_local
+
+    #+begin_src c
+    extern void p_jo_emit_dynamic_local();
+    #+end_src
+
+*** p_jo_emit_set_dynamic_local
+
+    #+begin_src c
+    extern void p_jo_emit_set_dynamic_local();
+    #+end_src
+
+*** p_jo_emit_field
+
+    #+begin_src c
+    extern void p_jo_emit_field();
+    #+end_src
+
+*** p_jo_emit_set_field
+
+    #+begin_src c
+    extern void p_jo_emit_set_field();
+    #+end_src
+
+*** p_emit_jz
+
+    #+begin_src c
+    extern void p_emit_jz();
+    #+end_src
+
+*** p_emit_jmp
+
+    #+begin_src c
+    extern void p_emit_jmp();
+    #+end_src
+
+*** p_name_bind_data
+
+    #+begin_src c
+    extern void p_name_bind_data();
+    #+end_src
+
+*** p_name_bind_gene
+
+    #+begin_src c
+    extern void p_name_bind_gene();
+    #+end_src
+
+*** p_name_bind_disp_to_jojo
+
+    #+begin_src c
+    extern void p_name_bind_disp_to_jojo();
+    #+end_src
+
+*** p_name_bind_disp_defalut_to_jojo
+
+    #+begin_src c
+    extern void p_name_bind_disp_defalut_to_jojo();
+    #+end_src
+
+*** p_class_to_tag
+
+    #+begin_src c
+    extern void p_class_to_tag();
+    #+end_src
+
+*** p_cells_copy
+
+    #+begin_src c
+    extern void p_cells_copy();
+    #+end_src
+
+*** expose_core
+
+    #+begin_src c
+    extern void expose_core();
+    #+end_src
+
+* *report*
+
+*** report_local_record
+
+    #+begin_src c
+    extern void report_local_record();
+    #+end_src
+
+*** expose_report
+
+    #+begin_src c
+    extern void expose_report();
+    #+end_src
+
+* *play*
+
+*** p1
+
+    #+begin_src c
+    extern void p1();
+    #+end_src
+
+*** expose_play
+
+    #+begin_src c
+    extern void expose_play();
+    #+end_src
+
+* init & main
+
+*** init_system
+
+    #+begin_src c
+    extern void init_system();
+    #+end_src
+
+*** init_jotable
+
+    #+begin_src c
+    extern void init_jotable();
+    #+end_src
+
+*** init_literal_jo
+
+    #+begin_src c
+    extern void init_literal_jo();
+    #+end_src
+
+*** init_stacks
+
+    #+begin_src c
+    extern jo_t jojo_area[];
+
+    extern void init_stacks();
+    #+end_src
+
+*** init_expose
+
+    #+begin_src c
+    extern void init_expose();
+    #+end_src
+
+* epilog
+
+  #+begin_src c
+  #endif
+  #+end_src

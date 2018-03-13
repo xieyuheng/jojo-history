@@ -1,0 +1,376 @@
+#+property: tangle jojo.c
+#+title: jojo
+
+* [todo-stack]
+
+*** den_u
+
+*** name_dict
+
+*** data_stack
+
+*** frame_stack
+
+*** gc
+
+*** string after gc
+
+* [note]
+
+*** design decisions
+
+    - yes
+      - dynamic type tag
+      - garbage collection
+      - local variables
+      - be able to define new data
+
+    - no -- leave them for nymph
+      - generic dispatching
+      - reader for sexp
+
+*** naming convention
+
+    | _t  | class     |
+    | _u  | sum type  |
+    | _fn | function  |
+    | _p  | predicate |
+    | _pt | pointer   |
+
+* prolog
+
+*** include
+
+    #+begin_src c
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <unistd.h>
+    #include <stdio.h>
+    #include <errno.h>
+    #include <string.h>
+    #include <fcntl.h>
+    #include <ctype.h>
+    #include <stdint.h>
+    #include <dlfcn.h>
+    #include <dirent.h>
+    #include <signal.h>
+    #include <limits.h>
+    #include <stdarg.h>
+    #include <assert.h>
+    #include <stdlib.h>
+    #+end_src
+
+*** bool
+
+    #+begin_src c
+    typedef enum { false, true } bool;
+    #+end_src
+
+* proto
+
+*** about env
+
+    #+begin_src c
+    typedef struct _env_t env_t;
+    #+end_src
+
+*** prim_fn
+
+    #+begin_src c
+    typedef
+    void
+    prim_fn (env_t *env);
+    #+end_src
+
+*** ins_u
+
+    #+begin_src c
+    typedef enum {
+        PRIM_INS,
+        CALL_INS,
+    } ins_tag_t;
+
+    typedef struct {
+        ins_tag_t tag;
+        union {
+            prim_fn *prim;
+            char *name;
+        };
+    } ins_u;
+    #+end_src
+
+*** den_u
+
+    #+begin_src c
+    typedef enum {
+        JOJO_DEN,
+        DATA_DEN,
+        VAR_DEN,
+        MACRO_DEN,
+        KEYWORD_DEN,
+    } den_tag_t;
+
+    typedef struct {
+        den_tag_t tag;
+        union {
+
+        };
+    } den_u;
+    #+end_src
+
+*** obj_u
+
+    #+begin_src c
+    typedef enum {
+        BOOL_OBJ,
+        INT_OBJ,
+    } obj_tag_t;
+
+    typedef struct {
+        obj_tag_t tag;
+        union {
+            bool bool_obj;
+            int int_obj;
+        };
+    } obj_u;
+    #+end_src
+
+*** about ins
+
+    #+begin_src c
+    void
+    ins_exe (ins_u ins, env_t *env);
+    #+end_src
+
+* env
+
+*** env_t
+
+    #+begin_src c
+    typedef struct _name_dict_t name_dict_t;
+    typedef struct _data_stack_t data_stack_t;
+    typedef struct _frame_stack_t frame_stack_t;
+    typedef struct _macro_stack_t macro_stack_t;
+    typedef struct _jojo_area_t jojo_area_t;
+
+    struct _env_t {
+        name_dict_t *name_dict;
+        data_stack_t *data_stack;
+        frame_stack_t *frame_stack;
+    };
+    #+end_src
+
+*** new_env
+
+    #+begin_src c
+    env_t *
+    new_env ()
+    {
+        env_t *self = malloc (sizeof (env_t));
+        self->name_dict = new_name_dict ();
+        self->data_stack = new_data_stack ();
+        self->frame_stack = new_frame_stack ();
+        return self;
+    }
+    #+end_src
+
+*** destroy_env
+
+    #+begin_src c
+    void
+    destroy_env (env_t **self_pt)
+    {
+        assert (self_pt);
+        if (*self_pt) {
+            env_t *self = *self_pt;
+            destroy_name_dict (&self->name_dict);
+            destroy_data_stack (&self->data_stack);
+            destroy_frame_stack (&self->frame_stack);
+            free (self);
+            *self_pt = NULL;
+        }
+    }
+    #+end_src
+
+*** >< name_dict
+
+***** name_dict_t
+
+      #+begin_src c
+      struct _name_dict_t {
+
+      };
+      #+end_src
+
+*** >< frame_stack
+
+***** frame_stack_t
+
+      #+begin_src c
+      typedef struct _frame_t frame_t;
+
+      struct _frame_stack_t {
+
+      };
+      #+end_src
+
+***** frame_t
+
+      #+begin_src c
+      struct _frame_t {
+          size_t index;
+          size_t length;
+          ins_u *body;
+      };
+      #+end_src
+
+***** frame_stack_tos
+
+      #+begin_src c
+      frame_t *
+      frame_stack_tos (frame_stack_t *frame_stack)
+      {
+
+      }
+      #+end_src
+
+*** >< data_stack
+
+***** data_stack_t
+
+      #+begin_src c
+      struct _data_stack_t {
+
+      };
+      #+end_src
+
+***** data_stack_pop
+
+      #+begin_src c
+      obj_u
+      data_stack_pop (env_t *env)
+      {
+
+      }
+      #+end_src
+
+*** macro_stack
+
+***** macro_stack_t
+
+      #+begin_src c
+      struct _macro_stack_t {
+
+      };
+      #+end_src
+
+* exe
+
+*** exe_fn
+
+    #+begin_src c
+    typedef
+    void
+    exe_fn (ins_u ins, env_t *env);
+    #+end_src
+
+*** prim_exe
+
+    #+begin_src c
+    void
+    prim_exe (ins_u ins, env_t *env)
+    {
+        prim_fn *prim = ins.prim;
+        prim (env);
+    }
+    #+end_src
+
+*** call_exe
+
+    #+begin_src c
+    void
+    call_exe (ins_u ins, env_t *env)
+    {
+
+    }
+    #+end_src
+
+*** jz_exe
+
+    #+begin_src c
+    void
+    jz_exe (ins_u ins, env_t *env)
+    {
+
+    }
+    #+end_src
+
+*** jmp_exp
+
+*** EXE_ARRAY
+
+    #+begin_src c
+    exe_fn *
+    EXE_ARRAY[] = {
+       prim_exe,
+       call_exe,
+    };
+    #+end_src
+
+*** ins_exe
+
+    #+begin_src c
+    void
+    ins_exe (ins_u ins, env_t *env)
+    {
+        exe_fn *exe = EXE_ARRAY[ins.tag];
+        exe (ins, env);
+    }
+    #+end_src
+
+* eval
+
+*** next
+
+    #+begin_src c
+    void
+    next (env_t *env)
+    {
+        frame_t *frame = frame_stack_tos (env->frame_stack);
+        ins_u ins = frame->body[frame->index];
+        frame->index = frame->index + 1;
+        ins_exe (ins, env);
+    }
+    #+end_src
+
+* prim
+
+*** bool
+
+*** int
+
+***** int_add
+
+      #+begin_src c
+      void
+      int_add (env_t *env)
+      {
+          obj_u a = data_stack_pop (env);
+          obj_u b = data_stack_pop (env);
+          obj_u c;
+          c.tag = INT_OBJ;
+          c.int_obj = a.int_obj + b.int_obj;
+          data_stack_push (env, c);
+      }
+      #+end_src
+
+* epilog
+
+*** main
+
+    #+begin_src c
+    int
+    main (void) {
+        return 0;
+    }
+    #+end_src

@@ -1,0 +1,11 @@
+#!/usr/bin/env jojo
+
+(run (import hiya/0.0.1)
+  (assert hiya "hiya" equal?))
+
+(assert
+  (run (import hiya/0.0.1)
+    hiya "hiya" equal?))
+
+(run (import hiya/0.0.1)
+  hiya w nl)

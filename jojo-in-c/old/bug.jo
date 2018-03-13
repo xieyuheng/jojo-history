@@ -1,0 +1,21 @@
+(+jojo sexp-table-substitute-2 (-> :sexp :table -- sexp)
+  step
+  (cond [:sexp cons?]
+        [:sexp .car :table recur
+         :sexp .cdr {:table sexp-table-substitute-2} list-map
+         cons]
+        else (if :table :sexp table-find then
+                 else :sexp)))
+
+'(+jojo LET (-> :body --)
+   :body {parse program-eval} LET list-map)
+(table 'LET 'LET/123)
+sexp-table-substitute-2
+w
+
+
+'(+jojo LET (-> :body --)
+   :body {parse program-eval} LET list-map)
+(table 'LET 'LET/123)
+sexp-table-substitute
+w
