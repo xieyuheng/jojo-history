@@ -1,1 +1,10 @@
 jojo's programming adventure
+
+- jojo is a forth-like language
+  which is implemented by dynamic threaded code interpreter
+
+- it has many implementations
+  each implementation explores its hosting programming environment
+
+- it is designed to serve as a compiling target
+  for cicada language series
