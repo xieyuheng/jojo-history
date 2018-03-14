@@ -3,8 +3,7 @@
   - jojo is a forth-like language
     which is implemented by dynamic threaded code interpreter
 
-  - it is designed to serve as a compiling target
-    for cicada language series
+  - its explicit syntax is designed to serve as a compiling target
 
   - it has many implementations
     each implementation explores its hosting programming environment
