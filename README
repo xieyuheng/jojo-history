@@ -4,11 +4,3 @@
     which is implemented by dynamic threaded code interpreter
 
   - its explicit syntax is designed to serve as a compiling target
-
-  - it has many implementations
-    each implementation explores its hosting programming environment
-
-    | jojo-in-js     | rich web UI |
-    | jojo-in-erlang | actor-model |
-    | jojo-in-c      | unix system |
-    | jojo-in-py     | more people |

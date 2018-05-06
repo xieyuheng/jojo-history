@@ -24,10 +24,11 @@
       - garbage collection
       - local variables
       - be able to define new data
+        or simply using map
 
-    - no -- leave them for nymph
+    - no -- leave them for upper level
       - generic dispatching
-      - reader for sexp
+      - sexp reader
 
 *** naming convention
 
