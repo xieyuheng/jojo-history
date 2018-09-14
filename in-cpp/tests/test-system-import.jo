@@ -1,0 +1,5 @@
+(note
+  (= nat (import "$JOJO/lib/nat.jo"))
+
+  (assert (eq (nat.add nat.two nat.two) nat.four))
+  (assert (eq (nat.mul nat.two nat.two) nat.four)))

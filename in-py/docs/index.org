@@ -1,0 +1,403 @@
+#+title: J💛J💛 in python
+
+* getting start
+
+*** install form pip package
+
+    #+begin_src sh
+    pip install jojo
+    #+end_src
+
+*** install from github
+
+    #+begin_src sh
+    git clone https://github.com/xieyuheng/jojo-in-python
+    cd jojo-in-python
+    pip install .
+    #+end_src
+
+*** start the interpreter
+
+    - make sure the interpreter is in your PATH,
+      and type 'jojo' to start the interpreter.
+
+    - in the interpreter, type 'bye' to leave it.
+
+* data stack
+
+  - you can put data into the data-stack,
+    and use jojo as an postfix notation calculator.
+
+  #+begin_src jojo
+  ;0>
+  1
+
+  ;1> 1
+  2
+
+  ;2> 1 2
+  add
+
+  ;1> 3
+  dup
+
+  ;2> 3 3
+  mul
+
+  ;1> 9
+  #+end_src
+
+* comment
+
+  #+begin_src jojo
+  ;; line comment
+
+  (note
+    comment in sexp)
+  #+end_src
+
+* stack operation
+
+  #+begin_src jojo
+  ;0>
+  1 2 3
+
+  ;1> 1
+
+  ;2> 1 2
+
+  ;3> 1 2 3
+  dup
+
+  ;4> 1 2 3 3
+  drop
+
+  ;3> 1 2 3
+  over
+
+  ;4> 1 2 3 2
+  drop
+
+  ;3> 1 2 3
+  tuck
+
+  ;4> 1 3 2 3
+  drop
+
+  ;3> 1 3 2
+  swap
+
+  ;3> 1 2 3
+  #+end_src
+
+* (+jojo) -- define function
+
+  #+begin_src jojo
+  ;0>
+  (+jojo square dup mul)
+
+  ;0>
+  3
+
+  ;1> 3
+  square
+
+  ;1> 9
+  #+end_src
+
+* list processing
+
+  #+begin_src jojo
+  ;0>
+  1 2 null cons cons
+
+  ;1> 1
+
+  ;2> 1 2
+
+  ;3> 1 2 (list)
+
+  ;2> 1 (list 2)
+
+  ;1> (list 1 2)
+  dup list-append
+
+  ;2> (list 1 2) (list 1 2)
+
+  ;1> (list 1 2 1 2)
+  dup
+
+  ;2> (list 1 2 1 2) (list 1 2 1 2)
+  car
+
+  ;2> (list 1 2 1 2) 1
+  over
+
+  ;3> (list 1 2 1 2) 1 (list 1 2 1 2)
+  cdr
+
+  ;3> (list 1 2 1 2) 1 (list 2 1 2)
+  cons
+
+  ;2> (list 1 2 1 2) (list 1 2 1 2)
+  equal?
+
+  ;1> true
+  #+end_src
+
+* local variable
+
+*** :local-name! & :local-name
+
+    #+begin_src jojo
+    (+jojo dup
+      :x! ;; put the object at the top of data-stack to local-name :x
+      :x  ;; get an object out of the local-name :x
+      :x)
+
+    ;0>
+    2 dup dup
+
+    ;1> 2
+
+    ;2> 2 2
+
+    ;3> 2 2 2
+    #+end_src
+
+*** (-> :local-name ...)
+
+    #+begin_src jojo
+    ;0>
+    (+jojo hi (-> :name String, :age Nat)
+      "hi " p :name p ", you are " p :age p " years old." p nl)
+
+    ;0>
+    ["xieyuheng" 5 hi]
+    hi xieyuheng, you are 5 years old.
+    #+end_src
+
+* (begin) -- sequential
+
+  #+begin_src jojo
+  ;0>
+  (begin
+    1 2 add dup mul)
+
+  ;1> 9
+  [1 2 add dup mul] ;; [...] is syntax sugar of (begin ...)
+
+  ;2> 9 9
+  equal?
+
+  ;1> true
+  #+end_src
+
+* (clo) -- closure
+
+  #+begin_src jojo
+  ;0>
+  3 (clo dup mul) apply
+
+  ;1> 3
+
+  ;2> 3 {dup mul} ;; {...} is syntax sugar of (clo ...)
+
+  ;1> 9
+  {dup mul} apply
+
+  ;2> 9 {dup mul}
+
+  ;1> 81
+  #+end_src
+
+* condition
+
+*** ifte
+
+    #+begin_src jojo
+    ;0>
+    (begin
+      1 1 add 2 eq?
+      {"in true branch." p nl}
+      {"in false branch." p nl}
+      ifte)
+    in true branch.
+
+    ;0>
+    (begin
+      1 1 add 2 eq? not
+      {"in true branch." p nl}
+      {"in false branch." p nl}
+      ifte)
+    in false branch.
+    #+end_src
+
+*** (if)
+
+    #+begin_src jojo
+    ;0>
+    (if [1 1 add 2 eq?]
+      ["in true branch." p nl]
+      ["in false branch." p nl])
+    in true branch.
+
+    ;0>
+    (if [1 1 add 2 eq? not]
+      ["in true branch." p nl]
+      ["in false branch." p nl])
+    in false branch.
+    #+end_src
+
+*** (when)
+
+    #+begin_src jojo
+    ;0>
+    (when [1 1 add 2 eq?]
+      "in when branch." p nl)
+    in when branch.
+    #+end_src
+
+*** (cond)
+
+    #+begin_src jojo
+    ;0>
+    (+jojo list-length (-> :list -- Int)
+      (cond [:list null?] 0
+            else [:list .cdr list-length inc]))
+
+    ;0>
+    (list 1 2 3) list-length
+
+    ;1> (list 1 2 3)
+
+    ;1> 3
+    #+end_src
+
+* >< built-in datatypes
+
+*** List
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** Vect -- vector
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** Dict -- dictionary
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** Tuple
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** Set
+
+    #+begin_src jojo
+
+    #+end_src
+
+* >< (+data) -- define new datatype
+
+  #+begin_src jojo
+  (+data )
+  #+end_src
+
+* (+union)
+
+  #+begin_src jojo
+
+  #+end_src
+
+* >< multiple dispatching
+
+*** (+gene) -- define generic function prototype
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** (+disp) -- dispatching function
+
+    #+begin_src jojo
+
+    #+end_src
+
+* >< common generics
+
+*** p -- print
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** equal?
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** repr
+
+    #+begin_src jojo
+
+    #+end_src
+
+* >< macro system
+
+*** (quote)
+
+    #+begin_src jojo
+
+    #+end_src
+
+*** ><
+
+    #+begin_src jojo
+
+    #+end_src
+
+* >< testing
+
+*** (assert) & (assert!)
+
+    #+begin_src jojo
+
+    #+end_src
+
+* >< import python module
+
+  #+begin_src jojo
+
+  #+end_src
+
+* >< create jojo module
+
+  #+begin_src jojo
+
+  #+end_src
+
+* >< command line interface
+
+  #+begin_src jojo
+
+  #+end_src
+
+* >< writing script
+
+  #+begin_src jojo
+
+  #+end_src
+
+* license
+
+  - I dedicate all my works here to all human beings

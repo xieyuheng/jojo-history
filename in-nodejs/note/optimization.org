@@ -1,0 +1,18 @@
+* optimization
+
+  - (+type) defines abstract datatype
+
+    abstract-syntax is a special representation of data
+
+    once defined, we have constructors and extractors
+    we must be able to replace them with more efficient functions.
+    [to optimize representation independent functions]
+
+    - take <nat> as an example
+      when representing number as list of numbers with a large base
+      we must optimize 'add'
+      to make use of the the representation of the data.
+
+    - <env> is another example
+
+    we must design a API for this feature

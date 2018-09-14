@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+# C="g++"
+C="clang++"
+W="-Wall -Wextra -Wno-infinite-recursion -Wno-unused-parameter"
+L="-std=c++17 -lstdc++fs"
+O="-foptimize-sibling-calls -Ofast"
+D="-g"
+
+export JOJO=$HOME/.jojo
+export PATH=$JOJO/bin:$PATH
+
+tangle ()
+{
+    ./tangle.js
+}
+
+b () # build
+{
+    tangle
+    clean
+    time $C -o jojo jojo.cpp $W $L
+}
+
+bo () # build with optimization
+{
+    tangle
+    clean
+    time $C -o jojo jojo.cpp $W $L $O
+}
+
+bd () # build with debug info
+{
+    tangle
+    clean
+    time $C -o jojo jojo.cpp $W $L $D
+}
+
+clean ()
+{
+    rm -f jojo
+}
+
+t () # test
+{
+    time ./jojo tests/*
+}
+
+d () # dev
+{
+    clean
+    tangle
+    time $C -o jojo jojo.cpp $W $L
+    t
+}
+
+debug () {
+    # time valgrind --leak-check=full jojo
+    for FILE in $(ls test | grep "\.jo" | grep "test-")
+    do
+        echo "<test/$FILE>" && valgrind jojo "test/$FILE" && echo "</test/$FILE>" && echo ""
+    done
+}
+
+# i () # install
+# {
+#     rm -rf $JOJO
+#     install -Dm755 jojo $JOJO/bin/jojo
+#     for FILE in $(ls lib)
+#     do
+#         install -Dm644 lib/$FILE $JOJO/lib/$FILE
+#     done
+# }
+
+main ()
+{
+    for TASK in $@
+    do
+        $TASK
+    done
+}
+
+main $@

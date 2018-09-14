@@ -1,0 +1,79 @@
+#+title: module system
+
+* [note]
+
+  - I document three styles of module system for dynamic language here.
+
+  - I use the last one for jojo.
+
+* module provide export specification
+
+*** like
+
+    - r7rs scheme
+
+*** one file one module
+
+    - one `.mo` file one module
+
+*** one project one directory
+
+    - there shell be not sub-directory
+
+*** non-first-class-ness
+
+    - a module is not first-class object.
+
+    - `.jo` file do not know about existence of `.mo` file.
+
+*** non-extendable
+
+    - module syntax is strict and non-extendable
+
+    - one or non (import)
+      one (include)
+      one (export)
+      and the order matters
+
+*** syntax
+
+    - (import <import-spec> ...)
+      - <import-spec> = (<module-name>) | (<module-name> <name-patch> ...)
+      - <module-name> = <local-module-name> | <global-module-name>
+      - <name-patch> = [todo]
+    - (include <path> ...)
+    - (export <name> ...)
+
+* objective module system -- named by file-name
+
+*** like
+
+    - python
+
+*** one file one module
+
+    - one `.jo` file is one module
+
+*** first-class-ness
+
+    - a module is just an object.
+
+*** extendable
+
+    - module syntax is extendable
+
+*** syntax
+
+    - (import <module-name>)
+    - (import-as <module-name> <as-name>)
+    - (import-from <module-name> <name> ...)
+
+* objective module system -- named by user
+
+*** like
+
+    - nodejs
+
+*** syntax
+
+    - (= <name> (import <module-name>))

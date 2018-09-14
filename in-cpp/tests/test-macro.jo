@@ -1,0 +1,4 @@
+(= echo
+   (macro [body] (note (println (sexp-repr body.car))) body.car))
+
+(assert (eq (echo (add 1 2)) (add 1 2)))

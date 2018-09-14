@@ -1,0 +1,76 @@
+(assert (eq dict-t (type-of (quote {a = "b" c = "d"}))))
+(assert (eq dict-t (type-of '{a = "b" c = "d"})))
+
+(= d {a = "b" c = "d"})
+
+(assert (eq d.a "b"))
+(assert (eq d.c "d"))
+
+(= d {a = (cons-c 1 null-c)
+      b = (cons-c 1 (cons-c 2 null-c))})
+
+(assert (eq (type-of d) dict-t))
+(assert (eq d.a.car 1))
+(assert (eq d.b.cdr.car 2))
+
+(= d {a = '(1)
+      b = '(1 2)})
+
+(assert (eq (type-of d) dict-t))
+(assert (eq d.a.car 1))
+(assert (eq d.b.cdr.car 2))
+
+(assert (eq {(= a "b") (= c "d")} {a = "b" c = "d"}))
+(assert (eq (list-to-dict (* (* 'a "b") (* 'c "d"))) {a = "b" c = "d"}))
+
+(assert (eq (list-to-dict (dict-to-list {a = "b" c = "d"}))
+            {a = "b" c = "d"}))
+
+(assert (eq (dict-length {a = "b" c = "d"}) 2))
+
+(assert (eq (list-length
+             (dict-key-list {a = "b" c = "d" e = "f"}))
+            3))
+
+(assert (eq (list-length
+             (dict-value-list {a = "b" c = "d" e = "f"}))
+            3))
+
+(assert (eq (dict-insert
+             (dict-insert
+              {a = "b" c = "d"}
+              'e "f")
+             'g "h")
+            {a = "b" c = "d"
+             e = "f" g = "h"}))
+
+(assert (eq (dict-merge {a = "b" c = "d"}
+                        {e = "f" g = "h"})
+            {a = "b" c = "d"
+             e = "f" g = "h"}))
+
+
+(assert (eq (dict-find {a = "b" c = "d"} 'a)
+            (some-c "b")))
+
+(assert (eq (dict-find {a = "b" c = "d"} 'x)
+            none-c))
+
+(let [(key 'a)
+      (dict {a = "b" c = "d"})
+      (found (dict-find dict key))]
+  (case found
+    (none-t (assert false))
+    (some-t (assert (eq found.value "b")))))
+
+(let [(key 'x)
+      (dict {a = "b" c = "d"})
+      (found (dict-find dict key))]
+  (case found
+    (none-t (assert true))
+    (some-t (assert false))))
+
+;; (note
+;;   (match (dict-find dict key)
+;;     (none-t ...)
+;;     ((some-c value) ...)))

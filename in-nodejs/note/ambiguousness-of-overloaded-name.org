@@ -1,0 +1,32 @@
+* ><
+
+  - type-constructor name can not be overloaded.
+    it will serve as the root of our recursion
+    to remove ambiguousness.
+
+  - data-constructor is the same as function.
+
+  - function name can be overloaded :
+
+    1. different function can share the same name,
+       if they have different types.
+
+    2. given a function and its type,
+       we can uniquely distinguish
+       its corresponding function body.
+
+    3. given only a function name,
+       to remove the ambiguousness of overloaded name,
+       we need to fill in the ommited information about its type.
+
+       - x -
+         but this is impossible in a our language,
+         because, if the function names are overloaded,
+         we can not even decide
+         1. how many input data a function takes
+         2. how many output data a function returns
+
+       - k -
+         this also means,
+         there are more informations in the syntax
+         of prefix notation with full parentheses.

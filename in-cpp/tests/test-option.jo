@@ -1,0 +1,3 @@
+(assert (eq none-t (type-of none)))
+(assert (eq some-t (type-of (some none))))
+(assert (eq (some 1).value 1))

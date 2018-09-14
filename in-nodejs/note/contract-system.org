@@ -1,0 +1,55 @@
+#+title: contract system
+
+* argmax
+
+  #+begin_src jojo
+  (+jojo argmax
+    : (-> (: :f (-> {any-p} -- {real-p}))
+          (: :l (and {list-p} {pair-p}))
+       -- {any-p})
+    (loop [:max [:l car :f apply]
+           :arg [:l car]
+           :r [:l cdr]]
+      (case :r
+        null-t :arg
+        cons-t
+        [:r car :f apply :new!
+         (if [:new :max gteq-p]
+           [:new :r car :r cdr loop]
+           [:max :arg :r cdr loop])])))
+
+  (+jojo sqrt
+    : (-> (: :n {0 gteq-p})
+       -- {real-p})
+    ...)
+
+  (+jojo argmax
+    : (-> (: :f (-> {0 gteq-p} -- {real-p}))
+          (: :l (and {list-p} {pair-p} {{0 gteq-p} andmap}))
+       -- {any-p})
+    (loop [:max [:l car :f apply]
+           :arg [:l car]
+           :r [:l cdr]]
+      (case :r
+        null-t :arg
+        cons-t
+        [:r car :f apply :new!
+         (if [:new :max gteq-p]
+           [:new :r car :r cdr loop]
+           [:max :arg :r cdr loop])])))
+
+  (+jojo argmax
+    : (-> (: :f (-> {0 gteq-p} -- {real-p}))
+          (: :l (and {list-p} {pair-p} {{0 gteq-p} andmap}))
+       -- (: :res {:l member-p}))
+    (loop [:max [:l car :f apply]
+           :arg [:l car]
+           :r [:l cdr]]
+      (case :r
+        null-t :arg
+        cons-t
+        [:r car :f apply :new!
+         (if [:new :max gteq-p]
+           [:new :r car :r cdr loop]
+           [:max :arg :r cdr loop])])))
+  #+end_src

@@ -1,0 +1,37 @@
+(= zero-t (data))
+(= succ-t (data prev))
+
+(= zero zero-c)
+(= one (succ-c zero))
+(= two (succ-c one))
+(= three (succ-c two))
+(= four (succ-c three))
+
+(= (add x y)
+   (case x
+     (zero-t y)
+     (succ-t (succ-c (add x.prev y)))))
+
+(= (mul x y)
+   (case x
+     (zero-t zero-c)
+     (succ-t (add y (mul x.prev y)))))
+
+(= (factorial x)
+   (case x
+     (zero-t (succ-c zero-c))
+     (succ-t (mul x (factorial x.prev)))))
+
+(= (test)
+   (assert (eq (add two two) four))
+   (assert (eq (mul two two) four))
+
+   (= (succ.add1)
+      (add this one))
+   (assert (eq (one.add1) two))
+   (assert (eq (two.add1) three))
+
+   (= succ.inc
+      (add this one))
+   (assert (eq one.inc two))
+   (assert (eq two.inc three)))

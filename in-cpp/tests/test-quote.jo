@@ -1,0 +1,16 @@
+(assert (not (eq "a" (quote a))))
+(assert (not (eq "a" 'a)))
+(assert (eq "a" (quote "a")))
+(assert (eq "a" '"a"))
+
+(assert (eq (quote (a b c))
+               (cons-c 'a
+                 (cons-c 'b
+                   (cons-c 'c
+                     null-c)))))
+
+(assert (eq '(a b c)
+               (cons-c 'a
+                 (cons-c 'b
+                   (cons-c 'c
+                     null-c)))))

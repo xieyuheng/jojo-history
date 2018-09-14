@@ -1,0 +1,14 @@
+(if (eq 1 1)
+  (assert true-c)
+  (assert false-c))
+
+(assert
+  (if (eq 1 1)
+    true-c
+    false-c))
+
+(assert
+  (not
+   (if (eq 1 2)
+     true-c
+     false-c)))

@@ -1,0 +1,25 @@
+#+title: Style Guide
+
+* org-mode
+
+  - [[https://github.com/xieyuheng/jojo/tree/master/old/without-org-mode][reason to not quit using org-mode]]
+
+* c++
+
+*** standard
+
+    - use c++17
+
+*** naming
+
+    - do not use `camelCase`, use `snake_case` instead.
+
+    - use `_t` for type, `_p` for predicate
+
+* jojo
+
+*** naming
+
+    - do not use `camelCase`, use `lisp-case` instead.
+
+    - use `-t` for type, `-p` for predicate

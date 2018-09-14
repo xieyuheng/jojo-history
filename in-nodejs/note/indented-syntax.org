@@ -1,0 +1,427 @@
+#+title: basic indent
+
+* number
+
+*** <bool>
+
+    #+begin_src cicada
+    +type <bool> : <<type>>
+     true  : <bool>
+     false : <bool>
+    #+end_src
+
+*** <nat>
+
+    #+begin_src cicada
+    +type <nat> : <<type>>
+     zero : <nat>
+     succ : -> .pre : <nat> -- <nat>
+
+    +fun add : -> [:m :n] : <nat> -- <nat>
+     match :n
+       zero :m
+       succ :m :n.pre recur succ
+
+    +fun mul : -> [:m :n] : <nat> -- <nat>
+     match :n
+       zero :n
+       succ :m :n.pre recur :n add
+
+    +fun factorial : -> :n : <nat> -- <nat>
+     match :n
+       zero :n succ
+       succ :n.pre recur :n mul
+    #+end_src
+
+*** <even>
+
+    #+begin_src cicada
+    +type <even> : -> .num : <nat> -- <<type>>
+     zero : zero <even>
+     plus-two : -> .pre : [:m <even>]
+                -- :m succ succ <even>
+
+    proof zero succ succ <even>
+     zero plus-two
+    #+end_src
+
+*** even?
+
+    #+begin_src cicada
+    +fun even? : -> :n : <nat> -- <bool>
+     match :n
+       zero true
+       succ (if [:n.pre zero?]
+              false
+              [:n.pre.pre recur])
+    #+end_src
+
+*** <odd>
+
+    #+begin_src cicada
+    +type <even> : -> <nat> -- <<type>>
+     zero-even : zero <even>
+     plus-two-even : -> .pre : [:m <even>]
+                     -- :m succ succ <even>
+
+    +type <odd> : -> <nat> -- <<type>>
+     one-odd : zero succ <odd>
+     plus-two-odd : -> .pre : [:m <odd>]
+                    -- :m succ succ <odd>
+    #+end_src
+
+*** even? -- returns more informations
+
+    #+begin_src cicada
+    +fun even?
+     : -> :n : <nat>
+       -- + true lit :n <even>
+          | false lit :n <odd>
+     match :n
+       zero [true zero-even]
+       succ match :n.pre
+              zero [false one-odd]
+              succ [:n.pre.pre recur
+                    case dup
+                      <even> plus-two-even
+                      <odd> plus-two-odd]
+    #+end_src
+
+*** <eq> -- an interface to the internal unification
+
+    #+begin_src cicada
+    +type <eq> : -> [.lhs .rhs] : :<t> -- <<type>>
+     refl : :z :z <eq>
+
+    +proof eq-apply
+     : -> :x :y <eq>, :f : (-> :<t1> -- :<t2>)
+       -- :x :f apply, :y :f apply, <eq>
+     refl
+
+    +proof eq-swap
+     : -> :x :y <eq> -- :y :x <eq>
+     refl
+
+    +proof eq-compose
+     : -> :x :y <eq> :y :z <eq> -- :x :z <eq>
+     refl
+    #+end_src
+
+*** add-associative -- structural induction proof
+
+    #+begin_src cicada
+    +proof add-associative
+     : -> [:x :y :z] : <nat>
+       -- :x :y add :z add
+          :x :y :z add add <eq>
+     match :z
+       zero refl
+       succ :x :y :z.pre recur {succ} eq-apply
+    #+end_src
+
+*** add-commutative
+
+    #+begin_src cicada
+    +proof add-commutative
+     : -> [:m :n] : <nat>
+       -- :m :n add, :n :m add <eq>
+     match :n
+       zero :m add-zero-commutative
+       succ :m :n.pre recur {succ} eq-apply
+            :n.pre :m add-succ-commutative eq-compose
+
+    +proof add-zero-commutative
+     : -> :m : <nat>
+       -- :m zero add, zero :m add <eq>
+     match :m
+       zero refl
+       succ :m.pre recur {succ} eq-apply
+
+    +proof add-succ-commutative
+     : -> [:m :n] : <nat>
+       -- :m succ :n add, :m :n add succ <eq>
+     match :n
+       zero refl
+       succ :m :n.pre recur {succ} eq-apply
+    #+end_src
+
+* <list>
+
+*** <list>
+
+    - <list> := <null> | (<sexp> . <list>)
+
+    #+begin_src cicada
+    +type <list> : -> .<t> : <<type>> -- <<type>>
+     null : :<t> <list>
+     cons : -> .cdr : [:<t> <list>]
+               .car : :<t>
+            -- :<t> <list>
+    #+end_src
+
+*** length
+
+    #+begin_src cicada
+    +fun length : -> :l : [:<t> <list>] -- <nat>
+     match :l
+       null zero
+       cons :l.cdr recur succ
+    #+end_src
+
+*** map
+
+    #+begin_src cicada
+    +fun map
+     : -> :l : [:<t1> <list>]
+          :f : (-> :<t1> -- :<t2>)
+       -- :<t2> <list>
+     match :l
+       null null
+       cons :l.cdr :f recur, :l.car :f apply, cons
+    #+end_src
+
+*** ref
+
+    #+begin_src cicada
+    +fun ref
+     : -> :l : [:<t> <list>], :index : <nat> -- :<t>
+     match :index
+       zero :l.car
+       succ :l.cdr :index.pre recur
+    #+end_src
+
+*** remove-first
+
+    #+begin_src cicada
+    +fun remove-first
+     : -> :x : :<t>, :l : [:<t> <list>]
+       -- :<t> <list>
+     match :l
+       null null
+       cons match :l.car :x equal?
+              true  :l.cdr
+              false :l.cdr :x recur :l.car cons
+    #+end_src
+
+* <has-length>
+
+*** <has-length>
+
+    #+begin_src cicada
+    +type <has-length>
+     : -> .list : [:<t> <list>]
+          .length : <nat>
+       -- <<type>>
+     null-has-length : null zero <has-length>
+     cons-has-length : -> .cdr : [:l :n <has-length>]
+                       -- :l :a cons :n succ <has-length>
+
+    +fun map-has-length
+     : -> :has-length : [:l :n <has-length>]
+       -- :l :f map :n <has-length>
+     match :has-length
+       null-has-length null-has-length
+       cons-has-length :has-length.cdr recur cons-has-length
+    #+end_src
+
+* <sexp> -- symbol expression
+
+*** <sexp>
+
+    - <sexp> := <symbol> | <list>
+
+    #+begin_src cicada
+    (+var <sexp>
+      (+ <symbol>, <sexp> <list>))
+
+    (note
+      (+fun <exp> (-> .<t> : <<type>> -- <<type>>)
+        (+ :<t>, :<t> <exp> <list>))
+      (+var <sexp>
+        (+ <symbol>, <exp>)))
+    #+end_src
+
+*** subst
+
+    #+begin_src cicada
+    +fun subst
+     : -> :new  : <symbol>
+          :old  : <symbol>
+          :sexp : <sexp>
+       -- <sexp>
+     case :sexp
+       <symbol> match :sexp :old equal?
+                  true  :new
+                  false :sexp
+       <list>   :new :old :sexp subst-list
+
+    +fun subst-list
+     : -> :new  : <symbol>
+          :old  : <symbol>
+          :list : [<sexp> <list>]
+       -- <sexp> <list>
+     match :list
+       null null
+       cons :new :old :list.cdr recur
+            :new :old :list.car subst
+            cons
+    #+end_src
+
+* <lexp> -- lambda expression
+
+*** <lexp>
+
+    - <lexp> := <var> | (lambda (<var>) <lexp>) | (<lexp> <lexp>)
+
+    #+begin_src cicada
+    +type <lexp> : <<type>>
+     var-lexp : -> .var : <var> -- <lexp>
+     lam-lexp : -> .var : <var>, .body : <lexp> -- <lexp>
+     app-lexp : -> [.rator .rand] : <lexp> -- <lexp>
+    #+end_src
+
+*** occurs-free?
+
+    #+begin_src cicada
+    +fun occurs-free?
+     : -> :search-var : <var>, :lexp : <lexp>
+       -- <bool>
+     match :lexp
+       var-lexp :search-var :lexp.var equal?
+       lam-lexp :search-var :lexp.var equal? not
+                :search-var :lexp.body recur and
+       app-lexp :search-var :lexp.rator recur
+                :search-var :lexp.rand recur or
+    #+end_src
+
+* <vector>
+
+*** <vector>
+
+    #+begin_src cicada
+    +type <vector>
+     : -> .length : <nat>
+          .<t> : <<type>>
+       -- <<type>>
+     null zero :<t> <vector>
+     cons -> .cdr : [:n :<t> <vector>]
+             .car : :<t>
+          -- :n succ :<t> <vector>
+    #+end_src
+
+*** append
+
+    #+begin_src cicada
+    +fun append
+     : -> :l0 : [:m :<t> <vector>]
+          :l1 : [:n :<t> <vector>]
+       -- :m :n add :<t> <vector>
+     match :l1
+       null :l0
+       cons :l0 :l1.cdr recur :l1.car cons
+    #+end_src
+
+*** map
+
+    #+begin_src cicada
+    +fun map
+     : -> :l : [:n :<t1> <vector>]
+          :f : -> :<t1> -- :<t2>
+       -- :n :<t2> <vector>
+     match :l
+       null null
+       cons :l.cdr :f recur :l.car :f apply cons
+    #+end_src
+
+* <binary-search-tree>
+
+*** <binary-search-tree>
+
+    - <binary-search-tree> := () | (<int> <binary-search-tree> <binary-search-tree>)
+
+    - not all semantic are expressed in the above grammar.
+      1. key in the left subtree <= key in the current node
+      2. keys in the right subtree > key in the current node
+
+    #+begin_src cicada
+    +type <order> : <<type>>
+     lt : <order>
+     eq : <order>
+     gt : <order>
+
+    +type <binary-search-tree> : <<type>>
+     null : <binary-search-tree>
+     node : -> .key   : <symbol>
+               .value : <int>
+               .left  : <binary-search-tree>
+               .right : <binary-search-tree>
+            -- <binary-search-tree>
+    #+end_src
+
+*** search
+
+    #+begin_src cicada
+    +fun search
+     : -> :tree : <binary-search-tree>
+          :key  : <symbol>
+       -- <binary-search-tree>
+     match :tree
+       null null
+       node match :key :tree.key compare
+              lt :tree.left :key recur
+              eq :tree
+              gt :tree.right :key recur
+    #+end_src
+
+*** insert
+
+    #+begin_src cicada
+    +fun insert
+     : -> :tree  : <binary-search-tree>
+          :key   : <symbol>
+          :vlaue : <int>
+       -- <binary-search-tree>
+     match :tree
+       null :key :value null null node
+       node match :key :tree.key compare
+              lt :tree.key :tree.value
+                 :tree.left :key :value recur :tree.right node
+              eq :key :value
+                 :tree.left :tree.right node
+              gt :tree.key :tree.value
+                 :tree.left :tree.right :key :value recur node
+    #+end_src
+
+*** delete
+
+    #+begin_src cicada
+    +fun delete
+     : -> :tree : <binary-search-tree>
+          :key : <symbol>
+       -- <binary-search-tree>
+     match :tree
+       null null
+       node match :key :tree.key compare
+              lt :tree.key :tree.value
+                 :tree.left :key recur :tree.right node
+              eq :tree delete-node
+              gt :tree.key :tree.value
+                 :tree.left :tree.right :key recur node
+
+    +fun delete-node
+     : -> :tree : <binary-search-tree>
+       -- <binary-search-tree>
+     cond [:tree.left null?] [:tree.right]
+          [:tree.right null?] [:tree.left]
+          else [:tree.right left-most-key-and-value :value! :key!
+                :key :value
+                :tree.left
+                :tree.right :key delete
+                node]
+
+    +fun left-most-key-and-value
+     : -> :tree : <binary-search-tree>
+       -- <symbol> <int>
+     cond [:tree.left null?] [:tree.key :tree.value]
+          else [:tree.left recur]
+    #+end_src

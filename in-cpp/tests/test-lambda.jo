@@ -1,0 +1,30 @@
+(= f (lambda [x y] (cons-c x y)))
+
+(assert (eq closure-t (type-of f)))
+(assert (eq closure-t (type-of (f null-c))))
+(assert (eq (f null-c (cons-c null-c null-c))
+            (cons-c null-c (cons-c null-c null-c))))
+
+(note
+  (println f)
+  (println (f null-c))
+  (println (f null-c (cons-c null-c null-c))))
+
+(= g (lambda [x] (lambda [y] (cons-c x y))))
+
+(assert (eq closure-t (type-of g)))
+(assert (eq closure-t (type-of (g null-c))))
+(assert (eq ((g null-c) (cons-c null-c null-c))
+            (cons-c null-c (cons-c null-c null-c))))
+
+(note
+  (println g)
+  (println (g null-c))
+  (println ((g null-c) (cons-c null-c null-c))))
+
+(= h (lambda [x]
+       (lambda [x]
+         x)))
+
+(assert (eq ((h 1) 2)
+            2))

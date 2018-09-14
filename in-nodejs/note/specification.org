@@ -1,0 +1,96 @@
+#+title: specification of cicada-script
+
+* top-macro
+
+*** function & variable
+
+    - (+jojo <jojo-name> <exp> ...)
+      - special words :
+        - recur
+
+    - (+var <var-name> <exp> ...)
+
+*** union & data
+
+    - (+union <union-name> <data-name> ...)
+      - generated :
+        <union-name>-p
+
+    - (+data <data-name> <field-name> ...)
+      - generated :
+        <data-name>-c
+        <data-name>-cr
+        <data-name>-p
+
+    - <type-name> = <data-name> or <union-name>
+
+*** gene & disp
+
+    - (+gene <generic-name> <arity> <exp> ...)
+
+    - (+disp <generic-name> [<type-name> ...] <exp> ...)
+
+*** macro
+
+    - (+macro)
+
+    - (+top-macro)
+
+* macro
+
+  - (let <local-name> ...)
+
+  - (begin <exp> ...)
+
+  - (set <var-name>)
+
+  - (case <case-clause> ...)
+    - <cond-clause>
+      = (<type-name> <exp>)
+      = (else <exp> ...)
+
+  - (closure <exp> ...)
+
+  - (field <field-name>)
+
+  - (set-field <field-name>)
+
+  - (dot <field-name> ...)
+    also (. <field-name> ...)
+
+  ------
+
+  - (if <exp> <exp> <exp>)
+
+  - (when <exp> <exp>)
+
+  - (cond <cond-clause> ...)
+    - <cond-clause>
+      = <exp> <exp>
+      = else <exp>
+
+* instruction
+
+  - clone
+
+  - apply
+
+  - drop dup over tuck swap
+
+* primitive data
+
+  - string-t
+
+  - number-t
+
+  - true-t
+  - false-t
+
+  - null-t
+  - cons-t
+
+  ------
+
+  - dict-t
+
+  - vect-t

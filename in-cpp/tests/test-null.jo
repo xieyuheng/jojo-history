@@ -1,0 +1,12 @@
+(= x (cons-c null-c null-c))
+(assert (eq cons-t (type-of cons-c)))
+(assert (eq null-t (type-of null-c)))
+(assert (eq x x))
+
+(= null null-c)
+
+(= (null.cons x)
+   (cons-c x null-c))
+
+(assert (eq (null.cons null)
+               (cons-c null null)))

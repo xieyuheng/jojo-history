@@ -1,0 +1,16 @@
+(assert (not (or)))
+
+(assert (eq (or (eq 1 1))
+            (eq 1 1)))
+
+(assert (or (eq 1 1) (eq 2 2) (eq 3 3)))
+(assert (or (eq 1 0) (eq 2 2) (eq 3 3)))
+(assert (or (eq 1 0) (eq 2 0) (eq 3 3)))
+(assert (not (or (eq 1 0) (eq 2 0) (eq 3 0))))
+
+(assert
+  (if (eq 1 1)
+    true
+    (if (eq 2 2)
+      true
+      (eq 3 3))))

@@ -1,0 +1,16 @@
+(= zero-t (data))
+(= zero.one-t (data))
+(= zero.one.two-t (data))
+(= zero.one.two.three-t (data))
+(= zero.one.two.three.four-t (data))
+
+(= zero zero-c)
+(= one zero.one-c)
+(= two one.two-c)
+(= three two.three-c)
+(= four three.four-c)
+
+(assert (eq zero.one-t (type-of one)))
+(assert (eq one.two-t (type-of two)))
+(assert (eq two.three-t (type-of three)))
+(assert (eq three.four-t (type-of four)))

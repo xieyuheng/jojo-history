@@ -1,0 +1,17 @@
+a.out
+
+jojo
+
+core.h
+./play
+
+build/
+
+*.o
+*.so
+
+*~
+
+*#*
+
+.#*

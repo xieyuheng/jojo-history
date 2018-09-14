@@ -1,0 +1,20 @@
+(assert (eq sym-t (type-of 'ABC)))
+
+(assert (eq (sym-length 'ABCDEFGH) 8))
+
+(assert (eq (sym-append 'ABCD 'EFGH) 'ABCDEFGH))
+
+(assert (eq (sym-slice 'ABCDEFGH 1 5) 'BCDE))
+
+(assert (eq (sym-ref 'ABCDEFGH 0) 'A))
+(assert (eq (sym-ref 'ABCDEFGH 1) 'B))
+(assert (eq (sym-ref 'ABCDEFGH 2) 'C))
+(assert (eq (sym-ref 'ABCDEFGH 3) 'D))
+
+(assert (eq (sym-head 'ABCDEFGH) 'A))
+(assert (eq (sym-rest 'ABCDEFGH) 'BCDEFGH))
+
+(assert (eq 'ABCDEFGH
+            (sym-append
+             (sym-head 'ABCDEFGH)
+             (sym-rest 'ABCDEFGH))))

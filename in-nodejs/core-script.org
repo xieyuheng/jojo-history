@@ -1,0 +1,1431 @@
+#+property: tangle core-script.cs
+#+title: core-script
+
+* [todo-stack]
+
+*** dict-update
+
+* [todo-list]
+
+*** combinators from joy
+
+* prolog
+
+* stack operation
+
+*** drop
+
+    #+begin_src cicada
+    (+fun drop (let x))
+    #+end_src
+
+*** dup
+
+    #+begin_src cicada
+    (+fun dup (let x) x x)
+    #+end_src
+
+*** over
+
+    #+begin_src cicada
+    (+fun over (let x y) x y x)
+    #+end_src
+
+*** tuck
+
+    #+begin_src cicada
+    (+fun tuck (let x y) y x y)
+    #+end_src
+
+*** swap
+
+    #+begin_src cicada
+    (+fun swap (let x y) y x)
+    #+end_src
+
+* common syntax
+
+*** (note)
+
+    #+begin_src cicada
+    (+macro note drop
+      '(begin))
+    #+end_src
+
+*** ifte
+
+    #+begin_src cicada
+    (+fun ifte
+      (let bool true-fn false-fn)
+      (case bool
+        (true-t true-fn)
+        (false-t false-fn)))
+    #+end_src
+
+*** (if)
+
+    #+begin_src cicada
+    (+macro if
+      (let body)
+      body.car (let question)
+      body.cdr.car (let on-true)
+      body.cdr.cdr.car (let on-false)
+      `(case (@ question)
+         (true-t (@ on-true))
+         (false-t (@ on-false))))
+    #+end_src
+
+*** (when) & (unless)
+
+    #+begin_src cicada
+    (+macro when (let body)
+      `(if (@ body.car)
+         (@ 'begin body.cdr cons-c)
+         []))
+
+    (+macro unless (let body)
+      `(if (@ body.car)
+         []
+         (@ 'begin body.cdr cons-c)))
+    #+end_src
+
+*** (assert) & (assert!)
+
+    #+begin_src cicada
+    (+macro assert (let body)
+      `(if [(@ body list-spread)]
+         []
+         ["- (assert) fail : " string-print
+          (quote (@ body)) sexp-list-print nl]))
+
+    (+macro assert! (let body)
+      `(if [(@ body list-spread)]
+         []
+         ["- (assert!) fail : " string-print
+          (quote (@ body)) sexp-list-print nl
+          error]))
+    #+end_src
+
+*** (and) & (or)
+
+    #+begin_src cicada
+    (+macro and (let body)
+      (if [body null-p]
+        'true-c
+        `(if (@ body.car)
+           [(@ body.cdr recur)]
+           false-c)))
+
+    (+macro or (let body)
+      (if [body null-p]
+        'false-c
+        `(if (@ body.car)
+           true-c
+           [(@ body.cdr recur)])))
+    #+end_src
+
+*** (cond)
+
+    #+begin_src cicada
+    (+macro cond (let body)
+      (case body
+        (null-t
+          `(begin
+             "- cond mismatch!" string-print nl
+             error))
+        (cons-t
+          body.car (when [dup 'else eq-p] drop 'true-c) (let question)
+          body.cdr.car (let answer)
+          `(if (@ question)
+             (@ answer)
+             (@ body.cdr.cdr recur)))))
+    #+end_src
+
+* common gene
+
+*** repr
+
+    #+begin_src cicada
+    (+gene repr 1
+      default-repr)
+    #+end_src
+
+*** repr [string-t]
+
+    #+begin_src cicada
+    (+disp repr [string-t]
+      doublequote-string swap string-append
+      doublequote-string string-append)
+    #+end_src
+
+*** repr [number-t]
+
+    #+begin_src cicada
+    (+disp repr [number-t]
+      number->string)
+    #+end_src
+
+*** w
+
+    #+begin_src cicada
+    (+gene w 1
+      repr string-print)
+    #+end_src
+
+*** p
+
+    #+begin_src cicada
+    (+gene p 1
+      w)
+    #+end_src
+
+*** p [string-t]
+
+    #+begin_src cicada
+    (+disp p [string-t]
+      string-print)
+    #+end_src
+
+* collection gene
+
+*** length
+
+    #+begin_src cicada
+    (+gene length 1
+      error)
+    #+end_src
+
+*** empty-p
+
+    #+begin_src cicada
+    (+gene empty-p 1
+      error)
+    #+end_src
+
+* algebric gene
+
+*** inc
+
+    #+begin_src cicada
+    (+gene inc 1
+      error)
+    #+end_src
+
+*** dec
+
+    #+begin_src cicada
+    (+gene dec 1
+      error)
+    #+end_src
+
+*** add
+
+    #+begin_src cicada
+    (+gene add 2
+      error)
+    #+end_src
+
+*** sub
+
+    #+begin_src cicada
+    (+gene sub 2
+      error)
+    #+end_src
+
+*** mul
+
+    #+begin_src cicada
+    (+gene mul 2
+      error)
+    #+end_src
+
+*** div
+
+    #+begin_src cicada
+    (+gene div 2
+      error)
+    #+end_src
+
+*** mod
+
+    #+begin_src cicada
+    (+gene mod 2
+      error)
+    #+end_src
+
+*** moddiv
+
+    #+begin_src cicada
+    (+gene moddiv 2
+      (let x y)
+      x y mod
+      x y div)
+    #+end_src
+
+*** divmod
+
+    #+begin_src cicada
+    (+gene divmod 2
+      (let x y)
+      x y div
+      x y mod)
+    #+end_src
+
+* bool gene
+
+  #+begin_src cicada
+  (+gene not 1
+    error)
+  #+end_src
+
+* order gene
+
+*** gt-p
+
+    #+begin_src cicada
+    (+gene gt-p 2
+      error)
+    #+end_src
+
+*** lt-p
+
+    #+begin_src cicada
+    (+gene lt-p 2
+      error)
+    #+end_src
+
+*** gteq-p
+
+    #+begin_src cicada
+    (+gene gteq-p 2
+      (let x y)
+      (or [x y eq-p]
+          [x y gt-p]))
+    #+end_src
+
+*** lteq-p
+
+    #+begin_src cicada
+    (+gene lteq-p 2
+      (let x y)
+      (or [x y eq-p]
+          [x y lt-p]))
+    #+end_src
+
+* combinator
+
+*** times
+
+    #+begin_src cicada
+    (+fun times (let fun n)
+      (unless [n 0 number-lteq-p]
+        fun
+        {fun} n number-dec recur))
+    #+end_src
+
+* bool
+
+*** bool-u
+
+    #+begin_src cicada
+    (+union bool-u
+      true-t
+      false-t)
+    #+end_src
+
+*** bool-assert
+
+    #+begin_src cicada
+    (+fun bool-assert
+      (let bool)
+      (case bool
+        (true-t)
+        (else
+          "- bool-assertion fail : " p bool p nl)))
+    #+end_src
+
+*** bool-if
+
+    #+begin_src cicada
+    (+macro bool-if
+      (let body)
+      body.car (let true-fn)
+      body.cdr.car (let false-fn)
+      `(begin
+         {(@ true-fn)}
+         {(@ false-fn)}
+         ifte))
+    #+end_src
+
+*** bool-when & bool-when-not
+
+    #+begin_src cicada
+    (+macro bool-when
+      (let body)
+      `(begin
+         {(@ body list-spread)}
+         {}
+         ifte))
+
+    (+macro bool-when-not
+      (let body)
+      `(begin
+         {}
+         {(@ body list-spread)}
+         ifte))
+    #+end_src
+
+*** repr [bool-u]
+
+    #+begin_src cicada
+    (+disp repr [bool-u]
+      (bool-if "true-c" "false-c"))
+    #+end_src
+
+*** not [bool-u]
+
+    #+begin_src cicada
+    (+disp not [bool-u]
+      bool-not)
+    #+end_src
+
+* number
+
+*** gt-p [number-t number-t]
+
+    #+begin_src cicada
+    (+disp gt-p [number-t number-t]
+      number-gt-p)
+    #+end_src
+
+*** lt-p [number-t number-t]
+
+    #+begin_src cicada
+    (+disp lt-p [number-t number-t]
+      number-lt-p)
+    #+end_src
+
+*** inc [number-t]
+
+    #+begin_src cicada
+    (+disp inc [number-t]
+      number-inc)
+    #+end_src
+
+*** dec [number-t]
+
+    #+begin_src cicada
+    (+disp dec [number-t]
+      number-dec)
+    #+end_src
+
+*** add [number-t number-t]
+
+    #+begin_src cicada
+    (+disp add [number-t number-t]
+      number-add)
+    #+end_src
+
+*** sub [number-t number-t]
+
+    #+begin_src cicada
+    (+disp sub [number-t number-t]
+      number-sub)
+    #+end_src
+
+*** mul [number-t number-t]
+
+    #+begin_src cicada
+    (+disp mul [number-t number-t]
+      number-mul)
+    #+end_src
+
+*** div [number-t number-t]
+
+    #+begin_src cicada
+    (+disp div [number-t number-t]
+      number-div)
+    #+end_src
+
+*** mod [number-t number-t]
+
+    #+begin_src cicada
+    (+disp mod [number-t number-t]
+      number-mod)
+    #+end_src
+
+* string
+
+*** string-head
+
+    #+begin_src cicada
+    (+fun string-head
+      0 string-ref)
+    #+end_src
+
+*** string-tail
+
+    #+begin_src cicada
+    (+fun string-tail
+      dup string-length
+      1 swap string-slice)
+    #+end_src
+
+*** string-last
+
+    #+begin_src cicada
+    (+fun string-last
+      dup string-length
+      dup number-dec swap string-slice)
+    #+end_src
+
+*** string-take
+
+    #+begin_src cicada
+    (+fun string-take
+      (let string length)
+      string 0 length string-slice)
+    #+end_src
+
+*** string-drop
+
+    #+begin_src cicada
+    (+fun string-drop
+      (let string length)
+      string length string string-length string-slice)
+    #+end_src
+
+*** string-member-p
+
+    #+begin_src cicada
+    (+fun string-member-p
+      (let string substring)
+      substring string-length (let length)
+      (cond
+        [string string-length length lt-p] false-c
+        [string length string-take substring eq-p] true-c
+        else [string string-tail substring recur]))
+    #+end_src
+
+*** string-split-by-char
+
+    #+begin_src cicada
+    (+fun string-split-by-char
+      0 string-split-by-char-with-cursor)
+    #+end_src
+
+*** string-split-by-char-with-cursor
+
+    #+begin_src cicada
+    (+fun string-split-by-char-with-cursor
+      (let string char cursor)
+      (cond
+        [string string-length cursor lteq-p]
+        [string null-c cons-c]
+
+        [string cursor string-ref char eq-p]
+        [string cursor string-take
+         string cursor string-drop string-tail char 0 recur
+         cons-c]
+
+        else
+        [string char cursor number-inc recur]))
+    #+end_src
+
+* cons
+
+*** decons
+
+    #+begin_src cicada
+    (+fun decons
+      dup .car swap .cdr)
+    #+end_src
+
+* list
+
+*** list-u
+
+    #+begin_src cicada
+    (+union list-u
+      null-t
+      cons-t)
+    #+end_src
+
+*** (lit-list)
+
+    #+begin_src cicada
+    (+macro lit-list (let body)
+      `(begin mark (@ body list-spread) collect-list))
+    #+end_src
+
+*** list-length
+
+    #+begin_src jojo
+    (+fun list-length (let list)
+      (if [list null-p]
+        0
+        [list.cdr recur number-inc]))
+    #+end_src
+
+*** list-ref
+
+    #+begin_src cicada
+    (+fun list-ref
+      (let list index)
+      (if [index 0 eq-p]
+        [list.car]
+        [list.cdr index dec recur]))
+    #+end_src
+
+*** list-append
+
+    #+begin_src jojo
+    (+fun list-append (let ante succ)
+      (case ante
+        (null-t succ)
+        (cons-t ante.car ante.cdr succ recur cons-c)))
+    #+end_src
+
+*** tail-cons
+
+    #+begin_src jojo
+    (+fun tail-cons null-c cons-c list-append)
+    #+end_src
+
+*** list-reverse
+
+    #+begin_src jojo
+    (+fun list-reverse null-c swap list-reverse-swap-append)
+
+    (+fun list-reverse-swap-append
+      ;; -> ante list -- list
+      (let list)
+      (case list
+        (null-t)
+        (cons-t list.car swap cons-c list.cdr recur)))
+    #+end_src
+
+*** list-any-p
+
+    #+begin_src jojo
+    (+fun list-any-p (let list pred)
+      (cond [list null-p] false-c
+            [list.car pred] true-c
+            else [list.cdr {pred} recur]))
+    #+end_src
+
+*** list-every-p
+
+    #+begin_src jojo
+    (+fun list-every-p (let list pred)
+      (cond [list null-p] true-c
+            [list.car pred bool-not] false-c
+            else [list.cdr {pred} recur]))
+    #+end_src
+
+*** list-ante -- antecedent
+
+    #+begin_src jojo
+    (+fun list-ante (let list pred)
+      (cond [list null-p] null-c
+            [list.car pred] null-c
+            else [list.car
+                  list.cdr {pred} recur
+                  cons-c]))
+    #+end_src
+
+*** list-succ -- succedent
+
+    #+begin_src jojo
+    (+fun list-succ (let list pred)
+      (cond [list null-p] null-c
+            [list.car pred] list
+            else [list.cdr {pred} recur]))
+    #+end_src
+
+*** list-split-to-two
+
+    #+begin_src jojo
+    (+fun list-split-to-two (let list pred) ;; -- ante succ
+      (cond [list null-p] [null-c null-c]
+            [list.car pred] [null-c list]
+            else [list.car
+                  list.cdr {pred} recur
+                  (let succ) cons-c succ]))
+    #+end_src
+
+*** list-map
+
+    #+begin_src jojo
+    (+fun list-map (let list fun)
+      (case list
+        (null-t null-c)
+        (cons-t list.car fun list.cdr {fun} recur cons-c)))
+    #+end_src
+
+*** list-for-each
+
+    #+begin_src jojo
+    (+fun list-for-each (let list fun)
+      (case list
+        (null-t)
+        (cons-t list.car fun list.cdr {fun} recur)))
+    #+end_src
+
+*** list-filter
+
+    #+begin_src jojo
+    (+fun list-filter (let list pred)
+      (cond [list null-p] null-c
+            [list.car pred]
+            [list.car list.cdr {pred} recur cons-c]
+            else [list.cdr {pred} recur]))
+    #+end_src
+
+*** list-foldr
+
+    #+begin_src jojo
+    (+fun list-foldr (let list b a-b->b)
+      (case list
+        (null-t b)
+        (cons-t
+          list.car
+          list.cdr b {a-b->b} recur
+          a-b->b)))
+    #+end_src
+
+*** list-foldl
+
+    #+begin_src jojo
+    (+fun list-foldl (let list b b-a->b)
+      (case list
+        (null-t b)
+        (cons-t
+          list.cdr b {b-a->b} recur
+          list.car
+          b-a->b)))
+    #+end_src
+
+*** list-member-p
+
+    #+begin_src jojo
+    (+fun list-member-p (let list x)
+      list {x eq-p} list-any-p)
+    #+end_src
+
+*** repr [list-u]
+
+    #+begin_src cicada
+    (+disp repr [list-u]
+      (let list)
+      (case list
+        (null-t "(lit-list)")
+        (cons-t
+          list list-inner-repr
+          "(lit-list " swap string-append
+          ")" string-append )))
+
+    (+fun list-inner-repr
+      (let list)
+      (case list
+        (null-t "")
+        (cons-t
+          list.car repr
+          (unless [list.cdr null-p]
+            " " string-append
+            list.cdr recur string-append))))
+    #+end_src
+
+*** p [list-u]
+
+    #+begin_src cicada
+    (+disp p [list-u]
+      "[" p
+      list-inner-print
+      "]" p)
+
+    (+fun list-inner-print
+      (let list)
+      (case list
+        (null-t)
+        (cons-t
+          list.car p
+          (case list.cdr
+            (null-t)
+            (cons-t
+              " " p list.cdr recur)
+            (else
+              " . " p list.cdr p)))))
+    #+end_src
+
+* dict
+
+*** dict-t
+
+    #+begin_src cicada
+    (+data dict-t
+      assoc-list)
+    #+end_src
+
+*** dict-length
+
+    #+begin_src cicada
+    (+fun dict-length
+      .assoc-list list-length)
+    #+end_src
+
+*** dict-empty-p
+
+    #+begin_src cicada
+    (+fun dict-empty-p
+      dict-length 0 eq-p)
+    #+end_src
+
+*** new-dict
+
+    #+begin_src cicada
+    (+fun new-dict
+      null-c dict-c)
+    #+end_src
+
+*** dict-find
+
+    #+begin_src cicada
+    (+fun dict-find
+      (let dict key)
+      ;; -- | value true-t
+      ;;      false-t
+      dict.assoc-list
+      key assoc-list-find)
+    #+end_src
+
+*** dict-get
+
+    #+begin_src cicada
+    (+fun dict-get
+      (let dict key)
+      ;; -- | value true-t
+      ;;      false-t
+      dict key dict-find
+      (bool-when-not
+        "- dict-get fail" p nl
+        "  key : " p key p nl
+        "  dict : " p dict p nl
+        error))
+    #+end_src
+
+*** assoc-list-find
+
+    #+begin_src cicada
+    (+fun assoc-list-find
+      (let assoc-list key)
+      ;; -- | value true-t
+      ;;      false-t
+      (case assoc-list
+        (null-t false-c)
+        (cons-t
+          (if [assoc-list.car.car key eq-p]
+            [assoc-list.car.cdr true-c]
+            [assoc-list.cdr key recur]))))
+    #+end_src
+
+*** dict-insert
+
+    #+begin_src cicada
+    (+fun dict-insert
+      (let dict key value)
+      ;; -- dict
+      dict.assoc-list
+      key value assoc-list-insert
+      (. assoc-list) dict clone)
+    #+end_src
+
+*** assoc-list-insert
+
+    #+begin_src cicada
+    (+fun assoc-list-insert
+      (let assoc-list key value)
+      key value cons-c assoc-list cons-c)
+    #+end_src
+
+*** >< dict-update
+
+*** (lit-dict)
+
+    #+begin_src cicada
+    (+macro lit-dict (let body)
+      `(begin (lit-list (@ body list-spread)) even-list->dict))
+    #+end_src
+
+*** even-list->dict
+
+    #+begin_src cicada
+    (+fun even-list->dict
+      even-list->assoc-list dict-c)
+    #+end_src
+
+*** even-list->assoc-list
+
+    #+begin_src cicada
+    (+fun even-list->assoc-list
+      (let even-list)
+      (case even-list
+        (null-t null-c)
+        (cons-t
+          even-list.car even-list.cdr.car cons-c
+          even-list.cdr.cdr recur cons-c)))
+    #+end_src
+
+*** repr [dict-t]
+
+    #+begin_src cicada
+    (+disp repr [dict-t]
+      .assoc-list (let assoc-list)
+      (case assoc-list
+        (null-t "(lit-dict)")
+        (cons-t
+          "(lit-dict "
+          assoc-list assoc-list-inner-repr string-append
+          ")" string-append)))
+    #+end_src
+
+*** assoc-list-inner-repr
+
+    #+begin_src cicada
+    (+fun assoc-list-inner-repr
+      (let assoc-list)
+      (case assoc-list
+        (null-t "")
+        (cons-t
+          assoc-list.car decons
+          swap repr " " string-append
+          swap repr string-append
+          (unless [assoc-list.cdr null-p]
+            ", " string-append
+            assoc-list.cdr recur string-append))))
+    #+end_src
+
+*** p [dict-t]
+
+    #+begin_src cicada
+    (+disp p [dict-t]
+      "[" p
+      .assoc-list assoc-list-inner-print
+      "]" p)
+    #+end_src
+
+*** assoc-list-inner-print
+
+    #+begin_src cicada
+    (+fun assoc-list-inner-print
+      (let assoc-list)
+      (case assoc-list
+        (null-t)
+        (cons-t
+          assoc-list.car.car p " = " p
+          assoc-list.car.cdr p
+          (case assoc-list.cdr
+            (null-t)
+            (cons-t
+              ", " p
+              assoc-list.cdr recur)))))
+    #+end_src
+
+*** dict-for-each
+
+    #+begin_src cicada
+    (+fun dict-for-each (let dict fun)
+      dict.assoc-list {decons fun} list-for-each)
+    #+end_src
+
+* test
+
+*** bool
+
+    #+begin_src cicada
+    (assert
+      true-c false-c bool-and
+      false-c eq-p)
+
+    (assert
+      true-c false-c bool-or
+      true-c eq-p)
+
+    (assert
+      true-c bool-not
+      false-c eq-p)
+
+    (assert
+      true-c bool-not bool-not
+      true-c eq-p)
+
+    (assert
+      true-c not
+      false-c eq-p)
+
+    (assert
+      true-c not not
+      true-c eq-p)
+    #+end_src
+
+*** stack operation
+
+    #+begin_src cicada
+    (assert
+      1 dup number-add 2 eq-p)
+    #+end_src
+
+*** eq-p
+
+    #+begin_src cicada
+    (assert
+      1 2 3 null-c cons-c cons-c cons-c
+      1 2 3 null-c cons-c cons-c cons-c eq-p)
+    #+end_src
+
+*** number
+
+***** dec
+
+      #+begin_src cicada
+      (assert 2 dec 1 eq-p)
+      #+end_src
+
+***** number-factorial
+
+      #+begin_src cicada
+      (+fun number-factorial-case
+        (let n)
+        (case [n 0 eq-p]
+          (true-t 1)
+          (false-t n number-dec recur n number-mul)))
+
+      (assert
+        5 number-factorial-case
+        120 eq-p)
+
+      (+fun number-factorial-ifte
+        (let n)
+        n 0 eq-p
+        {1}
+        {n number-dec recur n number-mul}
+        ifte)
+
+      (assert
+        5 number-factorial-ifte
+        120 eq-p)
+
+      (+fun number-factorial
+        (let n)
+        (if [n 0 eq-p]
+          1
+          [n number-dec recur n number-mul]))
+
+      (assert
+        5 number-factorial
+        120 eq-p)
+      #+end_src
+
+*** string
+
+    #+begin_src cicada
+    (assert
+      "0123" string-length
+      4 eq-p)
+
+    (assert
+      "0123" "4567" string-append
+      "01234567" eq-p)
+
+    (assert
+      "01234567" 3 string-ref
+      "3" eq-p)
+
+    (assert
+      "01234567" 3 5 string-slice
+      "34" eq-p)
+
+    (assert
+      123 number->string
+      "123" eq-p)
+
+    (assert
+      "01234567" string-head
+      "0" eq-p)
+
+    (assert
+      "01234567" string-tail
+      "1234567" eq-p)
+
+    (assert
+      "01234567" string-last
+      "7" eq-p)
+
+    (assert
+      "01234567" 3 string-take
+      "012" eq-p)
+
+    (assert
+      "01234567" 3 string-drop
+      "34567" eq-p)
+
+    (assert
+      "01234567" "34567" string-member-p)
+
+    (assert
+      "01234567" "012" string-member-p)
+
+    (assert
+      "01234567" "34567*" string-member-p bool-not)
+
+    (assert
+      "01234567" "*012" string-member-p bool-not)
+
+    (assert
+      "0123.4567" "." string-split-by-char
+      (lit-list "0123" "4567")
+      eq-p)
+
+    (assert
+      "..0123..4567.." "." string-split-by-char
+      (lit-list "" "" "0123" "" "4567" "" "")
+      eq-p)
+
+    (assert
+      "0.1.2.3.4.5.6.7" "." string-split-by-char
+      '(0 1 2 3 4 5 6 7)
+      eq-p)
+    #+end_src
+
+*** nat
+
+    #+begin_src cicada
+    (+union nat-u
+      zero-t
+      succ-t)
+
+    (+data zero-t)
+
+    (+data succ-t
+      prev)
+
+    (+fun nat-add
+      (let m n)
+      (case n
+        (zero-t m)
+        (succ-t m n.prev recur succ-c)))
+
+    (+fun nat-mul
+      (let m n)
+      (case n
+        (zero-t n)
+        (succ-t m n.prev recur m nat-add)))
+
+    (+fun nat-factorial
+      (let n)
+      (case n
+        (zero-t zero-c succ-c)
+        (succ-t n.prev recur n nat-mul)))
+
+    (assert
+      zero-c succ-c succ-c succ-c succ-c succ-c nat-factorial
+      zero-c succ-c succ-c succ-c succ-c succ-c
+      zero-c succ-c succ-c succ-c succ-c nat-mul
+      zero-c succ-c succ-c succ-c nat-mul
+      zero-c succ-c succ-c nat-mul
+      zero-c succ-c nat-mul
+      eq-p)
+    #+end_src
+
+*** (+var)
+
+    #+begin_src cicada
+    (+var var-cons 1 null-c cons-c)
+
+    (assert
+      2 var-cons.car!
+      var-cons 2 null-c cons-c eq-p)
+
+    (+fun nat->number
+      (let n)
+      (case n
+        (zero-t 0)
+        (succ-t n.prev recur number-inc)))
+
+    (+var var-nat zero-c succ-c succ-c)
+
+    (assert
+      var-nat nat->number 2 eq-p)
+
+    (assert
+      zero-c var-nat.prev!
+      var-nat nat->number 1 eq-p)
+    #+end_src
+
+*** (@)
+
+    #+begin_src cicada
+    (assert
+      `(1 2 (@ 1 2 number-add number->string))
+      '(1 2 3) eq-p)
+    #+end_src
+
+*** (+gene) & (+disp)
+
+    #+begin_src cicada
+    (+gene gene0 2
+      drop drop
+      "default gene0")
+
+    (assert 1 2 gene0 "default gene0" eq-p)
+
+    (+disp gene0 [number-t number-t]
+      drop drop
+      "number-t number-t gene0")
+
+    (assert 1 2 gene0 "number-t number-t gene0" eq-p)
+    #+end_src
+
+*** (when) & (unless)
+
+    #+begin_src cicada
+    (assert
+      (when [1 1 eq-p] 'ok)
+      'ok eq-p)
+
+    (assert
+      true-c
+      (unless [1 1 eq-p] 'ugh))
+
+    (assert
+      true-c
+      (when [1 2 eq-p] 'ugh))
+
+    (assert
+      (unless [1 2 eq-p] 'ok)
+      'ok eq-p)
+    #+end_src
+
+*** combinator
+
+***** times
+
+      #+begin_src cicada
+      (assert
+        "" {"*" string-append} 3 times
+        "***" eq-p)
+      #+end_src
+
+*** cons
+
+    #+begin_src cicada
+    (begin
+      1 2 cons-c
+      decons
+      2 eq-p bool-assert
+      1 eq-p bool-assert)
+    #+end_src
+
+*** list
+
+***** (lit-list)
+
+      #+begin_src cicada
+      (assert
+        mark 0 1 2 3 4 collect-list
+        (lit-list 0 1 2 3 4)
+        eq-p)
+      #+end_src
+
+***** basic
+
+      #+begin_src cicada
+      (assert '(a b c) list-length 3 eq-p)
+      (assert '(a b c) '(d e f) list-append '(a b c d e f) eq-p)
+      (assert '(a b c) 'd tail-cons '(a b c d) eq-p)
+
+      (assert
+        (lit-list 0 1 2 3 4)
+        (lit-list 5 6 7 8 9)
+        list-append
+        (lit-list 0 1 2 3 4 5 6 7 8 9)
+        eq-p)
+
+      (assert
+        (lit-list 0 1 2 3 4 5 6 7 8 9)
+        list-reverse
+        (lit-list 9 8 7 6 5 4 3 2 1 0)
+        eq-p)
+      #+end_src
+
+***** list-split-to-two
+
+      #+begin_src cicada
+      (assert
+        (lit-list 0 1 2 3 4 5 6 7 8 9)
+        {5 gteq-p} list-ante
+        (lit-list 0 1 2 3 4)
+        eq-p)
+
+      (assert
+        (lit-list 0 1 2 3 4 5 6 7 8 9)
+        {5 gteq-p} list-split-to-two
+        swap (lit-list 0 1 2 3 4) eq-p
+        swap (lit-list 5 6 7 8 9) eq-p
+        bool-and)
+      #+end_src
+
+***** list-map & list-filter
+
+      #+begin_src cicada
+      (assert
+        (lit-list 0 1 2 3 4 5 6 7 8 9)
+        {inc} list-map
+        (lit-list 1 2 3 4 5 6 7 8 9 10)
+        eq-p)
+
+      (assert
+        (lit-list 0 1 2 3 4 5 6 7 8 9)
+        {2 mod 0 eq-p} list-filter
+        (lit-list 0 2 4 6 8)
+        eq-p)
+      #+end_src
+
+***** list-foldr & list-foldl
+
+      #+begin_src cicada
+      (assert
+        (lit-list 0 1 2 3 4 5) 100 {add} list-foldr
+        0 1 2 3 4 5 100 add add add add add add
+        eq-p)
+
+      (assert
+        (lit-list 0 1 2 3 4 5) 100 {add} list-foldl
+        100 5 add 4 add 3 add 2 add 1 add 0 add
+        eq-p)
+
+      (assert
+        (lit-list
+          (lit-list 1 2 3)
+          (lit-list 4 5 6)
+          (lit-list 7 8 9))
+        null-c {list-append} list-foldr
+        (lit-list 1 2 3, 4 5 6, 7 8 9)
+        eq-p)
+
+      (assert
+        (lit-list
+          (lit-list 1 2 3)
+          (lit-list 4 5 6)
+          (lit-list 7 8 9))
+        null-c {list-append} list-foldl
+        (lit-list 7 8 9, 4 5 6, 1 2 3)
+        eq-p)
+      #+end_src
+
+*** dict
+
+***** dict-insert & dict-find
+
+      #+begin_src cicada
+      (begin
+        new-dict
+        1 "v1" dict-insert (let dict)
+        dict 1 dict-find bool-assert
+        "v1" eq-p bool-assert)
+
+      (begin
+        new-dict
+        1 "v1" dict-insert
+        2 "v2" dict-insert
+        3 "v3" dict-insert
+        (let dict)
+        dict 1 dict-get "v1" eq-p bool-assert
+        dict 2 dict-get "v2" eq-p bool-assert
+        dict 3 dict-get "v3" eq-p bool-assert)
+      #+end_src
+
+***** (lit-dict)
+
+      #+begin_src cicada
+      (begin
+        (lit-dict
+         1 "v1"
+         2 "v2"
+         3 "v3")
+        (let dict)
+        dict 1 dict-find bool-assert "v1" eq-p bool-assert
+        dict 2 dict-find bool-assert "v2" eq-p bool-assert
+        dict 3 dict-find bool-assert "v3" eq-p bool-assert)
+      #+end_src
+
+***** dict-for-each
+
+      #+begin_src cicada
+      #note
+      (begin
+        (lit-dict
+         1 "v1"
+         2 "v2"
+         3 "v3")
+        {(let key value) key p " " p value p nl}
+        dict-for-each)
+      #+end_src
+
+*** bool-if & bool-when & bool-when-not
+
+    #+begin_src cicada
+    (assert true-c (bool-if 1 2) 1 eq-p)
+    (assert false-c (bool-if 1 2) 2 eq-p)
+
+    (assert true-c (bool-when 'ok) 'ok eq-p)
+    (assert 'ok false-c (bool-when 'ugh) 'ok eq-p)
+
+    (assert false-c (bool-when-not 'ok) 'ok eq-p)
+    (assert 'ok true-c (bool-when-not 'ugh) 'ok eq-p)
+    #+end_src
+
+*** print
+
+    #+begin_src cicada
+    #note
+    (begin
+      '(a b c) w nl
+      '(a b c) p nl)
+
+    #note
+    (begin
+      zero-c succ-c p nl)
+
+    #note
+    (begin
+      (lit-list
+       (lit-list
+        (lit-dict
+         1 "v1"
+         2 (lit-dict
+            1 "v1"
+            2 "v2"
+            3 "v3")
+         3 "v3")))
+      (let dict)
+      dict w nl)
+
+    #note
+    (begin
+      '(1 2 3) p nl)
+    #+end_src
+
+* epilog
+
+*** play
+
+    #+begin_src cicada
+
+    #+end_src
+
+*** main
+
+    #+begin_src cicada
+
+    #+end_src

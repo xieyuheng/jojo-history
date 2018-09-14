@@ -1,0 +1,41 @@
+#+title: notes
+
+* P 0
+
+  - when I am trying to write a relatively complex program,
+    I factored my functions well,
+    and took notes about them.
+
+  - but after a while, when I come back to them,
+    I often found myself still unable to recall
+    all the mental activities as they was.
+
+  - how should I recall such mental activities successfully ?
+
+* S 0
+
+  - to take notes in form of problems and solutions,
+    because programming is a problem solving activity.
+
+  - thus if notes are taken in this form,
+    the actions of mind will be recorded most faithfully.
+
+* P 1
+
+  - there was no problem at all, until chiso is revealed,
+    then everything were reviewed
+    with chiso in mind.
+
+  - there was no problem for me, until I learned forth,
+    function composition owns more symmetry than
+    function application,
+    a new language must be designed accordingly,
+    with chiso in mind.
+
+* S 1
+
+  - ><
+
+* P 1.0
+
+* S 1.0

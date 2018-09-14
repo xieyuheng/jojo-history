@@ -1,0 +1,19 @@
+* type checker alone
+
+  - an interpreter might only implements
+    the type checker of a programming language.
+
+  - it can execute functions in the language,
+    but it can only do so in a non-optimized way.
+
+    - for example, without proper tail call.
+
+  - another interpreter will be implemented
+    to execute functions in the language
+    in a better way, which will ignore
+    much of the informations about type.
+
+  - to really optimize the execution,
+    a compiler must be written,
+    in which all the informations about type
+    can be used to optimize the compilation.

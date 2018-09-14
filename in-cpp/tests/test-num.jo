@@ -1,0 +1,19 @@
+(assert (eq 123 123))
+(assert (eq num-t (type-of 123)))
+
+(assert (eq 3.14 3.14))
+(assert (eq num-t (type-of 3.14)))
+
+(assert (eq (inc 1) 2))
+(assert (eq (dec 1) 0))
+(assert (eq (dec 0) -1))
+
+(assert (eq (add 1 1) 2))
+
+(assert (eq (pow 2 2) 4))
+(assert (eq (pow -2 3) -8))
+(assert (eq (pow 2 -3) (div 1 8)))
+(assert (eq (pow (neg 2) 3) (neg 8)))
+(assert (eq (pow 2 (neg 3)) (div 1 8)))
+
+(assert (lt 1 2))

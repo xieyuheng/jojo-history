@@ -1,0 +1,14 @@
+(assert (and))
+
+(assert (eq (and (eq 1 1))
+            (eq 1 1)))
+
+(assert (and (eq 1 1) (eq 2 2) (eq 3 3)))
+(assert (not (and (eq 1 1) (eq 2 2) (eq 3 0))))
+
+(assert
+  (if (not (eq 1 1))
+    false
+    (if (not (eq 2 2))
+      false
+      (eq 3 3))))

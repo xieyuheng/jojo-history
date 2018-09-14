@@ -1,0 +1,20 @@
+(assert (eq str-t (type-of "123")))
+
+(assert (eq (str-length "01234567") 8))
+
+(assert (eq (str-append "0123" "4567") "01234567"))
+
+(assert (eq (str-slice "01234567" 1 5) "1234"))
+
+(assert (eq (str-ref "01234567" 0) "0"))
+(assert (eq (str-ref "01234567" 1) "1"))
+(assert (eq (str-ref "01234567" 2) "2"))
+(assert (eq (str-ref "01234567" 3) "3"))
+
+(assert (eq (str-head "01234567") "0"))
+(assert (eq (str-rest "01234567") "1234567"))
+
+(assert (eq "01234567"
+            (str-append
+             (str-head "01234567")
+             (str-rest "01234567"))))

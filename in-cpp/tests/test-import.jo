@@ -1,0 +1,11 @@
+(= test-nat (import "test-nat.jo"))
+(= zero test-nat.zero)
+(= one test-nat.one)
+(= two test-nat.two)
+(= three test-nat.three)
+(= four test-nat.four)
+(= nat-add test-nat.nat-add)
+(= nat-mul test-nat.nat-mul)
+
+(assert (eq (nat-add two two) four))
+(assert (eq (nat-mul two two) four))

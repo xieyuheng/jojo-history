@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+
+const fs = require ("fs");
+const path = require ("path");
+const cicada = require ("./cicada-script.js");
+
+let cicada_dir = path.dirname (cicada.module.filename);
+let core_file = cicada_dir.concat ("/core-script.cs");
+
+function eval_file_vect (file_vect)
+{
+    let script =
+        fs.readFileSync (core_file)
+        .toString ();
+    for (let file of file_vect) {
+        let file_script =
+            fs.readFileSync (file)
+            .toString ();
+        script = script.concat (file_script);
+    }
+    let env = cicada.eval_script (script);
+    // console.log ("");
+    // cicada.data_stack_print (env);
+}
+
+function main ()
+{
+    let arg_vect = process.argv.slice (2);
+    eval_file_vect (arg_vect);
+}
+
+main ();

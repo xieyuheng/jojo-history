@@ -1,0 +1,23 @@
+(assert (eq (cond [(eq 1 0) 'A 'A])
+            (when (eq 1 0) (do 'A 'A))))
+
+(assert (eq (cond [(eq 1 0) 'A 'A]
+                  [(eq 2 2) 'B 'B]
+                  [else 'C 'C])
+            (if (eq 1 0) (do 'A 'A)
+              (if (eq 2 2) (do 'B 'B)
+                (do 'C 'C)))))
+
+(assert (eq (cond [(eq 1 0) 'A 'A]
+                  [(eq 2 0) 'B 'B]
+                  [else 'C 'C])
+            (if (eq 1 0) (do 'A 'A)
+              (if (eq 2 0) (do 'B 'B)
+                (do 'C 'C)))))
+
+(assert (eq (cond [(eq 1 0) 'A 'A]
+                  [(eq 2 0) 'B 'B]
+                  [(eq 3 3) 'C 'C])
+            (if (eq 1 0) (do 'A 'A)
+              (if (eq 2 0) (do 'B 'B)
+                (when (eq 3 3) (do 'C 'C))))))

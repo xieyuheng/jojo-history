@@ -1,0 +1,15 @@
+(= (bool-not x)
+   (case x
+     (true-t false)
+     (false-t true)))
+
+(assert (eq (bool-not true) false))
+(assert (eq (bool-not false) true))
+
+(= (bool-not x)
+   (case x
+     (true-t false)
+     (_ true)))
+
+(assert (eq (bool-not true) false))
+(assert (eq (bool-not false) true))

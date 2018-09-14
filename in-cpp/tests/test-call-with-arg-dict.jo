@@ -1,0 +1,64 @@
+;; closure
+
+(= (f a b c d)
+   (add (add a b)
+        (add c d)))
+
+(assert
+  (eq (f 1
+         2
+         3
+         4)
+      10))
+
+(assert
+  (eq {a = 1
+       b = 2
+       c = 3
+       d = 4}
+      {(= a 1)
+       (= b 2)
+       (= c 3)
+       (= d 4)}))
+
+(assert
+  (eq (f 1
+         2
+         3
+         4)
+      (f a = 1
+         b = 2
+         c = 3
+         d = 4)))
+
+(assert
+  (eq ((f a = 1
+          c = 3)
+       b = 2
+       d = 4)
+      10))
+
+(assert
+  (eq (f 1
+         2
+         3
+         4)
+      (f (= a 1)
+         (= b 2)
+         (= c 3)
+         (= d 4))))
+
+;; prim
+
+(assert (eq (add x = 1 y = 2) 3))
+(assert (eq ((add x = 1) y = 2) 3))
+
+;; data
+
+(assert
+  (eq (cons-c car = 1 cdr = 2)
+      (cons-c 1 2)))
+
+(assert
+  (eq ((cons-c car = 1) cdr = 2)
+      (cons-c 1 2)))

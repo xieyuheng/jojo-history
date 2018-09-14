@@ -1,0 +1,29 @@
+(= zero-t (data))
+(= succ-t (data prev))
+
+(= zero zero-c)
+(= one (succ-c zero))
+(= two (succ-c one))
+(= three (succ-c two))
+(= four (succ-c three))
+
+(assert (eq zero-t (type-of zero)))
+(assert (eq succ-t (type-of one)))
+(assert (eq succ-t (type-of two)))
+(assert (eq succ-t (type-of three)))
+(assert (eq succ-t (type-of four)))
+
+(assert (not (eq succ-t (type-of zero))))
+(assert (not (eq zero-t (type-of one))))
+(assert (not (eq zero-t (type-of two))))
+(assert (not (eq zero-t (type-of three))))
+(assert (not (eq zero-t (type-of four))))
+
+
+(assert (eq null-t (type-of null-c)))
+
+(assert (eq cons-t (type-of cons-c)))
+(assert (eq cons-t (type-of (cons-c null-c))))
+
+(assert (eq prim-t (type-of println)))
+(assert (eq closure-t (type-of (lambda [x] x))))
