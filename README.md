@@ -1,3 +1,3 @@
-# About this directory
+# About this repo
 
-This directory backs up and documents many abandoned efforts about the design and implementation.
+This repo backs up and documents many abandoned efforts about the design and implementation.
