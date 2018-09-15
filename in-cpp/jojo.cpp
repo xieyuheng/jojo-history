@@ -467,7 +467,6 @@
       }
       obj_map_t
       obj_map_merge (
-          env_t &env,
           obj_map_t &ante,
           obj_map_t &succ)
       {
@@ -3488,7 +3487,7 @@
             env.obj_stack.pop ();
             auto arg_dict = as_dict (obj);
             auto obj_map = obj_map_merge (
-                env, this->obj_map, arg_dict->obj_map);
+                this->obj_map, arg_dict->obj_map);
             auto size = this->name_vector.size ();
             auto have = obj_map.size ();
             if (size == have) {
@@ -3508,9 +3507,7 @@
             env.obj_stack.pop ();
             auto arg_dict = as_dict (obj);
             auto obj_map = obj_map_merge (
-                env, this->obj_map, arg_dict->obj_map);
-            // auto size = this->name_vector.size ();
-            // auto have = obj_map.size ();
+                this->obj_map, arg_dict->obj_map);
             auto data = make_data (
                 this->tag,
                 this->name_vector,
